@@ -8,6 +8,16 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "sqlalchemy>=2.1,<2.2",
+    "alembic>=1.20,<2",
+    "pyperf>=2.10.0,<2.11",
+    "pyperformance>=1.14.0,<1.15",
+    "rich>=15,<16",
+]
+
+[project.optional-dependencies]
+db = [
+    "pymysql>=1.2,<2",
 ]
 
 [project.scripts]
