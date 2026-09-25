@@ -1,25 +1,84 @@
-[Русская версия](README.ru.md)
+[Русский](README.ru.md)
 
 # takt
 
-takt runs pyperformance and pyperf benchmarks and stores the results in SQL databases.
+takt runs pyperformance benchmarks or your own pyperf scripts.
+It writes every result to one or more SQL databases at once.
+It then compares results from these databases and from result files.
 
 ## Installation
 
 SQLite only:
 
-    pip install takt
+```bash
+pip install takt
+```
 
-SQLite and MariaDB:
+With drivers for other databases (in v0: MariaDB):
 
-    pip install "takt[db]"
+```bash
+pip install "takt[db]"
+```
 
-## Commands
+## Quick start
 
-- `takt run` runs benchmarks and stores the result.
-- `takt import` stores an existing pyperf JSON result.
-- `takt compare` compares results from files and databases.
+Run the `nbody` benchmark and store the result under the name `baseline <today's UTC date>`:
 
-## Requirements
+```bash
+takt run -b nbody --fast --db sqlite:///bench.db --name "baseline {date}"
+```
 
-Python 3.14 or newer.
+Store a result file you already have under the name `patched`:
+
+```bash
+takt import result.json --db sqlite:///bench.db --name patched
+```
+
+Compare the two runs:
+
+```bash
+takt compare "baseline 2026-09-25" patched --db sqlite:///bench.db
+```
+
+## Configuration file
+
+Put `takt.toml` in the current directory to avoid repeating `--db`:
+
+```toml
+name_template = "nightly {date}"
+
+[targets.local]
+url = "sqlite:///bench.db"
+```
+
+With this file, `takt run -b nbody --fast` stores the result in `bench.db` under the name `nightly <date>`.
+
+## Documentation
+
+The full documentation is in the `docs` directory. To read it locally:
+
+```bash
+poetry run mkdocs serve
+```
+
+## Development
+
+```bash
+poetry run pytest
+```
+
+```bash
+poetry run ruff check src tests
+```
+
+```bash
+poetry run flake8 src
+```
+
+```bash
+poetry run mypy --strict src
+```
+
+```bash
+poetry build
+```
