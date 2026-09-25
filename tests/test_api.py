@@ -171,6 +171,21 @@ def test_compare_db_and_file(tmp_path: Path) -> None:
     assert table.headers == ('Benchmark', 'base', str(changed))
 
 
+def test_compare_empty_database_raises_execution_error(
+    tmp_path: Path,
+) -> None:
+    url = sqlite_url(tmp_path / 'empty.db')
+    changed = write_result(tmp_path / 'b.json', SLOW)
+
+    with pytest.raises(takt.ExecutionError) as caught:
+        takt.compare(['base', str(changed)], db=[url])
+
+    engine_url = url.replace('sqlite:', 'sqlite+pysqlite:', 1)
+    assert str(caught.value) == (
+        f'cannot read from database {engine_url}: no such table: takt_suite'
+    )
+
+
 def test_public_exports() -> None:
     assert set(takt.__all__) == {
         'run',
