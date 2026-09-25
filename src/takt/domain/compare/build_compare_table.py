@@ -1,0 +1,153 @@
+"""Building of the compare table from labeled suites."""
+
+import statistics
+from collections.abc import Mapping, Sequence
+from typing import Final
+
+from takt.domain.compare.compare_table import CompareTable
+from takt.domain.compare.labeled_suite import LabeledSuite
+from takt.domain.compare.normalized_mean import format_normalized_mean
+from takt.domain.compare.significance import is_significant
+from takt.domain.compare.value_format import format_value
+from takt.domain.errors.no_common_benchmarks_error import (
+    NoCommonBenchmarksError,
+)
+from takt.domain.model.benchmark import Benchmark
+from takt.domain.model.suite import Suite
+
+_DEFAULT_UNIT: Final = 'second'
+_NOT_SIGNIFICANT: Final = 'not significant'
+
+_BenchmarksByName = Mapping[str, Benchmark]
+_Row = tuple[str, ...]
+_IgnoredOperand = tuple[str, tuple[str, ...]]
+
+
+def build_compare_table(
+    base: LabeledSuite,
+    changed: Sequence[LabeledSuite],
+) -> CompareTable:
+    """Compare changed suites against the base suite.
+
+    :param base: The reference suite.
+    :param changed: Suites compared against the base, at least one.
+    :returns: The table ``pyperf compare_to --table`` would print.
+    :raises ValueError: If ``changed`` is empty.
+    :raises NoCommonBenchmarksError: If no benchmark with values is
+        present in every suite.
+    """
+    if not changed:
+        msg = 'at least one changed suite is required'
+        raise ValueError(msg)
+    suites = (base, *changed)
+    present = [_benchmarks_with_values(labeled.suite) for labeled in suites]
+    common = [
+        name
+        for name in present[0]
+        if all(name in benchmarks for benchmarks in present[1:])
+    ]
+    if not common:
+        msg = 'benchmark suites have no benchmark in common'
+        raise NoCommonBenchmarksError(msg)
+    return _table(suites, present, common)
+
+
+def _benchmarks_with_values(suite: Suite) -> _BenchmarksByName:
+    return {
+        benchmark.name: benchmark
+        for benchmark in suite.benchmarks
+        if any(run.values for run in benchmark.runs)
+    }
+
+
+def _table(
+    suites: Sequence[LabeledSuite],
+    present: Sequence[_BenchmarksByName],
+    common: Sequence[str],
+) -> CompareTable:
+    rows: list[_Row] = []
+    hidden: list[str] = []
+    norm_means: list[list[float]] = [[] for _ in present[1:]]
+    for name in common:
+        row = _compare_row(name, present, norm_means)
+        if row:
+            rows.append(row)
+        else:
+            hidden.append(name)
+    if len(common) > 1 and rows:
+        rows.append(
+            (
+                'Geometric mean',
+                '(ref)',
+                *(
+                    format_normalized_mean(statistics.geometric_mean(column))
+                    for column in norm_means
+                ),
+            )
+        )
+    return CompareTable(
+        headers=('Benchmark', *(labeled.label for labeled in suites)),
+        rows=tuple(rows),
+        hidden_not_significant=tuple(hidden),
+        ignored=_ignored(suites, common),
+    )
+
+
+def _compare_row(
+    name: str,
+    present: Sequence[_BenchmarksByName],
+    norm_means: Sequence[list[float]],
+) -> _Row:
+    base_values, base_unit = _sample(present[0][name])
+    cells = [name, format_value(base_unit, statistics.mean(base_values))]
+    for benchmarks, column_means in zip(present[1:], norm_means, strict=True):
+        cells.append(_cell(base_values, benchmarks[name], column_means))
+    if all(cell == _NOT_SIGNIFICANT for cell in cells[2:]):
+        return ()
+    return tuple(cells)
+
+
+def _cell(
+    base_values: Sequence[float],
+    benchmark: Benchmark,
+    column_means: list[float],
+) -> str:
+    values, unit = _sample(benchmark)
+    mean = statistics.mean(values)
+    norm_mean = mean / statistics.mean(base_values)
+    column_means.append(norm_mean)
+    if not is_significant(base_values, values).significant:
+        return _NOT_SIGNIFICANT
+    return ': '.join(
+        (
+            format_value(unit, mean),
+            format_normalized_mean(norm_mean),
+        )
+    )
+
+
+def _sample(benchmark: Benchmark) -> tuple[list[float], str]:
+    values = [
+        measurement.value
+        for run in benchmark.runs
+        for measurement in run.values
+    ]
+    units = (run.metadata.unit for run in benchmark.runs)
+    unit = next((unit for unit in units if unit is not None), _DEFAULT_UNIT)
+    return values, unit
+
+
+def _ignored(
+    suites: Sequence[LabeledSuite],
+    common: Sequence[str],
+) -> tuple[_IgnoredOperand, ...]:
+    ignored: list[_IgnoredOperand] = []
+    for labeled in suites:
+        names = sorted(
+            benchmark.name
+            for benchmark in labeled.suite.benchmarks
+            if benchmark.name not in common
+        )
+        if names:
+            ignored.append((labeled.label, tuple(names)))
+    return tuple(ignored)
