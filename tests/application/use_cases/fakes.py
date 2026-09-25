@@ -29,6 +29,24 @@ class FakeReader:
         return self.suite
 
 
+class FakeRunner:
+    def __init__(
+        self,
+        result_path: Path | None,
+        error: Exception | None = None,
+    ) -> None:
+        self.result_path = result_path
+        self.error = error
+        self.calls: list[tuple[str, ...]] = []
+
+    def run(self, arguments: tuple[str, ...]) -> Path:
+        self.calls.append(arguments)
+        if self.error is not None:
+            raise self.error
+        assert self.result_path is not None
+        return self.result_path
+
+
 class FixedClock:
     def __init__(self, moment: datetime) -> None:
         self.moment = moment
