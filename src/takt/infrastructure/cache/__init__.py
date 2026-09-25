@@ -1,0 +1,1 @@
+"""Local schema version cache."""

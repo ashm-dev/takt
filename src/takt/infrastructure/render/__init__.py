@@ -1,0 +1,1 @@
+"""Rendering of compare tables."""
