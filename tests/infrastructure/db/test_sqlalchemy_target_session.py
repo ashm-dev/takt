@@ -1,8 +1,8 @@
 from contextlib import closing
 
 import pytest
-from sqlalchemy.exc import OperationalError
 
+from takt.domain.errors.execution_error import ExecutionError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
 from takt.domain.model.target import Target
 from takt.infrastructure.db.sqlalchemy_target_connector import (
@@ -70,5 +70,5 @@ def test_open_invalid_url_disposes_engine() -> None:
         dialect='mariadb',
     )
 
-    with pytest.raises(OperationalError):
+    with pytest.raises(ExecutionError):
         SqlAlchemyTargetConnector().open(target)
