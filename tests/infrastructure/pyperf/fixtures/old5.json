@@ -1,0 +1,1 @@
+{"version": 5, "benchmarks": [{"common_metadata": {"name": "telco", "unit": "second", "inner_loops": 2, "hostname": "old-host"}, "runs": [{"metadata": {"loops": 2, "date": "2017-01-01 12:00:00"}, "warmups": [[2, 0.4]], "samples": [0.05, 0.06]}]}]}

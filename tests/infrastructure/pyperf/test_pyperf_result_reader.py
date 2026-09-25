@@ -1,0 +1,177 @@
+import gzip
+import json
+from datetime import datetime
+from pathlib import Path
+
+import pytest
+
+from takt.domain.errors.invalid_result_error import InvalidResultError
+from takt.domain.hashing.result_hash import result_hash
+from takt.domain.model.benchmark import Benchmark
+from takt.domain.model.suite import Suite
+from takt.infrastructure.pyperf.pyperf_result_reader import PyperfResultReader
+
+FIXTURES = Path(__file__).parent / 'fixtures'
+FULL = FIXTURES / 'full.json'
+OLD5 = FIXTURES / 'old5.json'
+
+
+def _as_dict(node: object) -> dict[str, object]:
+    assert isinstance(node, dict)
+    return node
+
+
+def _as_list(node: object) -> list[object]:
+    assert isinstance(node, list)
+    return node
+
+
+def _full_document() -> dict[str, object]:
+    return _as_dict(json.loads(FULL.read_text(encoding='utf-8')))
+
+
+def _benchmark_metadata(
+    document: dict[str, object], index: int
+) -> dict[str, object]:
+    benchmark = _as_dict(_as_list(document['benchmarks'])[index])
+    return _as_dict(benchmark['metadata'])
+
+
+def _all_metadata(document: dict[str, object]) -> list[dict[str, object]]:
+    found: list[dict[str, object]] = []
+    for node in _as_list(document['benchmarks']):
+        benchmark = _as_dict(node)
+        found.append(_as_dict(benchmark['metadata']))
+        for run_node in _as_list(benchmark['runs']):
+            run_metadata = _as_dict(run_node).get('metadata')
+            if run_metadata is not None:
+                found.append(_as_dict(run_metadata))
+    return found
+
+
+def _write(tmp_path: Path, document: object) -> Path:
+    path = tmp_path / 'result.json'
+    path.write_text(json.dumps(document), encoding='utf-8')
+    return path
+
+
+def _read(path: Path) -> Suite:
+    return PyperfResultReader().read(path)
+
+
+def _check_nbody(nbody: Benchmark) -> None:
+    calibration, measured = nbody.runs
+    assert calibration.values == ()
+    assert tuple(
+        (warmup.loops, warmup.value) for warmup in calibration.warmups
+    ) == ((1, 0.25), (2, 0.26), (4, 0.24))
+    assert calibration.metadata.calibrate_loops == 4
+    assert tuple(value.value for value in measured.values) == (0.21, 0.22, 0.2)
+    assert measured.metadata.custom == {'my_label': 'baseline'}
+
+
+def _check_json_dumps(json_dumps: Benchmark) -> None:
+    assert len(json_dumps.runs) == 1
+    metadata = json_dumps.runs[0].metadata
+    assert metadata.tags == ('serialize',)
+    assert metadata.python_hash_seed == '0'
+    assert metadata.custom == {'duration': 2}
+    assert metadata.hostname == 'bench-host'
+
+
+def test_reads_full_fixture() -> None:
+    suite = _read(FULL)
+
+    assert suite.format_version == '1.0'
+    assert suite.hash == result_hash(_full_document())
+    assert tuple(bench.name for bench in suite.benchmarks) == (
+        'nbody',
+        'json_dumps',
+    )
+    nbody, json_dumps = suite.benchmarks
+    _check_nbody(nbody)
+    _check_json_dumps(json_dumps)
+    assert suite.result_date == datetime.fromisoformat('2026-09-25 09:59:00')
+
+
+def test_gzip_has_same_hash(tmp_path: Path) -> None:
+    compressed = tmp_path / 'full.json.gz'
+    with gzip.open(compressed, 'wt', encoding='utf-8') as gzip_file:
+        gzip_file.write(FULL.read_text(encoding='utf-8'))
+
+    assert _read(compressed).hash == _read(FULL).hash
+
+
+def test_reformatted_json_has_same_hash(tmp_path: Path) -> None:
+    reformatted = tmp_path / 'full.json'
+    reformatted.write_text(
+        json.dumps(_full_document(), indent=4), encoding='utf-8'
+    )
+
+    assert _read(reformatted).hash == _read(FULL).hash
+
+
+def test_reads_old_format5() -> None:
+    suite = _read(OLD5)
+
+    assert suite.format_version == '5'
+    assert tuple(bench.name for bench in suite.benchmarks) == ('telco',)
+    runs = suite.benchmarks[0].runs
+    assert len(runs) == 1
+    run = runs[0]
+    values = tuple(measurement.value for measurement in run.values)
+    assert values == (0.05, 0.06)
+    assert tuple(warmup.loops for warmup in run.warmups) == (2,)
+    assert run.warmups[0].value == pytest.approx(0.1)
+    assert run.metadata.hostname == 'old-host'
+    assert run.metadata.inner_loops == 2
+
+
+def test_unsupported_version_raises(tmp_path: Path) -> None:
+    document = _full_document()
+    document['version'] = '2.0'
+    path = _write(tmp_path, document)
+
+    with pytest.raises(InvalidResultError) as error:
+        _read(path)
+
+    assert str(error.value) == (
+        f"invalid pyperf result {path}: unsupported format version '2.0'"
+    )
+
+
+def test_missing_version_raises(tmp_path: Path) -> None:
+    path = _write(tmp_path, {'benchmarks': []})
+
+    with pytest.raises(InvalidResultError) as error:
+        _read(path)
+
+    assert str(error.value).endswith("missing 'version'")
+
+
+def test_pyperf_rejects_file(tmp_path: Path) -> None:
+    path = _write(tmp_path, {'version': '1.0', 'benchmarks': []})
+
+    with pytest.raises(InvalidResultError) as error:
+        _read(path)
+
+    assert str(error.value).startswith('invalid pyperf result ')
+
+
+def test_result_date_none_without_dates(tmp_path: Path) -> None:
+    document = _full_document()
+    for metadata in _all_metadata(document):
+        metadata.pop('date', None)
+
+    assert _read(_write(tmp_path, document)).result_date is None
+
+
+def test_bad_date_is_skipped(tmp_path: Path) -> None:
+    document = _full_document()
+    _benchmark_metadata(document, 1)['date'] = 'yesterday'
+
+    suite = _read(_write(tmp_path, document))
+
+    assert suite.result_date == datetime.fromisoformat(
+        '2026-09-25 10:00:00.000001'
+    )
