@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.14'
+  POETRY_VERSION: '2.4.3'
+
+jobs:
+  lint:
+    name: Lint (ruff, wemake-python-styleguide)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install Poetry
+        run: pipx install "poetry==${POETRY_VERSION}"
+      - name: Install dependencies
+        run: poetry install --all-extras
+      - name: Ruff check
+        run: poetry run ruff check .
+      - name: Ruff format
+        run: poetry run ruff format --check .
+      - name: wemake-python-styleguide
+        run: poetry run flake8 .
+
+  types:
+    name: Types (mypy strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install Poetry
+        run: pipx install "poetry==${POETRY_VERSION}"
+      - name: Install dependencies
+        run: poetry install --all-extras
+      - name: Mypy
+        run: poetry run mypy
+
+  tests:
+    name: Tests (pytest, coverage >= 90%)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install Poetry
+        run: pipx install "poetry==${POETRY_VERSION}"
+      - name: Install dependencies
+        run: poetry install --all-extras
+      - name: Pytest
+        run: poetry run pytest -n 2
+
+  wheel:
+    name: Wheel (mypyc)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install Poetry
+        run: pipx install "poetry==${POETRY_VERSION}"
+      - name: Build wheel
+        env:
+          TAKT_MYPYC: '1'
+        run: poetry build -f wheel
+      - name: Check wheel layout
+        run: |
+          python -m zipfile -l dist/*.whl
+          if python -m zipfile -l dist/*.whl | grep -q '^src/'; then
+            echo 'Wheel contains files under src/' >&2
+            exit 1
+          fi
+      - name: Install wheel into a clean environment
+        run: |
+          python -m venv /tmp/wheel-check
+          /tmp/wheel-check/bin/pip install dist/*.whl
+          cd /tmp
+          /tmp/wheel-check/bin/python -c 'import takt'
+
+  docs:
+    name: Docs (mkdocs --strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install Poetry
+        run: pipx install "poetry==${POETRY_VERSION}"
+      - name: Install dependencies
+        run: poetry install --all-extras
+      - name: Build docs
+        run: poetry run mkdocs build --strict
