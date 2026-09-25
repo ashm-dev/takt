@@ -205,6 +205,39 @@ def test_compare_unknown_operand(
 
 
 @pytest.mark.usefixtures('result_a')
+def test_compare_empty_database(
+    sqlite_url: str,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    code = main(['compare', 'a.json', 'base', '--db', sqlite_url])
+
+    assert code == 1
+    engine_url = sqlite_url.replace('sqlite:', 'sqlite+pysqlite:', 1)
+    assert capsys.readouterr().err == (
+        f'error: cannot read from database {engine_url}: '
+        'no such table: takt_suite\n'
+    )
+
+
+@pytest.mark.usefixtures('result_a')
+def test_compare_unreachable_database(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    url = 'mariadb+pymysql://u:secret@127.0.0.1:1/x'
+
+    code = main(['compare', 'a.json', 'base', '--db', url])
+
+    assert code == 1
+    err = capsys.readouterr().err
+    assert err.startswith(
+        'error: cannot connect to database '
+        'mariadb+pymysql://u:***@127.0.0.1:1/x: ',
+    )
+    assert err.count('\n') == 1
+    assert 'secret' not in err
+
+
+@pytest.mark.usefixtures('result_a')
 def test_import_without_targets(capsys: pytest.CaptureFixture[str]) -> None:
     code = main(['import', 'a.json'])
 
