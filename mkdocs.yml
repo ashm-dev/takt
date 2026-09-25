@@ -9,6 +9,7 @@ nav:
   - Home: index.md
   - Configuration: configuration.md
   - Commands: commands.md
+  - Data model: data-model.md
   - API: api.md
 plugins:
   - search
@@ -26,6 +27,7 @@ plugins:
             Home: Главная
             Configuration: Настройка
             Commands: Команды
+            Data model: Модель данных
             API: API
   - mkdocstrings:
       handlers:
