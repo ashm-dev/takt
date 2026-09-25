@@ -75,6 +75,7 @@ ignore = [
 "tests/**/*.py" = ["S101", "PLR2004", "D", "INP001"]
 "src/takt/infrastructure/db/migrations/**/*.py" = ["INP001"]
 "build.py" = ["INP001"]
+"src/takt/__init__.py" = ["RUF022"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
