@@ -137,7 +137,8 @@ def compare(
     :raises UsageError: If the configuration is invalid, fewer than two
         operands are given or a stored run is requested without a target.
     :raises ExecutionError: If an operand is not found or ambiguous, a
-        result file cannot be read or the suites share no benchmark.
+        result file cannot be read, the database cannot be connected to
+        or read, or the suites share no benchmark.
     """
     targets = resolve_targets(_sources(db, target, config, None))
     selected = targets[0] if targets else None
