@@ -108,6 +108,27 @@ module = [
 ]
 ignore_missing_imports = true
 
+[tool.pytest.ini_options]
+minversion = "9.0"
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--import-mode=importlib",
+    "-ra",
+    "--cov=takt",
+    "--cov-branch",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-fail-under=90",
+]
+markers = [
+    "slow: runs real benchmarks and takes more than 10 seconds",
+    "mariadb: needs Docker to start MariaDB through testcontainers",
+]
+xfail_strict = true
+filterwarnings = ["error"]
+
 [build-system]
 requires = [
     "poetry-core>=2.0.0,<3.0.0",
