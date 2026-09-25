@@ -82,6 +82,32 @@ convention = "pep257"
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = "single"
 
+[tool.mypy]
+python_version = "3.14"
+strict = true
+mypy_path = "src"
+files = ["src", "tests", "build.py"]
+warn_unreachable = true
+enable_error_code = [
+    "ignore-without-code",
+    "redundant-expr",
+    "truthy-bool",
+    "possibly-undefined",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "pyperf",
+    "pyperf.*",
+    "pyperformance",
+    "pyperformance.*",
+    "testcontainers",
+    "testcontainers.*",
+    "setuptools",
+    "setuptools.*",
+]
+ignore_missing_imports = true
+
 [build-system]
 requires = [
     "poetry-core>=2.0.0,<3.0.0",
