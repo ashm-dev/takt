@@ -70,5 +70,36 @@ def test_open_invalid_url_disposes_engine() -> None:
         dialect='mariadb',
     )
 
-    with pytest.raises(ExecutionError):
+    with pytest.raises(ExecutionError) as connect_error:
         SqlAlchemyTargetConnector().open(target)
+
+    assert str(connect_error.value).startswith(
+        'cannot connect to database mariadb+pymysql://u:***@127.0.0.1:1/db: ',
+    )
+    assert ':p@' not in str(connect_error.value)
+
+
+@pytest.mark.parametrize(
+    ('method', 'arguments'),
+    [
+        ('loaded_name', (MISSING_HASH,)),
+        ('get', (MISSING_HASH,)),
+        ('find_by_name', ('x',)),
+        ('find_by_hash_prefix', ('d', None)),
+    ],
+)
+def test_read_without_schema_raises_execution_error(
+    sqlite_target: Target,
+    method: str,
+    arguments: tuple[str | None, ...],
+) -> None:
+    with (
+        closing(SqlAlchemyTargetConnector().open(sqlite_target)) as session,
+        pytest.raises(ExecutionError) as read_error,
+    ):
+        getattr(session, method)(*arguments)
+
+    engine_url = sqlite_target.url.replace('sqlite:', 'sqlite+pysqlite:', 1)
+    assert str(read_error.value).startswith(
+        f'cannot read from database {engine_url}: no such table: ',
+    )
