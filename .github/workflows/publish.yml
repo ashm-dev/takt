@@ -1,0 +1,52 @@
+name: Publish
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+env:
+  POETRY_VERSION: '2.4.3'
+
+jobs:
+  build:
+    name: Build manylinux wheel
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_28_x86_64
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Poetry
+        run: /opt/python/cp314-cp314/bin/python -m pip install "poetry==${POETRY_VERSION}"
+      - name: Build wheel
+        env:
+          TAKT_MYPYC: '1'
+        run: |
+          /opt/python/cp314-cp314/bin/python -m poetry env use /opt/python/cp314-cp314/bin/python
+          /opt/python/cp314-cp314/bin/python -m poetry build -f wheel
+      - name: Repair wheel
+        run: auditwheel repair dist/*.whl -w wheelhouse
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheelhouse
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/takt
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheelhouse
+          path: wheelhouse
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: wheelhouse/
