@@ -53,6 +53,12 @@ url = "sqlite:///bench.db"
 
 With this file, `takt run -b nbody --fast` stores the result in `bench.db` under the name `nightly <date>`.
 
+## Compatibility
+
+| takt | Python | pyperf | pyperformance |
+|---|---|---|---|
+| 0.1.0 | >=3.14 | >=2.10.0,<2.11 | >=1.14.0,<1.15 |
+
 ## Documentation
 
 The full documentation is in the `docs` directory. To read it locally:
