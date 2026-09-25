@@ -129,6 +129,18 @@ markers = [
 xfail_strict = true
 filterwarnings = ["error"]
 
+[tool.coverage.run]
+branch = true
+source = ["takt"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "^\\s*\\.\\.\\.$",
+]
+
 [build-system]
 requires = [
     "poetry-core>=2.0.0,<3.0.0",
