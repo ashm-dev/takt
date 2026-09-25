@@ -149,5 +149,6 @@ requires = [
     "sqlalchemy>=2.1,<2.2",
     "pyperf>=2.10.0,<2.11",
     "alembic>=1.20,<2",
+    "rich>=15,<16",
 ]
 build-backend = "poetry.core.masonry.api"
