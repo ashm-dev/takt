@@ -216,3 +216,20 @@ def test_all_aware_dates_give_naive_date(tmp_path: Path) -> None:
     suite = _read(_write(tmp_path, document))
 
     assert suite.result_date == datetime.fromisoformat('2026-09-25 12:59:00')
+
+
+@pytest.mark.parametrize(('name', 'type_name'), [(123, 'int'), (1.5, 'float')])
+def test_non_string_benchmark_name_raises(
+    tmp_path: Path, name: object, type_name: str
+) -> None:
+    document = _full_document()
+    _benchmark_metadata(document, 1)['name'] = name
+    path = _write(tmp_path, document)
+
+    with pytest.raises(InvalidResultError) as error:
+        _read(path)
+
+    assert str(error.value) == (
+        f'invalid pyperf result {path}: '
+        f'benchmark name must be a string, got {type_name}'
+    )
