@@ -141,8 +141,9 @@ def compare(
 ) -> CompareTable:
     """Compare two or more results against the first one.
 
-    Stored runs are read from the first configured target; operands that
-    are all files need no database.
+    Stored runs are read from the first configured target; when every
+    operand is a file, ``db``, ``target``, ``config``, ``TAKT_DB`` and
+    ``takt.toml`` are not read at all.
 
     :param operands: Result files, run names, ``name:N``, ``name:prefix``
         or hash prefixes; the first one is the base, and a path-like
@@ -151,23 +152,22 @@ def compare(
     :param target: Target names from ``takt.toml``, like ``--target``.
     :param config: Path to ``takt.toml`` instead of ``./takt.toml``.
     :returns: The compare table.
-    :raises UsageError: If the configuration is invalid, fewer than two
-        operands are given, a stored run is requested without a target,
-        or a string is passed instead of a sequence of strings.
+    :raises UsageError: If fewer than two operands are given, a stored run
+        is requested without a target or with an invalid configuration, or
+        a string is passed instead of a sequence of strings.
     :raises ExecutionError: If an operand is not found or ambiguous, a
         result file cannot be read, the database cannot be connected to
         or read, or the suites share no benchmark.
     """
     reject_single_strings(operands=operands, db=db, target=target)
-    targets = resolve_targets(_sources(db, target, config, None))
-    selected = targets[0] if targets else None
+    sources = _sources(db, target, config, None)
     return CompareSuites(
         reader=PyperfResultReader(),
         connector=SqlAlchemyTargetConnector(),
     ).execute(
         CompareRequest(
             operands=tuple(operands),
-            target=selected,
+            find_target=lambda: next(iter(resolve_targets(sources)), None),
         ),
     )
 

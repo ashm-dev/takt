@@ -39,8 +39,9 @@ class CompareSuites:
 
         :param request: Operands and the optional database target.
         :returns: The compare table.
-        :raises ConfigurationError: If there are fewer than two operands
-            or a database operand is given without a target.
+        :raises ConfigurationError: If there are fewer than two operands,
+            or a database operand is given without a target or with an
+            invalid database setting.
         :raises OperandNotFoundError: If an operand is empty or malformed,
             or matches nothing.
         :raises AmbiguousOperandError: If an operand matches several runs.
@@ -73,13 +74,14 @@ class CompareSuites:
         ]
         if not stored:
             return OperandResolver(reader=self._reader, session=None)
-        if request.target is None:
+        target = request.find_target()
+        if target is None:
             msg = (
                 f"operand '{stored[0]}' is not a file "
                 'and no database target is configured'
             )
             raise ConfigurationError(msg)
-        session = self._connector.open(request.target)
+        session = self._connector.open(target)
         # Callbacks run in reverse order, so rollback precedes close.
         cleanup.callback(session.close)
         cleanup.callback(session.rollback)

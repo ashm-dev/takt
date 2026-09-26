@@ -44,7 +44,10 @@ class Fixture:
         *operands: str,
         target: Target | None = TARGET,
     ) -> tuple[str, ...]:
-        request = CompareRequest(operands=operands, target=target)
+        request = CompareRequest(
+            operands=operands,
+            find_target=lambda: target,
+        )
         return self.use_case.execute(request).headers
 
 
