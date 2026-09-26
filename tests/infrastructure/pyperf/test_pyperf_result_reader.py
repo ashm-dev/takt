@@ -1,5 +1,6 @@
 import gzip
 import json
+import math
 from datetime import datetime
 from pathlib import Path
 
@@ -175,3 +176,20 @@ def test_bad_date_is_skipped(tmp_path: Path) -> None:
     assert suite.result_date == datetime.fromisoformat(
         '2026-09-25 10:00:00.000001'
     )
+
+
+@pytest.mark.parametrize(
+    'value',
+    [math.nan, math.inf, '\ud800'],
+    ids=['nan', 'infinity', 'lone-surrogate'],
+)
+def test_unhashable_document_raises(tmp_path: Path, value: object) -> None:
+    document = _full_document()
+    _benchmark_metadata(document, 0)['extra'] = value
+    path = _write(tmp_path, document)
+
+    with pytest.raises(InvalidResultError) as error:
+        _read(path)
+
+    assert str(error.value).startswith(f'invalid pyperf result {path}: ')
+    assert isinstance(error.value.__cause__, ValueError)
