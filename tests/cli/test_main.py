@@ -1,5 +1,7 @@
 import dataclasses
 import functools
+import io
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from types import MappingProxyType
@@ -58,6 +60,27 @@ class Recorder:
         if isinstance(self.response, BaseException):
             raise self.response
         return self.response
+
+
+class BufferedOutput(io.StringIO):
+    def __init__(self, log: list[str]) -> None:
+        super().__init__()
+        self.log = log
+
+    def flush(self) -> None:
+        self.log.append(self.getvalue())
+        self.seek(0)
+        self.truncate()
+
+
+class DirectOutput(io.StringIO):
+    def __init__(self, log: list[str]) -> None:
+        super().__init__()
+        self.log = log
+
+    def write(self, text: str) -> int:
+        self.log.append(text)
+        return len(text)
 
 
 @pytest.fixture
@@ -168,6 +191,29 @@ def test_retry_keeps_rendered_name_from_any_source(
         'Retry without re-running benchmarks: '
         "takt import r.json --db sqlite:///a.db --name 'nightly {{x}}'"
     ) in capsys.readouterr().err.splitlines()
+
+
+def test_report_comes_before_error_in_one_log(
+    fake_api: Callable[[str, object], Recorder],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_api('run', FAILED_REPORT)
+    log: list[str] = []
+    monkeypatch.setattr(sys, 'stdout', BufferedOutput(log))
+    monkeypatch.setattr(sys, 'stderr', DirectOutput(log))
+
+    main(['run', '-b', 'nbody', '--db', 'sqlite:///a.db'])
+
+    assert ''.join(log).splitlines() == [
+        'Result 3fa2b1c4d5e6 (default) from r.json',
+        '  local: rolled back',
+        '  mariadb+pymysql://u:***@h/db: failed: connection refused',
+        'error: result was not written to all targets',
+        (
+            'Retry without re-running benchmarks: '
+            'takt import r.json --db sqlite:///a.db --name default'
+        ),
+    ]
 
 
 def test_run_partial_result_prints_import_hint(
