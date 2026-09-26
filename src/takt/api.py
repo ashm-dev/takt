@@ -70,8 +70,9 @@ def run(
     :param name: Run name or name template, like ``--name``.
     :returns: The import report of the produced result file.
     :raises UsageError: If the configuration, targets or run name are
-        invalid, ``-o``/``--output`` has no value, or a string is passed
-        instead of a sequence of strings.
+        invalid, ``-o``/``--output`` has no value, the folder of the result
+        file is missing or not writable, or a string is passed instead of a
+        sequence of strings.
     :raises ExecutionError: If the benchmarks fail or the result file
         cannot be read.
     """

@@ -14,5 +14,6 @@ class BenchmarkRunner(Protocol):
         :returns: Path to the JSON result.
         :raises BenchmarkFailedError: If the process cannot start, exits
             with a non-zero code or leaves no result file.
-        :raises UsageError: If ``-o``/``--output`` has no value.
+        :raises UsageError: If ``-o``/``--output`` has no value, or the
+            folder of the result file is missing or not writable.
         """

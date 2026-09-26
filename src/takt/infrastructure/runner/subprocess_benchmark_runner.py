@@ -8,6 +8,9 @@ from pathlib import Path
 from takt.application.ports.clock import Clock
 from takt.domain.errors.benchmark_failed_error import BenchmarkFailedError
 from takt.infrastructure.runner.default_output_path import default_output_path
+from takt.infrastructure.runner.output_directory import (
+    require_output_directory,
+)
 from takt.infrastructure.runner.runner_command import build_runner_command
 
 _CANNOT_START_CODE = 127
@@ -40,7 +43,8 @@ class SubprocessBenchmarkRunner:
         :returns: Path to the JSON result.
         :raises BenchmarkFailedError: If the process cannot start, exits
             with a non-zero code or leaves no result file.
-        :raises UsageError: If ``-o``/``--output`` has no value.
+        :raises UsageError: If ``-o``/``--output`` has no value, or the
+            folder of the result file is missing or not writable.
         """
         command, result_path = build_runner_command(
             arguments,
@@ -48,6 +52,7 @@ class SubprocessBenchmarkRunner:
             output=default_output_path(self._clock.now(), self._cwd),
             cwd=self._cwd,
         )
+        require_output_directory(result_path)
         # The runners never overwrite an output file, so an old one is stale.
         existed = result_path.exists()
         return_code = self._execute(command)
