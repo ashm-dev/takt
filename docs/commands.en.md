@@ -76,6 +76,7 @@ Result 3fa2b1c4d5e6 (nightly 2026-09-25) from /home/me/takt-20260925T101500Z.jso
 
 The first line shows the first 12 characters of the result hash, the run name and the result file.
 A run without a name is shown as `unnamed`.
+If every database already had the result, nothing was written, so the first line shows the name stored there instead of the one you asked for; if the databases store different names, it shows no name.
 Then there is one line per target:
 
 | Text | Meaning |
