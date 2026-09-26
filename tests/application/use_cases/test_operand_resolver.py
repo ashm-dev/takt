@@ -145,6 +145,22 @@ def test_plain_short_prefix_is_not_searched() -> None:
     assert session.prefix_lookups == []
 
 
+def test_plain_uppercase_prefix_explains_rule() -> None:
+    session = session_with(record(HASH_A, None))
+
+    with pytest.raises(
+        OperandNotFoundError,
+        match=exact_pattern(
+            "operand '3FA2B1' not found in target 'main': "
+            'no file or run name matches; to find a run by hash, use '
+            '6 to 64 lowercase hex characters'
+        ),
+    ):
+        resolve(session, PlainOperand(text='3FA2B1'))
+
+    assert session.prefix_lookups == []
+
+
 def test_plain_ambiguous_prefix() -> None:
     session = session_with(
         record('3fa2b1'.ljust(64, 'a'), 'x'),

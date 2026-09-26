@@ -96,6 +96,27 @@ def test_name_with_slash_is_run_name() -> None:
     assert operand == PlainOperand(text='release/3.14')
 
 
+@pytest.mark.parametrize(
+    ('text', 'is_prefix', 'looks_like_hash'),
+    [
+        ('3fa2b1', True, True),
+        ('3fa2b', False, True),
+        ('3FA2B1', False, True),
+        ('nightly', False, False),
+    ],
+)
+def test_plain_operand_hash_checks(
+    text: str,
+    *,
+    is_prefix: bool,
+    looks_like_hash: bool,
+) -> None:
+    operand = PlainOperand(text=text)
+
+    assert operand.is_hash_prefix() is is_prefix
+    assert operand.looks_like_hash() is looks_like_hash
+
+
 def test_plain_name() -> None:
     operand = parse_operand('default 01.01.01', never_file)
 
