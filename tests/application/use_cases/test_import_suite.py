@@ -102,13 +102,14 @@ def test_import_renders_name_from_template() -> None:
 
 def test_clock_called_once_and_used_for_loaded_at() -> None:
     world = FakeWorld()
-    template = NameTemplate.parse('{datetime}')
+    template = NameTemplate.parse('{datetime}/{date}/{path}')
     fixture = Fixture(world)
 
-    fixture.use_case.execute(request(name_template=template))
+    report = fixture.use_case.execute(request(name_template=template))
 
     assert fixture.clock.calls == 1
     assert world.inserted[-1].loaded_at == NOW
+    assert report.name == '2026-09-25T13-46-01Z/2026-09-25/run'
 
 
 def test_source_is_passed_to_record() -> None:
