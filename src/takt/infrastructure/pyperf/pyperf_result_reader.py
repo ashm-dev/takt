@@ -93,8 +93,12 @@ def _suite(
 
 
 def _benchmark(bench: pyperf.Benchmark) -> Benchmark:
+    name = bench.get_name()
+    if not isinstance(name, str):
+        message = f'benchmark name must be a string, got {type(name).__name__}'
+        raise ValueError(message)  # noqa: TRY004 - read() turns ValueError into InvalidResultError
     return Benchmark(
-        name=bench.get_name(),
+        name=name,
         runs=tuple(_worker_run(run) for run in bench.get_runs()),
     )
 
