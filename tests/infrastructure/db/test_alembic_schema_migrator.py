@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import pytest
@@ -114,6 +115,30 @@ def test_head_raises_for_empty_versions_directory(
         match='no migrations found for dialect sqlite',
     ):
         AlembicSchemaMigrator().head(target)
+
+
+@pytest.mark.parametrize('name', ['takt%migrations', 'takt:migrations'])
+def test_migrations_under_path_with_special_characters(
+    name: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    sqlite_target: Target,
+) -> None:
+    migrations = tmp_path / name
+    shutil.copytree(
+        MIGRATIONS_DIRECTORY,
+        migrations,
+        ignore=shutil.ignore_patterns('__pycache__'),
+    )
+    monkeypatch.setattr(
+        'takt.infrastructure.db.alembic_schema_migrator.MIGRATIONS_DIRECTORY',
+        migrations,
+    )
+    migrator = AlembicSchemaMigrator()
+
+    assert migrator.head(sqlite_target) == '0001'
+    migrator.upgrade(sqlite_target)
+    assert_upgraded(sqlite_target)
 
 
 def test_upgrade_creates_schema_on_sqlite(sqlite_target: Target) -> None:
