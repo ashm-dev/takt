@@ -231,6 +231,65 @@ def test_empty_targets_returns_empty_report() -> None:
     assert world.journal == []
 
 
+def test_close_failure_after_success_is_ignored() -> None:
+    world = FakeWorld(loaded={'b': 'old'}, fail={'close:a': 1, 'close:b': 1})
+
+    report = write_expecting(world, (WR, AL, WR))
+
+    assert world.stored == {'a', 'c'}
+    assert report.succeeded
+
+
+def test_cleanup_failures_keep_insert_statuses() -> None:
+    world = FakeWorld(
+        fail={
+            'insert:b': 1,
+            'rollback:a': 1,
+            'close:a': 1,
+            'rollback:b': 1,
+            'close:b': 1,
+        },
+    )
+
+    report = write_expecting(world, (RB, FL, NA))
+
+    assert report.outcomes[1].error == 'insert failed on b'
+    assert_subsequence(
+        world.journal,
+        ['insert:b', 'rollback:b', 'close:b', 'rollback:a', 'close:a'],
+    )
+
+
+def test_cleanup_failures_keep_commit_statuses() -> None:
+    world = FakeWorld(
+        fail={
+            'commit:b': 1,
+            'rollback:b': 1,
+            'close:b': 1,
+            'rollback:c': 1,
+            'close:c': 1,
+        },
+    )
+
+    report = write_expecting(world, (RB, FL, RB))
+
+    assert report.outcomes[1].error == 'commit failed on b'
+    assert world.stored == set()
+    assert_subsequence(
+        world.journal,
+        ['commit:b', 'rollback:b', 'close:b', 'rollback:c', 'close:c'],
+    )
+
+
+def test_compensation_close_failure_is_ignored() -> None:
+    world = FakeWorld(fail={'commit:c': 1, 'close:a': 2})
+
+    write_expecting(world, (RB, RB, FL))
+
+    assert world.journal.count('close:a') == 2
+    assert world.stored == set()
+
+
 def test_empty_exception_text_uses_class_name() -> None:
     world = FakeWorld(empty_errors={'insert:a'})
 
