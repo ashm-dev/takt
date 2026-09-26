@@ -1,5 +1,6 @@
 """Parsing of a single compare operand into its typed form."""
 
+import os
 import re
 from collections.abc import Callable
 from pathlib import Path
@@ -16,23 +17,32 @@ from takt.domain.operand.tagged_operand import TaggedOperand
 _INDEX_PATTERN: Final[re.Pattern[str]] = re.compile(r'[0-9]+')
 
 
-def parse_operand(text: str, is_file: Callable[[Path], bool]) -> Operand:
+def parse_operand(
+    operand: str | os.PathLike[str],
+    is_file: Callable[[Path], bool],
+) -> Operand:
     """Parse a single compare operand.
 
-    :param text: Operand text as the user wrote it on the command line.
+    :param operand: Operand as the user wrote it; a path object always
+        names a result file.
     :param is_file: Predicate checking whether a path is an existing
         file; it is called at most once, with the operand path after
         ``~`` expansion (``~name`` of an unknown user stays as written),
         and that expansion may itself read the system user database.
     :returns: The parsed operand.
-    :raises OperandNotFoundError: If the operand is empty or malformed.
+    :raises OperandNotFoundError: If the operand is empty or malformed, or
+        it is a path object and no such file exists.
     """
+    text = os.fspath(operand)
     if text.strip() == '':
         msg = 'operand must not be empty'
         raise OperandNotFoundError(msg)
     path = expand_home(text)
     if is_file(path):
         return FileOperand(text=text, path=path)
+    if not isinstance(operand, str):
+        msg = f'result file not found: {text}'
+        raise OperandNotFoundError(msg)
     if ':' not in text:
         return PlainOperand(text=text)
     return _parse_tagged(text)

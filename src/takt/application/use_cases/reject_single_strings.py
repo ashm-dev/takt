@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from takt.domain.errors.usage_error import UsageError
 
 
-def reject_single_strings(**arguments: Sequence[str]) -> None:
+def reject_single_strings(**arguments: Sequence[object]) -> None:
     """Raise if a string is passed where a sequence of strings is expected.
 
     A ``str`` is itself a sequence of strings, so without this check

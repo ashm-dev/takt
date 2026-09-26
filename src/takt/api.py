@@ -50,7 +50,7 @@ def run(
     *,
     db: Sequence[str] = (),
     target: Sequence[str] = (),
-    config: Path | None = None,
+    config: str | os.PathLike[str] | None = None,
     name: str | None = None,
 ) -> ImportReport:
     """Run benchmarks and write the result to every selected database.
@@ -91,18 +91,19 @@ def run(
 
 
 def import_results(
-    path: Path,
+    path: str | os.PathLike[str],
     *,
     db: Sequence[str] = (),
     target: Sequence[str] = (),
-    config: Path | None = None,
+    config: str | os.PathLike[str] | None = None,
     name: str | None = None,
 ) -> ImportReport:
     """Write a ready pyperf or pyperformance result to every database.
 
     A failed write does not raise: ``report.write.succeeded`` is ``False``.
 
-    :param path: Result file, ``.json`` or ``.json.gz``.
+    :param path: Result file, ``.json`` or ``.json.gz``; it becomes the
+        ``Path`` in ``report.result_path`` unchanged.
     :param db: SQLAlchemy URLs of target databases, like ``--db``.
     :param target: Target names from ``takt.toml``, like ``--target``.
     :param config: Path to ``takt.toml`` instead of ``./takt.toml``.
@@ -116,7 +117,7 @@ def import_results(
     targets, template = _configured(db, target, config, name)
     return _importer().execute(
         ImportRequest(
-            path=path,
+            path=Path(path),
             targets=targets,
             name_template=template,
             source=SuiteSource.IMPORT,
@@ -125,11 +126,11 @@ def import_results(
 
 
 def compare(
-    operands: Sequence[str],
+    operands: Sequence[str | os.PathLike[str]],
     *,
     db: Sequence[str] = (),
     target: Sequence[str] = (),
-    config: Path | None = None,
+    config: str | os.PathLike[str] | None = None,
 ) -> CompareTable:
     """Compare two or more results against the first one.
 
@@ -137,7 +138,8 @@ def compare(
     are all files need no database.
 
     :param operands: Result files, run names, ``name:N``, ``name:prefix``
-        or hash prefixes; the first one is the base.
+        or hash prefixes; the first one is the base, and a path-like
+        operand is a file whose label is its string form.
     :param db: SQLAlchemy URLs of target databases, like ``--db``.
     :param target: Target names from ``takt.toml``, like ``--target``.
     :param config: Path to ``takt.toml`` instead of ``./takt.toml``.
@@ -155,13 +157,18 @@ def compare(
     return CompareSuites(
         reader=PyperfResultReader(),
         connector=SqlAlchemyTargetConnector(),
-    ).execute(CompareRequest(operands=tuple(operands), target=selected))
+    ).execute(
+        CompareRequest(
+            operands=tuple(operands),
+            target=selected,
+        ),
+    )
 
 
 def _configured(
     db: Sequence[str],
     target: Sequence[str],
-    config: Path | None,
+    config: str | os.PathLike[str] | None,
     name: str | None,
 ) -> tuple[tuple[Target, ...], NameTemplate | None]:
     sources = _sources(db, target, config, name)
@@ -175,13 +182,13 @@ def _configured(
 def _sources(
     db: Sequence[str],
     target: Sequence[str],
-    config: Path | None,
+    config: str | os.PathLike[str] | None,
     name: str | None,
 ) -> ConfigSources:
     return ConfigSources(
         db_flags=tuple(db),
         target_flags=tuple(target),
-        config_path=config,
+        config_path=None if config is None else Path(config),
         name_flag=name,
         environ=os.environ,
         cwd=Path.cwd(),

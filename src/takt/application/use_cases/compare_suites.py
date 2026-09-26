@@ -53,7 +53,7 @@ class CompareSuites:
             msg = 'compare needs at least two operands'
             raise ConfigurationError(msg)
         operands = [
-            parse_operand(text, Path.is_file) for text in request.operands
+            parse_operand(operand, Path.is_file) for operand in request.operands
         ]
         with contextlib.ExitStack() as cleanup:
             resolver = self._resolver(operands, request, cleanup)

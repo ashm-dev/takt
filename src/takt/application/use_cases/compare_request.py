@@ -1,5 +1,6 @@
 """Request to compare benchmark suites."""
 
+import os
 from dataclasses import dataclass
 
 from takt.domain.model.target import Target
@@ -9,9 +10,10 @@ from takt.domain.model.target import Target
 class CompareRequest:
     """Request to compare benchmark suites.
 
-    :ivar operands: Operands exactly as the user wrote them, base first.
+    :ivar operands: Operands exactly as the user wrote them, base first;
+        a path object always names a result file.
     :ivar target: Database to look stored runs up in, or ``None``.
     """
 
-    operands: tuple[str, ...]
+    operands: tuple[str | os.PathLike[str], ...]
     target: Target | None
