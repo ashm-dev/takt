@@ -12,5 +12,6 @@ class BenchmarkRunner(Protocol):
 
         :param arguments: Arguments of ``takt run`` without takt flags.
         :returns: Path to the JSON result.
-        :raises BenchmarkFailedError: If the process exits with a non-zero code.
+        :raises BenchmarkFailedError: If the process cannot start, exits
+            with a non-zero code or leaves no result file.
         """
