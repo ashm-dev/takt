@@ -126,7 +126,18 @@ def test_unknown_placeholder(field: str) -> None:
         NameTemplate.parse(text)
 
 
-@pytest.mark.parametrize('text', ['{date:%Y}', '{date!r}'])
+@pytest.mark.parametrize(
+    'text',
+    [
+        '{date:%Y}',
+        '{date!r}',
+        '{date:}',
+        '{hash}{date:}',
+        '{{x}}{date:}',
+        '{date:}{bogus}',
+        '{date:} a:b',
+    ],
+)
 def test_spec_and_conversion_forbidden(text: str) -> None:
     message = (
         f'invalid name template {text!r}: format spec and conversion '
