@@ -46,9 +46,21 @@ def test_user_output_forms(arguments: tuple[str, ...]) -> None:
     assert path == USER_OUT
 
 
-def test_user_output_expands_home() -> None:
-    _, path = _build('-o', '~/r.json')
-    assert path == Path('~/r.json').expanduser()
+def test_output_goes_before_double_dash() -> None:
+    tail = ('--', '-o', 'x')
+    command = (PY, 'bench.py', '-o', 'r.json', *USER_EXTRA, *tail)
+    assert _build('bench.py', '-o', 'r.json', *tail) == (command, USER_OUT)
+
+
+@pytest.mark.parametrize(
+    'arguments',
+    [('-o', '~/r.json'), ('--output=~/r.json',)],
+)
+def test_user_output_expands_home(arguments: tuple[str, ...]) -> None:
+    command, path = _build(*arguments)
+    expanded = Path('~/r.json').expanduser()
+    assert path == expanded
+    assert command[-2:] == ('--output', str(expanded))
 
 
 @pytest.mark.parametrize(
