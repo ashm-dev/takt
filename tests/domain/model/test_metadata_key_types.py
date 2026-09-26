@@ -19,3 +19,4 @@ def test_key_types_match_run_metadata_fields() -> None:
     )
 
     assert field_types == tuple(METADATA_KEY_TYPES.items())
+    assert len(METADATA_KEY_TYPES) == 49

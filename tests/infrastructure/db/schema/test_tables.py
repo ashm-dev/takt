@@ -4,7 +4,7 @@ import pytest
 import sqlalchemy as sa
 from sqlalchemy.schema import CreateTable
 
-from takt.domain.model.known_metadata_keys import KNOWN_METADATA_KEYS
+from takt.domain.model.metadata_key_types import METADATA_KEY_TYPES
 from takt.domain.model.run_metadata import RunMetadata
 from takt.domain.model.target import Target
 from takt.infrastructure.db.engine_factory import create_target_engine
@@ -70,10 +70,10 @@ def test_primary_keys(table_name: str, expected: tuple[str, ...]) -> None:
 def test_run_metadata_columns() -> None:
     names = tuple(column.name for column in RUN_METADATA_TABLE.columns)
 
-    assert names == (*RUN_KEY, *KNOWN_METADATA_KEYS, 'custom')
+    assert names == (*RUN_KEY, *METADATA_KEY_TYPES, 'custom')
 
 
-@pytest.mark.parametrize('key', KNOWN_METADATA_KEYS)
+@pytest.mark.parametrize('key', tuple(METADATA_KEY_TYPES))
 def test_metadata_column_types_match_run_metadata(key: str) -> None:
     hint = typing.get_type_hints(RunMetadata)[key]
     column_type = RUN_METADATA_TABLE.c[key].type
@@ -96,7 +96,7 @@ def test_nullable() -> None:
     assert not MEASUREMENT_TABLE.c.value.nullable
     assert all(
         RUN_METADATA_TABLE.c[key].nullable
-        for key in (*KNOWN_METADATA_KEYS, 'custom')
+        for key in (*METADATA_KEY_TYPES, 'custom')
     )
 
 
