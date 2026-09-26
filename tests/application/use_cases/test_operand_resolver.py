@@ -136,7 +136,8 @@ def test_plain_short_prefix_is_not_searched() -> None:
         OperandNotFoundError,
         match=exact_pattern(
             "operand '3fa2b' not found in target 'main': "
-            'no file, run name or hash prefix matches'
+            'no file or run name matches; to find a run by hash, use '
+            '6 to 64 lowercase hex characters'
         ),
     ):
         resolve(session, PlainOperand(text='3fa2b'))

@@ -8,7 +8,6 @@ from takt.domain.errors.configuration_error import ConfigurationError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
 from takt.domain.model.suite_summary import SuiteSummary
 from takt.domain.operand.file_operand import FileOperand
-from takt.domain.operand.hash_prefix_pattern import HASH_PREFIX_PATTERN
 from takt.domain.operand.operand import Operand
 from takt.domain.operand.plain_operand import PlainOperand
 from takt.domain.operand.tagged_operand import TaggedOperand
@@ -81,13 +80,13 @@ class OperandResolver:
         matches = session.find_by_name(text)
         if len(matches) > 1:
             raise _ambiguous(text, _name_lines(text, matches), matches)
-        if not matches and HASH_PREFIX_PATTERN.fullmatch(text) is not None:
+        if not matches and operand.is_hash_prefix():
             matches = session.find_by_hash_prefix(text, None)
             if len(matches) > 1:
                 raise _ambiguous(text, _prefix_lines(matches), matches)
         if matches:
             return matches[0]
-        raise self._not_found(text, 'no file, run name or hash prefix matches')
+        raise self._not_found(text, _plain_reason(operand))
 
     def _find_tagged_index(
         self,
@@ -125,6 +124,16 @@ class OperandResolver:
         return OperandNotFoundError(
             f"operand '{text}' not found in {where}: {reason}",
         )
+
+
+def _plain_reason(operand: PlainOperand) -> str:
+    # Such text looks like a hash, but it was never searched as one.
+    if operand.looks_like_hash() and not operand.is_hash_prefix():
+        return (
+            'no file or run name matches; to find a run by hash, use '
+            '6 to 64 lowercase hex characters'
+        )
+    return 'no file, run name or hash prefix matches'
 
 
 def _name_lines(text: str, matches: _Matches) -> list[str]:
