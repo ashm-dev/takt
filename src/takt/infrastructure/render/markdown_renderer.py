@@ -19,19 +19,23 @@ def render_markdown(table: CompareTable) -> str:
 
 
 def _table_lines(table: CompareTable) -> list[str]:
-    lines = (table.headers, *table.rows)
+    # A bare | in a run name or path would start a new column.
+    header, *rows = [
+        [cell.replace('|', r'\|') for cell in line]
+        for line in (table.headers, *table.rows)
+    ]
     widths = [
-        max(len(line[column]) for line in lines)
-        for column in range(len(table.headers))
+        max(len(line[column]) for line in (header, *rows))
+        for column in range(len(header))
     ]
     separator = [
         '-' * (widths[0] + 2),
         *(_centered_rule(width) for width in widths[1:]),
     ]
     return [
-        _cells_line(table.headers, widths),
+        _cells_line(header, widths),
         _join(separator),
-        *(_cells_line(row, widths) for row in table.rows),
+        *(_cells_line(row, widths) for row in rows),
     ]
 
 
