@@ -98,6 +98,7 @@ def test_import_renders_name_from_template() -> None:
     report = fixture.use_case.execute(request(name_template=template))
 
     assert report.name == '3.14.0-bench-host-ffffffffffff'
+    assert world.inserted[-1].name == report.name
 
 
 def test_clock_called_once_and_used_for_loaded_at() -> None:
