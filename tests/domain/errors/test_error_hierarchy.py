@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from takt.domain.errors.ambiguous_operand_error import AmbiguousOperandError
@@ -67,3 +69,14 @@ def test_benchmark_failed_error_keeps_return_code() -> None:
     assert isinstance(error, ExecutionError)
     assert error.return_code == 3
     assert error.exit_code == 1
+    assert error.result_path is None
+
+
+def test_benchmark_failed_error_keeps_result_path() -> None:
+    error = BenchmarkFailedError(
+        'failed',
+        return_code=1,
+        result_path=Path('r.json'),
+    )
+
+    assert error.result_path == Path('r.json')
