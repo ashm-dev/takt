@@ -7,6 +7,7 @@ import sqlalchemy as sa
 from takt.domain.errors.execution_error import ExecutionError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
 from takt.domain.model.target import Target
+from takt.infrastructure.db.alembic_schema_migrator import AlembicSchemaMigrator
 from takt.infrastructure.db.sqlalchemy_target_connector import (
     SqlAlchemyTargetConnector,
 )
@@ -151,3 +152,21 @@ def test_read_without_schema_raises_execution_error(
     assert str(read_error.value).startswith(
         f'cannot read from database {engine_url}: no such table: ',
     )
+
+
+def test_sqlite_writers_do_not_block_each_other(sqlite_target: Target) -> None:
+    AlembicSchemaMigrator().upgrade(sqlite_target)
+    connector = SqlAlchemyTargetConnector()
+    first = make_record(suite_hash='b' * 64)
+    second = make_record(suite_hash='c' * 64)
+
+    with (
+        closing(connector.open(sqlite_target)) as first_session,
+        closing(connector.open(sqlite_target)) as second_session,
+    ):
+        first_session.loaded_name(first.suite.hash)
+        first_session.insert(first)
+        second_session.loaded_name(second.suite.hash)
+        first_session.commit()
+        second_session.insert(second)
+        second_session.commit()
