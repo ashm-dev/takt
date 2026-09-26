@@ -14,6 +14,7 @@ from takt.cli.main import main
 from takt.domain.compare.compare_table import CompareTable
 from takt.domain.errors.benchmark_failed_error import BenchmarkFailedError
 from takt.domain.errors.configuration_error import ConfigurationError
+from takt.domain.errors.invalid_run_name_error import InvalidRunNameError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
 from takt.domain.model.target import Target
 
@@ -242,6 +243,40 @@ def test_run_failure_without_result_has_no_hint(
     assert capsys.readouterr().err == (
         'error: cannot start benchmark command: boom\n'
     )
+
+
+def test_run_late_name_error_prints_result_path(
+    fake_api: Callable[[str, object], Recorder],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    fake_api(
+        'run',
+        InvalidRunNameError(
+            "run name must not contain ':': 'a:b'",
+            result_path=Path('r.json'),
+        ),
+    )
+
+    code = main(['run', '-b', 'nbody', '--db', 'sqlite:///a.db'])
+
+    assert code == 2
+    assert capsys.readouterr().err == (
+        "error: run name must not contain ':': 'a:b'\n"
+        'Result was written to r.json. '
+        'Load it with takt import and another --name.\n'
+    )
+
+
+def test_run_early_name_error_has_no_hint(
+    fake_api: Callable[[str, object], Recorder],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    fake_api('run', InvalidRunNameError('run name must not be empty'))
+
+    code = main(['run', '-b', 'nbody', '--db', 'sqlite:///a.db'])
+
+    assert code == 2
+    assert capsys.readouterr().err == 'error: run name must not be empty\n'
 
 
 def test_takt_error_exit_code(
