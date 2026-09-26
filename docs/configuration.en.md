@@ -35,7 +35,7 @@ takt takes targets from the first source that is set, in this order:
 - A source with a higher priority fully replaces the sources below it; they are not merged.
 - Without flags and without `TAKT_DB`, takt uses all targets from `takt.toml`.
 - `--db` and `--target` in one command add up.
-- The same URL is written only once.
+- The same database is written only once, and the first spelling is kept. For SQLite takt compares the full file paths, so `sqlite:///bench.db` and `sqlite:////home/me/bench.db`, run from `/home/me`, are one target. For MariaDB takt ignores the driver, the user and the password, and takes a URL without a port as port 3306, so `mariadb://u:p@db/bench` and `mariadb+pymysql://ci:pw@db:3306/bench` are one target.
 - `takt compare` with files only needs no targets at all.
 
 ## takt.toml
