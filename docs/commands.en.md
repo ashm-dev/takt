@@ -248,6 +248,8 @@ error: operand 'default' is ambiguous, candidates:
 ### Output
 
 takt prints the table to the terminal.
+When the output goes to a file or a pipe, as in a CI log, takt does not wrap the table and the lines below it, so every column title stays whole.
+In a narrow terminal a long column title wraps onto several lines; takt never cuts it.
 With `--markdown PATH` it also writes the table to a Markdown file and prints `Markdown table written to <PATH>`.
 
 ```bash
