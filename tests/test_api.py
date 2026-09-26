@@ -55,6 +55,19 @@ def result_file(tmp_path: Path) -> Path:
     return write_result(tmp_path / 'result.json', FAST)
 
 
+@pytest.fixture
+def custom_config(tmp_path: Path) -> Path:
+    first = sqlite_url(tmp_path / 'a.db')
+    second = sqlite_url(tmp_path / 'b.db')
+    config = tmp_path / 'conf' / 'ci.toml'
+    config.parent.mkdir()
+    config.write_text(
+        f'[targets.a]\nurl = "{first}"\n[targets.b]\nurl = "{second}"\n',
+        encoding='utf-8',
+    )
+    return config
+
+
 def write_result(path: Path, timings: tuple[float, ...]) -> Path:
     worker_run = pyperf.Run(
         list(timings),
@@ -134,6 +147,22 @@ def test_import_uses_toml(tmp_path: Path, result_file: Path) -> None:
     assert suite_rows(database) == 1
 
 
+def test_import_uses_config_and_target(
+    tmp_path: Path,
+    result_file: Path,
+    custom_config: Path,
+) -> None:
+    report = takt.import_results(
+        result_file,
+        config=custom_config,
+        target=['b'],
+    )
+
+    assert single_outcome(report).target.name == 'b'
+    assert suite_rows(tmp_path / 'b.db') == 1
+    assert not (tmp_path / 'a.db').exists()
+
+
 def test_run_config_error_does_not_run(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -162,6 +191,23 @@ def test_run_imports_runner_result(
     assert report.write.succeeded is True
     assert report.result_path == result_file
     assert recording.calls == [('-b', 'nbody')]
+
+
+def test_run_uses_config_and_target(
+    tmp_path: Path,
+    result_file: Path,
+    custom_config: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        SubprocessBenchmarkRunner, 'run', RecordingRun(result_file)
+    )
+
+    report = takt.run(['-b', 'nbody'], config=custom_config, target=['b'])
+
+    assert single_outcome(report).target.name == 'b'
+    assert suite_rows(tmp_path / 'b.db') == 1
+    assert not (tmp_path / 'a.db').exists()
 
 
 @pytest.mark.parametrize(('call', 'parameter'), SINGLE_STRINGS)
@@ -201,6 +247,23 @@ def test_compare_db_and_file(tmp_path: Path) -> None:
     takt.import_results(base, db=[url], name='base')
 
     table = takt.compare(['base', str(changed)], db=[url])
+
+    assert table.headers == ('Benchmark', 'base', str(changed))
+
+
+def test_compare_uses_config_and_target(
+    tmp_path: Path,
+    custom_config: Path,
+) -> None:
+    base = write_result(tmp_path / 'a.json', FAST)
+    changed = write_result(tmp_path / 'b.json', SLOW)
+    takt.import_results(base, db=[sqlite_url(tmp_path / 'b.db')], name='base')
+
+    table = takt.compare(
+        ['base', str(changed)],
+        config=custom_config,
+        target=['b'],
+    )
 
     assert table.headers == ('Benchmark', 'base', str(changed))
 
