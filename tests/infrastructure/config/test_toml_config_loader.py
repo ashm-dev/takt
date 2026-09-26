@@ -106,11 +106,15 @@ def test_targets_not_table(config_file: Path) -> None:
     )
 
 
-def test_bad_target_name(config_file: Path) -> None:
-    text = '[targets."bad name"]\nurl = "sqlite://"\n'
+@pytest.mark.parametrize(
+    ('key', 'name'),
+    [('"bad name"', 'bad name'), (r'"ci\n"', 'ci\n')],
+)
+def test_bad_target_name(config_file: Path, key: str, name: str) -> None:
+    text = f'[targets.{key}]\nurl = "sqlite://"\n'
 
     assert config_error(config_file, text) == (
-        f"{config_file}: invalid target name 'bad name'; "
+        f'{config_file}: invalid target name {name!r}; '
         "use letters, digits, '_' and '-'"
     )
 
