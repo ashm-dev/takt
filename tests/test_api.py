@@ -114,6 +114,15 @@ def test_import_to_sqlite(tmp_path: Path, result_file: Path) -> None:
     assert suite_rows(database) == 1
 
 
+def test_import_takes_path_as_string(tmp_path: Path, result_file: Path) -> None:
+    database = tmp_path / 'text.db'
+
+    report = takt.import_results(str(result_file), db=[sqlite_url(database)])
+
+    assert report.result_path == result_file
+    assert suite_rows(database) == 1
+
+
 def test_import_twice_is_already_loaded(
     tmp_path: Path,
     result_file: Path,
@@ -284,6 +293,49 @@ def test_compare_files_without_targets(tmp_path: Path) -> None:
 
     assert isinstance(table, takt.CompareTable)
     assert table.headers == ('Benchmark', str(base), str(changed))
+
+
+def test_compare_takes_paths_and_config_string(
+    tmp_path: Path,
+    custom_config: Path,
+) -> None:
+    files = [
+        write_result(tmp_path / 'a.json', FAST),
+        write_result(tmp_path / 'b.json', SLOW),
+    ]
+
+    table = takt.compare(files, config=str(custom_config))
+
+    assert table.headers == ('Benchmark', *map(str, files))
+
+
+def test_compare_path_object_never_names_a_run(
+    tmp_path: Path,
+    result_file: Path,
+) -> None:
+    db = [sqlite_url(tmp_path / 'runs.db')]
+    takt.import_results(result_file, db=db, name='base')
+
+    with pytest.raises(
+        takt.ExecutionError,
+        match=exact_pattern('result file not found: base'),
+    ):
+        takt.compare([result_file, Path('base')], db=db)
+
+
+def test_run_takes_config_string(
+    result_file: Path,
+    custom_config: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        SubprocessBenchmarkRunner, 'run', RecordingRun(result_file)
+    )
+
+    report = takt.run(['--fast'], config=str(custom_config))
+
+    assert report.write.succeeded is True
+    assert len(report.write.outcomes) == 2
 
 
 def test_compare_db_and_file(tmp_path: Path) -> None:
