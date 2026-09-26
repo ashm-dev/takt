@@ -9,9 +9,9 @@ takt has three commands: `takt run`, `takt import` and `takt compare`.
 
 ### Two modes
 
-takt looks at the first argument after `run`:
+takt removes its own flags (see "Flags" below) and looks at the first argument that is left:
 
-- If it is a path to a `.py` file, takt treats it as a pyperf script (a script built on `pyperf.Runner`). takt runs it with the same Python that takt itself runs on.
+- If it ends in `.py` and does not start with `-`, takt treats it as the path to a pyperf script (a script built on `pyperf.Runner`). takt runs it with the same Python that takt itself runs on.
 - Otherwise takt runs `pyperformance run`.
 
 pyperformance mode:
