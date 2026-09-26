@@ -12,7 +12,7 @@ from takt.infrastructure.config.takt_config import TaktConfig
 _DEFAULT_FILE_NAME: Final = 'takt.toml'
 _TOP_KEYS: Final = frozenset(('name_template', 'targets'))
 _TARGET_KEYS: Final = frozenset(('url',))
-_TARGET_NAME: Final = re.compile('^[A-Za-z0-9_-]+$')
+_TARGET_NAME: Final = re.compile('[A-Za-z0-9_-]+')
 
 
 def load_toml_config(path: Path) -> TaktConfig:
@@ -75,7 +75,7 @@ def _read_targets(path: Path, raw_targets: object) -> dict[str, str]:
 
 
 def _read_target_url(path: Path, name: str, table: object) -> str:
-    if _TARGET_NAME.match(name) is None:
+    if _TARGET_NAME.fullmatch(name) is None:
         _fail(
             f'{path}: invalid target name {name!r}; '
             "use letters, digits, '_' and '-'",
