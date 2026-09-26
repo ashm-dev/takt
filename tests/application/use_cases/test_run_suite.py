@@ -43,7 +43,6 @@ class Fixture:
     ) -> None:
         self.runner = FakeRunner(result_path, error=runner_error)
         self.reader = FakeReader(make_suite(), error=reader_error)
-        self.clock = FixedClock(NOW)
         importer = ImportSuite(
             reader=self.reader,
             writer=MultiTargetWriter(
@@ -51,7 +50,7 @@ class Fixture:
                 migrator=FakeMigrator(world),
                 cache=FakeCache(world),
             ),
-            clock=self.clock,
+            clock=FixedClock(NOW),
         )
         self.use_case = RunSuite(runner=self.runner, importer=importer)
 
