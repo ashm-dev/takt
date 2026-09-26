@@ -223,6 +223,12 @@ The numbers and the significance test are the same as in `pyperf compare_to --ta
 | 2 | Wrong arguments or configuration, found before any benchmark runs, or a final run name that breaks the rules |
 | 130 | Interrupted with Ctrl+C |
 
-Every error is printed to standard error as `error: <message>`, without a traceback.
+A mistake in the command line itself, such as a missing argument or a flag without its value, is reported by argparse.
+It prints the usage of the command and then a line like `takt import: error: the following arguments are required: PATH`.
+An unknown flag of `takt import` or `takt compare` prints the general usage of `takt` and the line `takt: error: unrecognized arguments: <flags>`.
+`takt run` does not reject unknown flags: it passes them to pyperformance or the pyperf script.
+The exit code is 2.
+
+Every other error is printed to standard error as `error: <message>`, without a traceback.
 Most messages are one line; an ambiguous operand also lists the candidates below it.
 When `takt run` fails to write the result, or a benchmark fails but a result file was still written, takt also prints a `takt import` command that loads this file without re-running benchmarks.
