@@ -7,12 +7,12 @@ from typing import Final
 
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
 from takt.domain.operand.file_operand import FileOperand
+from takt.domain.operand.hash_prefix_pattern import HASH_PREFIX_PATTERN
 from takt.domain.operand.operand import Operand
 from takt.domain.operand.plain_operand import PlainOperand
 from takt.domain.operand.tagged_operand import TaggedOperand
 
 _INDEX_PATTERN: Final[re.Pattern[str]] = re.compile(r'[0-9]+')
-_HASH_PREFIX_PATTERN: Final[re.Pattern[str]] = re.compile(r'[0-9a-f]{6,64}')
 
 
 def parse_operand(text: str, is_file: Callable[[Path], bool]) -> Operand:
@@ -62,7 +62,7 @@ def _validate_tag(*, text: str, name: str, tail: str) -> None:
 
 
 def _parse_hash_prefix(*, text: str, name: str, tail: str) -> TaggedOperand:
-    if _HASH_PREFIX_PATTERN.fullmatch(tail) is not None:
+    if HASH_PREFIX_PATTERN.fullmatch(tail) is not None:
         return TaggedOperand(
             text=text,
             name=name,

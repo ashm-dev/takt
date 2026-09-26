@@ -1,7 +1,5 @@
 """Resolution of compare operands into labeled suites."""
 
-import re
-
 from takt.application.ports.result_reader import ResultReader
 from takt.application.ports.target_session import TargetSession
 from takt.domain.compare.labeled_suite import LabeledSuite
@@ -10,11 +8,11 @@ from takt.domain.errors.configuration_error import ConfigurationError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
 from takt.domain.model.suite_summary import SuiteSummary
 from takt.domain.operand.file_operand import FileOperand
+from takt.domain.operand.hash_prefix_pattern import HASH_PREFIX_PATTERN
 from takt.domain.operand.operand import Operand
 from takt.domain.operand.plain_operand import PlainOperand
 from takt.domain.operand.tagged_operand import TaggedOperand
 
-_HASH_PREFIX_PATTERN = re.compile('[0-9a-f]{6,64}')
 _SHORT_HASH_LENGTH = 12
 
 _Matches = tuple[SuiteSummary, ...]
@@ -79,7 +77,7 @@ class OperandResolver:
         matches = session.find_by_name(text)
         if len(matches) > 1:
             raise _ambiguous(text, _name_lines(text, matches), matches)
-        if not matches and _HASH_PREFIX_PATTERN.fullmatch(text) is not None:
+        if not matches and HASH_PREFIX_PATTERN.fullmatch(text) is not None:
             matches = session.find_by_hash_prefix(text, None)
             if len(matches) > 1:
                 raise _ambiguous(text, _prefix_lines(matches), matches)
