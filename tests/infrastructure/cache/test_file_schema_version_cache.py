@@ -152,7 +152,7 @@ def test_put_removes_temp_file_on_replace_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(os, 'replace', fail_replace)
-    with pytest.raises(OSError, match=REPLACE_ERROR):
-        cache.put(URL_A, '0001')
+
+    cache.put(URL_A, '0001')
 
     assert list(tmp_path.glob('*.tmp')) == []

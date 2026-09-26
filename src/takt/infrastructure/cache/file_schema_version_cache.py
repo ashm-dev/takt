@@ -1,5 +1,6 @@
 """Schema version cache stored in a local JSON file."""
 
+import contextlib
 import hashlib
 import json
 import tempfile
@@ -9,7 +10,11 @@ from typing import IO
 
 
 class FileSchemaVersionCache:
-    """Remember the schema revision already applied to each target URL."""
+    """Remember the schema revision already applied to each target URL.
+
+    The cache only lets takt skip schema checks, so a file that cannot be
+    read counts as empty and a failed write is skipped.
+    """
 
     def __init__(self, *, file_path: Path) -> None:
         """Create a cache backed by a file.
@@ -48,7 +53,8 @@ class FileSchemaVersionCache:
         """
         entries = _read_entries(self.file_path)
         entries[_url_key(url)] = revision
-        _write_entries(self.file_path, entries)
+        with contextlib.suppress(OSError):
+            _write_entries(self.file_path, entries)
 
     def forget(self, url: str) -> None:
         """Drop the revision remembered for a URL.
@@ -57,7 +63,8 @@ class FileSchemaVersionCache:
         """
         entries = _read_entries(self.file_path)
         if entries.pop(_url_key(url), None) is not None:
-            _write_entries(self.file_path, entries)
+            with contextlib.suppress(OSError):
+                _write_entries(self.file_path, entries)
 
 
 def _url_key(url: str) -> str:
@@ -68,7 +75,7 @@ def _url_key(url: str) -> str:
 def _read_entries(file_path: Path) -> dict[str, str]:
     try:
         document: object = json.loads(file_path.read_text(encoding='utf-8'))
-    except FileNotFoundError, json.JSONDecodeError, UnicodeDecodeError:
+    except OSError, json.JSONDecodeError, UnicodeDecodeError:
         return {}
     if not isinstance(document, dict):
         return {}
