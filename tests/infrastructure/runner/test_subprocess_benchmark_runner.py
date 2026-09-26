@@ -1,5 +1,4 @@
 import subprocess
-from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -23,8 +22,6 @@ BENCH_SCRIPT = (
     'runner = pyperf.Runner()\n'
     "runner.bench_func('noop', lambda: None)\n"
 )
-
-type FakeRun = Callable[..., subprocess.CompletedProcess[bytes]]
 
 
 class _FixedClock:
@@ -69,7 +66,7 @@ def _runner(tmp_path: Path) -> SubprocessBenchmarkRunner:
     )
 
 
-def _patch(monkeypatch: pytest.MonkeyPatch, fake: FakeRun) -> None:
+def _patch(monkeypatch: pytest.MonkeyPatch, fake: _Recorder) -> None:
     monkeypatch.setattr(subprocess, 'run', fake)
 
 
