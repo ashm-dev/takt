@@ -68,10 +68,16 @@ def _versions_directory(target: Target) -> Path:
 
 def _alembic_config(target: Target) -> Config:
     config = Config()
-    config.set_main_option('script_location', str(MIGRATIONS_DIRECTORY))
+    config.set_main_option('script_location', _option(MIGRATIONS_DIRECTORY))
     config.set_main_option(
         'version_locations',
-        str(_versions_directory(target)),
+        _option(_versions_directory(target)),
     )
-    config.set_main_option('path_separator', 'os')
+    # The install path may contain os.pathsep, which 'os' would split on.
+    config.set_main_option('path_separator', 'newline')
     return config
+
+
+def _option(path: Path) -> str:
+    # Alembic keeps options in ConfigParser, which reads '%' as interpolation.
+    return str(path).replace('%', '%%')
