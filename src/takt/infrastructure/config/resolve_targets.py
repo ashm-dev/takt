@@ -1,14 +1,21 @@
 """Choice of target databases from flags, environment and takt.toml."""
 
 from collections.abc import Mapping
+from pathlib import Path
+from typing import Final
+
+from sqlalchemy.engine import URL, make_url
 
 from takt.domain.errors.configuration_error import ConfigurationError
 from takt.domain.model.target import Target
 from takt.infrastructure.config.config_sources import ConfigSources
 from takt.infrastructure.config.dialect_registry import dialect_for_url
+from takt.infrastructure.config.sqlite_file_name import sqlite_file_name
 from takt.infrastructure.config.toml_config_loader import load_config
 
 _NamedUrl = tuple[str | None, str]
+
+_MARIADB_PORT: Final = 3306
 
 
 def resolve_targets(sources: ConfigSources) -> tuple[Target, ...]:
@@ -17,21 +24,34 @@ def resolve_targets(sources: ConfigSources) -> tuple[Target, ...]:
     Flags replace ``TAKT_DB``, which replaces ``takt.toml`` targets.
 
     :param sources: Raw configuration inputs.
-    :returns: Targets without duplicate URLs, possibly empty.
+    :returns: Targets without duplicate databases, possibly empty; of
+        several spellings of one database the first one is kept.
     :raises ConfigurationError: If the config file, a target name or a URL
         is invalid.
     """
-    config_targets = load_config(sources).targets
     targets: dict[str, Target] = {}
-    for name, url in _named_urls(sources, config_targets):
+    for name, url in _named_urls(sources, load_config(sources).targets):
+        dialect = dialect_for_url(url).backend
+        key = _database_key(url, dialect, sources.cwd)
         # Two sessions to one database in one transaction can deadlock.
-        if url not in targets:
-            targets[url] = Target(
-                name=name,
-                url=url,
-                dialect=dialect_for_url(url).backend,
-            )
+        if key not in targets:
+            targets[key] = Target(name=name, url=url, dialect=dialect)
     return tuple(targets.values())
+
+
+def _database_key(url: str, dialect: str, cwd: Path) -> str:
+    parsed = make_url(url)
+    if dialect == 'sqlite':
+        # A relative and an absolute path can name the same SQLite file.
+        return str((cwd / sqlite_file_name(parsed)).resolve())
+    # The driver, the user and the default port do not change the database.
+    return URL.create(
+        drivername=dialect,
+        host=parsed.host,
+        port=parsed.port or _MARIADB_PORT,
+        database=parsed.database,
+        query=parsed.query,
+    ).render_as_string()
 
 
 def _named_urls(
