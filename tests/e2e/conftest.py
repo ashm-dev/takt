@@ -12,6 +12,18 @@ import pyperf
 runner = pyperf.Runner()
 runner.bench_func("sleep_small", time.sleep, 0.0001)
 """
+SCRIPT_FLAGS = (
+    '--processes',
+    '1',
+    '--values',
+    '3',
+    '--warmups',
+    '1',
+    '--loops',
+    '1',
+)
+NOMINAL = (0.1, 0.11, 0.1)
+SLOWER = (0.2, 0.21, 0.2)
 
 MakeResult = Callable[[Path | str, str, Sequence[float]], Path]
 CountSuites = Callable[[str], int]

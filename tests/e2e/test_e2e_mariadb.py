@@ -10,23 +10,17 @@ from takt.domain.model.target import Target
 from takt.infrastructure.cache.file_schema_version_cache import (
     FileSchemaVersionCache,
 )
-from tests.e2e.conftest import CountSuites, MakeResult
+from tests.e2e.conftest import (
+    NOMINAL,
+    SCRIPT_FLAGS,
+    SLOWER,
+    CountSuites,
+    MakeResult,
+)
 
 pytestmark = pytest.mark.mariadb
 
-NOMINAL = (0.1, 0.11, 0.1)
-SLOWER = (0.2, 0.21, 0.2)
 CLOSED_PORT_URL = 'mariadb+pymysql://takt:takt@127.0.0.1:1/takt'
-SCRIPT_FLAGS = (
-    '--processes',
-    '1',
-    '--values',
-    '3',
-    '--warmups',
-    '1',
-    '--loops',
-    '1',
-)
 
 
 def drop_takt_tables(url: str) -> None:

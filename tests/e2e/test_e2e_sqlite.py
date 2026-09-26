@@ -5,10 +5,13 @@ import pytest
 import sqlalchemy as sa
 
 from takt.cli.main import main
-from tests.e2e.conftest import CountSuites, MakeResult
-
-NOMINAL = (0.1, 0.11, 0.1)
-SLOWER = (0.2, 0.21, 0.2)
+from tests.e2e.conftest import (
+    NOMINAL,
+    SCRIPT_FLAGS,
+    SLOWER,
+    CountSuites,
+    MakeResult,
+)
 
 
 @pytest.fixture
@@ -35,14 +38,7 @@ def test_run_pyperf_script(
         [
             'run',
             str(bench_script),
-            '--processes',
-            '1',
-            '--values',
-            '3',
-            '--warmups',
-            '1',
-            '--loops',
-            '1',
+            *SCRIPT_FLAGS,
             '--db',
             sqlite_url,
             '--name',
