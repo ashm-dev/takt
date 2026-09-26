@@ -219,7 +219,7 @@ The numbers and the significance test are the same as in `pyperf compare_to --ta
 |---|---|
 | 0 | Success, including "everything was already loaded" |
 | 1 | Runtime error: database, file, benchmark, or the result was not written to all targets |
-| 2 | Wrong arguments or configuration, found before any benchmark runs |
+| 2 | Wrong arguments or configuration, found before any benchmark runs, or a final run name that breaks the rules |
 | 130 | Interrupted with Ctrl+C |
 
 Every error is printed to standard error as one line `error: <message>`, without a traceback.
