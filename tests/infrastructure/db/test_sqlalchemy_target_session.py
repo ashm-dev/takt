@@ -1,6 +1,8 @@
 from contextlib import closing
+from dataclasses import replace
 
 import pytest
+import sqlalchemy as sa
 
 from takt.domain.errors.execution_error import ExecutionError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
@@ -16,6 +18,14 @@ MISSING_HASH = 'd' * 64
 def loaded_name(target: Target) -> tuple[bool, str | None]:
     with closing(SqlAlchemyTargetConnector().open(target)) as session:
         return session.loaded_name(DEFAULT_HASH)
+
+
+class RecordingDispose:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def __call__(self) -> None:
+        self.calls += 1
 
 
 def test_loaded_name_for_missing_hash(target: Target) -> None:
@@ -77,6 +87,44 @@ def test_open_invalid_url_disposes_engine() -> None:
         'cannot connect to database mariadb+pymysql://u:***@127.0.0.1:1/db: ',
     )
     assert ':p@' not in str(connect_error.value)
+
+
+def test_open_invalid_url_parameter_raises_execution_error(
+    sqlite_target: Target,
+) -> None:
+    bad_timeout = replace(sqlite_target, url=f'{sqlite_target.url}?timeout=abc')
+
+    with pytest.raises(ExecutionError) as connect_error:
+        SqlAlchemyTargetConnector().open(bad_timeout)
+
+    assert str(connect_error.value) == (
+        f'cannot connect to database {bad_timeout.display()}: '
+        "could not convert string to float: 'abc'"
+    )
+
+
+def test_open_driver_error_disposes_engine(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    dispose = RecordingDispose()
+    monkeypatch.setattr(sa.Engine, 'dispose', dispose)
+    unknown_option = Target(
+        name=None,
+        url='mariadb+pymysql://u:p@127.0.0.1:1/db?unknown=1',
+        dialect='mariadb',
+    )
+
+    with pytest.raises(ExecutionError) as connect_error:
+        SqlAlchemyTargetConnector().open(unknown_option)
+
+    assert str(connect_error.value).startswith(
+        'cannot connect to database '
+        'mariadb+pymysql://u:***@127.0.0.1:1/db?unknown=1: ',
+    )
+    assert str(connect_error.value).endswith(
+        "unexpected keyword argument 'unknown'",
+    )
+    assert dispose.calls == 1
 
 
 @pytest.mark.parametrize(
