@@ -1,6 +1,7 @@
 import functools
 from collections.abc import Callable
 from pathlib import Path
+from types import MappingProxyType
 
 import pytest
 
@@ -29,6 +30,21 @@ SNAPSHOT_TABLE = CompareTable(
     rows=(('nbody', '100 ms', '90.0 ms: 1.11x faster'),),
     hidden_not_significant=(),
     ignored=(),
+)
+TARGET_ARGV = (
+    '--db',
+    'sqlite:///a.db',
+    '--target',
+    'ci',
+    '--config',
+    'ci.toml',
+)
+TARGET_KWARGS = MappingProxyType(
+    {
+        'db': ['sqlite:///a.db'],
+        'target': ['ci'],
+        'config': Path('ci.toml'),
+    },
 )
 SNAPSHOT_MARKDOWN = (
     '| Benchmark | base.json | new.json              |\n'
@@ -111,6 +127,42 @@ def test_import_ok(fake_api: Callable[[str, object], Recorder]) -> None:
     assert code == 0
     assert fake.args == (Path('r.json'),)
     assert fake.kwargs['db'] == ['sqlite:///a.db']
+
+
+@pytest.mark.parametrize(
+    ('argv', 'function_name', 'response', 'expected'),
+    [
+        (
+            ['run', '-b', 'nbody', *TARGET_ARGV, '--name', 'x'],
+            'run',
+            OK_REPORT,
+            {**TARGET_KWARGS, 'name': 'x'},
+        ),
+        (
+            ['import', 'r.json', *TARGET_ARGV, '--name', 'x'],
+            'import_results',
+            OK_REPORT,
+            {**TARGET_KWARGS, 'name': 'x'},
+        ),
+        (
+            ['compare', 'a', 'b', *TARGET_ARGV],
+            'compare',
+            SNAPSHOT_TABLE,
+            dict(TARGET_KWARGS),
+        ),
+    ],
+)
+def test_flags_reach_api(
+    fake_api: Callable[[str, object], Recorder],
+    argv: list[str],
+    function_name: str,
+    response: object,
+    expected: dict[str, object],
+) -> None:
+    fake = fake_api(function_name, response)
+
+    assert main(argv) == 0
+    assert fake.kwargs == expected
 
 
 def test_import_failed_write(
