@@ -74,15 +74,23 @@ poetry run pytest
 ```
 
 ```bash
-poetry run ruff check src tests
+poetry run ruff check .
 ```
 
 ```bash
-poetry run flake8 src
+poetry run ruff format --check .
 ```
 
 ```bash
-poetry run mypy --strict src
+poetry run flake8 .
+```
+
+```bash
+poetry run mypy
+```
+
+```bash
+poetry run mkdocs build --strict
 ```
 
 ```bash
