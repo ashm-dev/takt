@@ -48,10 +48,19 @@ class SubprocessBenchmarkRunner:
             output=default_output_path(self._clock.now(), self._cwd),
             cwd=self._cwd,
         )
-        self._execute(command)
+        # The runners never overwrite an output file, so an old one is stale.
+        existed = result_path.exists()
+        return_code = self._execute(command)
+        if return_code != 0:
+            written = not existed and result_path.is_file()
+            raise _failed(
+                command,
+                return_code,
+                result_path if written else None,
+            )
         return self._require_file(result_path)
 
-    def _execute(self, command: tuple[str, ...]) -> None:
+    def _execute(self, command: tuple[str, ...]) -> int:
         try:
             completed = subprocess.run(  # noqa: S603 - arguments are passed as a tuple without a shell
                 command,
@@ -64,13 +73,7 @@ class SubprocessBenchmarkRunner:
                 message,
                 return_code=_CANNOT_START_CODE,
             ) from exc
-        return_code = completed.returncode
-        if return_code != 0:
-            message = (
-                'benchmark command failed with exit code '
-                f'{return_code}: {shlex.join(command)}'
-            )
-            raise BenchmarkFailedError(message, return_code=return_code)
+        return completed.returncode
 
     def _require_file(self, result_path: Path) -> Path:
         if not result_path.is_file():
@@ -80,3 +83,19 @@ class SubprocessBenchmarkRunner:
             )
             raise BenchmarkFailedError(message, return_code=0)
         return result_path
+
+
+def _failed(
+    command: tuple[str, ...],
+    return_code: int,
+    result_path: Path | None,
+) -> BenchmarkFailedError:
+    message = (
+        'benchmark command failed with exit code '
+        f'{return_code}: {shlex.join(command)}'
+    )
+    return BenchmarkFailedError(
+        message,
+        return_code=return_code,
+        result_path=result_path,
+    )
