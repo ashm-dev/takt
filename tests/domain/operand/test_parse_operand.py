@@ -79,6 +79,23 @@ def test_home_with_nul_byte_is_run_name() -> None:
     assert is_file.calls == [Path('~takt\x00user')]
 
 
+@pytest.mark.parametrize(
+    'text',
+    ['dir/x.json', 'bench-10:15.json', 'r.json.gz', './x', '../x', '/x', '~/x'],
+)
+def test_missing_result_file(text: str) -> None:
+    message = f'result file not found: {text}'
+
+    with pytest.raises(OperandNotFoundError, match=exact_pattern(message)):
+        parse_operand(text, never_file)
+
+
+def test_name_with_slash_is_run_name() -> None:
+    operand = parse_operand('release/3.14', never_file)
+
+    assert operand == PlainOperand(text='release/3.14')
+
+
 def test_plain_name() -> None:
     operand = parse_operand('default 01.01.01', never_file)
 

@@ -223,6 +223,24 @@ def test_compare_unknown_operand(
 
 
 @pytest.mark.usefixtures('result_a')
+@pytest.mark.parametrize('with_db', [False, True])
+def test_compare_missing_result_file(
+    sqlite_url: str,
+    capsys: pytest.CaptureFixture[str],
+    *,
+    with_db: bool,
+) -> None:
+    targets = ['--db', sqlite_url] if with_db else []
+
+    code = main(['compare', 'a.json', 'results/b.json', *targets])
+
+    assert code == 1
+    assert capsys.readouterr().err == (
+        'error: result file not found: results/b.json\n'
+    )
+
+
+@pytest.mark.usefixtures('result_a')
 def test_compare_empty_database(
     sqlite_url: str,
     capsys: pytest.CaptureFixture[str],
