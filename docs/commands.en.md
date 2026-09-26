@@ -41,8 +41,9 @@ takt flags never clash with pyperformance or pyperf flags.
 Flag abbreviations are turned off: `--ta` is not taken for `--target`.
 How targets and names are chosen is described on the [Configuration](configuration.md) page.
 
-takt checks the targets and the name template before it starts the benchmarks.
+takt checks the targets and the text of the name template before it starts the benchmarks.
 A mistake there stops the command with exit code 2, and no benchmark runs.
+The 255-character limit, and a `:` that comes from a value such as `{hostname}`, are checked only after the benchmarks: see "Run name" on the [Configuration](configuration.md) page.
 
 ### Result file
 
