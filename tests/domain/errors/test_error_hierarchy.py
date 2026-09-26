@@ -12,6 +12,7 @@ from takt.domain.errors.missing_driver_error import MissingDriverError
 from takt.domain.errors.no_common_benchmarks_error import (
     NoCommonBenchmarksError,
 )
+from takt.domain.errors.no_targets_error import NoTargetsError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
 from takt.domain.errors.takt_error import TaktError
 from takt.domain.errors.unsupported_dialect_error import (
@@ -49,6 +50,17 @@ def test_error_parent_and_exit_code(
 
 def test_takt_error_exit_code() -> None:
     assert TaktError('broken').exit_code == 1
+
+
+def test_no_targets_error() -> None:
+    error = NoTargetsError()
+
+    assert isinstance(error, ConfigurationError)
+    assert error.exit_code == 2
+    assert str(error) == (
+        'no database targets configured: '
+        'use --db, --target, TAKT_DB or takt.toml'
+    )
 
 
 def test_ambiguous_operand_error_keeps_candidates() -> None:
