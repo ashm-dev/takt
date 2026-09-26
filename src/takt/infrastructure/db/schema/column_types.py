@@ -16,7 +16,7 @@ FORMAT_VERSION_TYPE: Final = sa.String(_SHORT_TEXT_LENGTH)
 SOURCE_TYPE: Final = sa.String(_SHORT_TEXT_LENGTH)
 KIND_TYPE: Final = sa.String(_KIND_LENGTH)
 POSITION_TYPE: Final = sa.Integer()
-LOOPS_TYPE: Final = sa.Integer()
+LOOPS_TYPE: Final = sa.BigInteger()
 DATETIME_TYPE: Final = sa.DateTime().with_variant(
     mysql.DATETIME(fsp=6),
     'mariadb',

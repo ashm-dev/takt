@@ -105,7 +105,7 @@ def upgrade() -> None:
             nullable=False,
             autoincrement=False,
         ),
-        sa.Column('loops', sa.Integer(), nullable=True),
+        sa.Column('loops', sa.BigInteger(), nullable=True),
         sa.Column('value', sa.Double(), nullable=False),
         sa.ForeignKeyConstraint(
             ['suite_hash', 'benchmark_position', 'run_position'],
