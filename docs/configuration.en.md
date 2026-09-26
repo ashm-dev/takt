@@ -74,6 +74,15 @@ For example, `takt import result.json --target local --target maria_ci` writes t
 
 An empty value counts as not set.
 
+If a value that you did not type in the command is wrong, the error starts with its source, so you know where to fix it:
+
+```text
+error: TAKT_DB: unsupported database 'postgresql'; supported in this version: mariadb, sqlite
+error: TAKT_NAME: run name must not contain ':': 'run:1'
+error: /home/me/proj/takt.toml: target 'pg': unsupported database 'postgresql'; supported in this version: mariadb, sqlite
+error: /home/me/proj/takt.toml: name_template: invalid name template 'nightly {commit}': unknown placeholder {commit}; allowed: {date}, {datetime}, {path}, {python_version}, {hostname}, {hash}
+```
+
 ## Run name
 
 A run name is a label for a stored result.

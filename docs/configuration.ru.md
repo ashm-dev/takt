@@ -74,6 +74,15 @@ url = "mariadb+pymysql://user:password@db-host:3306/bench"
 
 Пустое значение считается незаданным.
 
+Если неверно значение, которое вы не вводили в команде, ошибка начинается с его источника, чтобы было понятно, где его исправить:
+
+```text
+error: TAKT_DB: unsupported database 'postgresql'; supported in this version: mariadb, sqlite
+error: TAKT_NAME: run name must not contain ':': 'run:1'
+error: /home/me/proj/takt.toml: target 'pg': unsupported database 'postgresql'; supported in this version: mariadb, sqlite
+error: /home/me/proj/takt.toml: name_template: invalid name template 'nightly {commit}': unknown placeholder {commit}; allowed: {date}, {datetime}, {path}, {python_version}, {hostname}, {hash}
+```
+
 ## Имя прогона
 
 Имя прогона — это подпись сохранённого результата.
