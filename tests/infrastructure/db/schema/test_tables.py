@@ -16,24 +16,13 @@ from takt.infrastructure.db.schema.tables import (
     RUN_METADATA_TABLE,
     SUITE_TABLE,
 )
-
-RUN_KEY = ('suite_hash', 'benchmark_position', 'run_position')
-BENCHMARK_KEY = ('suite_hash', 'benchmark_position')
-
-PRIMARY_KEYS = (
-    ('takt_suite', ('hash',)),
-    ('takt_benchmark', BENCHMARK_KEY),
-    ('takt_worker_run', RUN_KEY),
-    ('takt_measurement', (*RUN_KEY, 'kind', 'position')),
-    ('takt_run_metadata', RUN_KEY),
-    ('takt_loaded_hash', ('hash',)),
-)
-
-FOREIGN_KEYS = (
-    ('takt_benchmark', (('suite_hash',), 'takt_suite', ('hash',))),
-    ('takt_worker_run', (BENCHMARK_KEY, 'takt_benchmark', BENCHMARK_KEY)),
-    ('takt_measurement', (RUN_KEY, 'takt_worker_run', RUN_KEY)),
-    ('takt_run_metadata', (RUN_KEY, 'takt_worker_run', RUN_KEY)),
+from tests.infrastructure.db.schema.expected_schema import (
+    FOREIGN_KEYS,
+    INDEX_NAMES,
+    PRIMARY_KEYS,
+    RUN_KEY,
+    TABLE_NAMES,
+    ForeignKey,
 )
 
 EXPECTED_COLUMN_TYPES = (
@@ -43,19 +32,9 @@ EXPECTED_COLUMN_TYPES = (
     (tuple[str, ...] | None, sa.JSON),
 )
 
-Columns = tuple[str, ...]
-ForeignKey = tuple[Columns, str, Columns]
-
 
 def test_table_names() -> None:
-    assert set(METADATA.tables) == {
-        'takt_suite',
-        'takt_benchmark',
-        'takt_worker_run',
-        'takt_measurement',
-        'takt_run_metadata',
-        'takt_loaded_hash',
-    }
+    assert set(METADATA.tables) == TABLE_NAMES
 
 
 @pytest.mark.parametrize(('table_name', 'expected'), PRIMARY_KEYS)
@@ -120,10 +99,7 @@ def test_tables_without_foreign_keys(table: sa.Table) -> None:
 
 
 def test_index_names() -> None:
-    assert {index.name for index in SUITE_TABLE.indexes} == {
-        'ix_takt_suite_name',
-        'ix_takt_suite_result_date',
-    }
+    assert {index.name for index in SUITE_TABLE.indexes} == INDEX_NAMES
 
 
 def test_mariadb_ddl() -> None:

@@ -14,19 +14,10 @@ from takt.infrastructure.db.alembic_schema_migrator import (
 )
 from takt.infrastructure.db.engine_factory import create_target_engine
 from takt.infrastructure.db.schema.tables import METADATA
+from tests.infrastructure.db.schema.expected_schema import TABLE_NAMES
 
 VERSION_TABLE = 'takt_alembic_version'
-EXPECTED_TABLES = frozenset(
-    (
-        'takt_suite',
-        'takt_benchmark',
-        'takt_worker_run',
-        'takt_measurement',
-        'takt_run_metadata',
-        'takt_loaded_hash',
-        VERSION_TABLE,
-    ),
-)
+EXPECTED_TABLES = TABLE_NAMES | {VERSION_TABLE}
 
 
 def read_versions(engine: sa.Engine) -> list[str]:

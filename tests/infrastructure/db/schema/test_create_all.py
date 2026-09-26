@@ -12,38 +12,15 @@ from takt.infrastructure.db.schema.tables import (
     SUITE_TABLE,
     WORKER_RUN_TABLE,
 )
-
-Columns = tuple[str, ...]
-ForeignKey = tuple[Columns, str | None, Columns]
+from tests.infrastructure.db.schema.expected_schema import (
+    FOREIGN_KEYS,
+    INDEX_NAMES,
+    PRIMARY_KEYS,
+    TABLE_NAMES,
+    ForeignKey,
+)
 
 SUITE_HASH = 'a' * 64
-RUN_KEY = ('suite_hash', 'benchmark_position', 'run_position')
-BENCHMARK_KEY = ('suite_hash', 'benchmark_position')
-
-EXPECTED_TABLES = (
-    ('takt_suite', ('hash',), ()),
-    (
-        'takt_benchmark',
-        BENCHMARK_KEY,
-        ((('suite_hash',), 'takt_suite', ('hash',)),),
-    ),
-    (
-        'takt_worker_run',
-        RUN_KEY,
-        ((BENCHMARK_KEY, 'takt_benchmark', BENCHMARK_KEY),),
-    ),
-    (
-        'takt_measurement',
-        (*RUN_KEY, 'kind', 'position'),
-        ((RUN_KEY, 'takt_worker_run', RUN_KEY),),
-    ),
-    (
-        'takt_run_metadata',
-        RUN_KEY,
-        ((RUN_KEY, 'takt_worker_run', RUN_KEY),),
-    ),
-    ('takt_loaded_hash', ('hash',), ()),
-)
 
 
 def create_schema(target: Target) -> sa.Engine:
@@ -67,23 +44,23 @@ def foreign_keys(
 
 
 def assert_keys(inspector: sa.Inspector) -> None:
-    for table_name, primary_key, expected_foreign_keys in EXPECTED_TABLES:
+    for table_name, primary_key in PRIMARY_KEYS:
         constraint = inspector.get_pk_constraint(table_name)
         assert tuple(constraint['constrained_columns']) == primary_key
-        assert foreign_keys(inspector, table_name) == expected_foreign_keys
+    reflected = tuple(
+        (name, foreign_key)
+        for name, _ in PRIMARY_KEYS
+        for foreign_key in foreign_keys(inspector, name)
+    )
+    assert reflected == FOREIGN_KEYS
 
 
 def assert_schema(engine: sa.Engine) -> None:
     inspector = sa.inspect(engine)
-    assert {name for name, _, _ in EXPECTED_TABLES} == set(
-        inspector.get_table_names(),
-    )
+    assert set(inspector.get_table_names()) == TABLE_NAMES
     assert_keys(inspector)
     indexes = inspector.get_indexes('takt_suite')
-    assert {index['name'] for index in indexes} == {
-        'ix_takt_suite_name',
-        'ix_takt_suite_result_date',
-    }
+    assert {index['name'] for index in indexes} == INDEX_NAMES
 
 
 def insert_orphan_benchmark(engine: sa.Engine) -> None:
