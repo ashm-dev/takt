@@ -63,5 +63,6 @@ def test_run_owns_only_takt_flags(capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit):
         build_parser().parse_known_args(['run', '--help'])
 
-    flags = help_flags(capsys.readouterr().out)
+    options = capsys.readouterr().out.partition('options:\n')[2]
+    flags = help_flags(options.partition('\n\n')[0])
     assert flags == {'-h', '--help', *TAKT_FLAGS}
