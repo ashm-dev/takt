@@ -106,7 +106,8 @@ The value is a template. takt replaces these placeholders:
 ## Schema cache
 
 takt creates and updates its tables in every target on `run` and `import`.
-To skip this check next time, takt remembers the schema version of every target in a local cache.
+On SQLite a schema update runs in one transaction: if it fails, the database keeps its old tables, and the next `run` or `import` tries the update again.
+To skip the schema check next time, takt remembers the schema version of every target in a local cache.
 
 - Location: `$XDG_CACHE_HOME/takt/`, by default `~/.cache/takt/`.
 - Content: the schema version for every target. takt stores a hash of the URL, not the URL, so passwords do not get into the cache.
