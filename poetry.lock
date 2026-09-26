@@ -1591,7 +1591,7 @@ files = [
     {file = "pymysql-1.2.3-py3-none-any.whl", hash = "sha256:14f1c68e2ed859243ae5ca41ffbe677027fc46bc136a9f0be8a4e928e5e7415a"},
     {file = "pymysql-1.2.3.tar.gz", hash = "sha256:d5b288529782e536ae171866df3ca9dc4f6cbfb3cc2f18e6f837fbb90dbc262b"},
 ]
-markers = {main = "extra == \"db\""}
+markers = {main = "extra == \"mariadb\""}
 
 [package.dependencies]
 cryptography = {version = ">=46.0.7", optional = true, markers = "extra == \"rsa\""}
@@ -2342,9 +2342,9 @@ files = [
 dev = ["pytest", "setuptools"]
 
 [extras]
-db = ["pymysql"]
+mariadb = ["pymysql"]
 
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.14"
-content-hash = "84e62afde83edb7cd3f758e7a6ffda544ca91eab3ba5afe80de40967a2f55118"
+content-hash = "9f8afea13f3655a9bbdc94928fc41d6e475cf1094f51702b55e292018cfd267c"
