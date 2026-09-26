@@ -6,13 +6,16 @@ from takt.domain.errors.usage_error import UsageError
 from takt.infrastructure.runner.runner_command import build_runner_command
 
 PY = '/usr/bin/python3.14'
+CWD = Path('/work')
 OUT = Path('/work/takt-x.json')
+USER_OUT = Path('/work/r.json')
 PYPERFORMANCE = (PY, '-m', 'pyperformance', 'run')
-DEFAULT_EXTRA = ('-o', '/work/takt-x.json')
+DEFAULT_EXTRA = ('--output', '/work/takt-x.json')
+USER_EXTRA = ('--output', '/work/r.json')
 
 
 def _build(*arguments: str) -> tuple[tuple[str, ...], Path]:
-    return build_runner_command(arguments, python=PY, output=OUT)
+    return build_runner_command(arguments, python=PY, output=OUT, cwd=CWD)
 
 
 def test_pyperformance_default_output() -> None:
@@ -39,8 +42,8 @@ def test_pyperformance_empty_arguments() -> None:
 )
 def test_user_output_forms(arguments: tuple[str, ...]) -> None:
     command, path = _build(*arguments)
-    assert command == (*PYPERFORMANCE, *arguments)
-    assert path == Path('r.json')
+    assert command == (*PYPERFORMANCE, *arguments, *USER_EXTRA)
+    assert path == USER_OUT
 
 
 def test_user_output_expands_home() -> None:
@@ -74,8 +77,8 @@ def test_script_mode() -> None:
 
 def test_script_mode_user_output() -> None:
     command, path = _build('bench.py', '-o', 'r.json')
-    assert command == (PY, 'bench.py', '-o', 'r.json')
-    assert path == Path('r.json')
+    assert command == (PY, 'bench.py', '-o', 'r.json', *USER_EXTRA)
+    assert path == USER_OUT
 
 
 def test_py_not_first_is_pyperformance() -> None:

@@ -46,9 +46,10 @@ class SubprocessBenchmarkRunner:
             arguments,
             python=self._python,
             output=default_output_path(self._clock.now(), self._cwd),
+            cwd=self._cwd,
         )
         self._execute(command)
-        return self._resolve(result_path)
+        return self._require_file(result_path)
 
     def _execute(self, command: tuple[str, ...]) -> None:
         try:
@@ -71,16 +72,11 @@ class SubprocessBenchmarkRunner:
             )
             raise BenchmarkFailedError(message, return_code=return_code)
 
-    def _resolve(self, result_path: Path) -> Path:
-        resolved = (
-            result_path
-            if result_path.is_absolute()
-            else self._cwd / result_path
-        )
-        if not resolved.is_file():
+    def _require_file(self, result_path: Path) -> Path:
+        if not result_path.is_file():
             message = (
                 'benchmark finished but the result file was not created: '
-                f'{resolved}'
+                f'{result_path}'
             )
             raise BenchmarkFailedError(message, return_code=0)
-        return resolved
+        return result_path

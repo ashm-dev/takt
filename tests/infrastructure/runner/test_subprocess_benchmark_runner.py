@@ -90,7 +90,7 @@ def test_success_returns_default_path(
     _patch(monkeypatch, recorder)
     assert _runner(tmp_path).run(('-b', 'nbody')) == expected
     command, _ = build_runner_command(
-        ('-b', 'nbody'), python=PY, output=expected
+        ('-b', 'nbody'), python=PY, output=expected, cwd=tmp_path
     )
     assert recorder.command == command
     assert recorder.cwd == tmp_path
