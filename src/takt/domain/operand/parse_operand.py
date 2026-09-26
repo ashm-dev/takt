@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Final
 
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
+from takt.domain.operand.expand_home import expand_home
 from takt.domain.operand.file_operand import FileOperand
 from takt.domain.operand.hash_prefix_pattern import HASH_PREFIX_PATTERN
 from takt.domain.operand.operand import Operand
@@ -28,7 +29,7 @@ def parse_operand(text: str, is_file: Callable[[Path], bool]) -> Operand:
     if text.strip() == '':
         msg = 'operand must not be empty'
         raise OperandNotFoundError(msg)
-    path = Path(text).expanduser()
+    path = expand_home(text)
     if is_file(path):
         return FileOperand(text=text, path=path)
     if ':' not in text:
