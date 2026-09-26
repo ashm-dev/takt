@@ -25,6 +25,7 @@ from takt.infrastructure.db.database_error import database_error
             'Invalid SQLite URL',
         ),
         (ValueError('bad value'), 'bad value'),
+        (AssertionError(), 'AssertionError'),
     ],
 )
 def test_reason_is_one_line(error: Exception, reason: str) -> None:
