@@ -38,6 +38,14 @@ def test_mariadb(url: str) -> None:
 
 
 @pytest.mark.parametrize(
+    ('backend', 'extra'),
+    [('sqlite', None), ('mariadb', 'mariadb')],
+)
+def test_extra(backend: str, extra: str | None) -> None:
+    assert DIALECTS[backend].extra == extra
+
+
+@pytest.mark.parametrize(
     ('url', 'backend'),
     [
         ('mysql+pymysql://u@h/db', 'mysql'),
