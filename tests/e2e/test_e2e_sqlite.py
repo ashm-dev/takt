@@ -255,6 +255,31 @@ def test_compare_missing_result_file(
 
 
 @pytest.mark.usefixtures('result_a')
+def test_compare_names_the_only_target_it_searched(
+    make_result: MakeResult,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    write_toml(
+        tmp_path / 'takt.toml',
+        {'one': tmp_path / 'one.db', 'two': tmp_path / 'two.db'},
+    )
+    make_result('b.json', 'nbody', SLOWER)
+    main(['import', 'a.json', '--target', 'one', '--name', 'a1'])
+    main(['import', 'b.json', '--target', 'two', '--name', 'o1'])
+    capsys.readouterr()
+
+    code = main(['compare', 'a.json', 'o1'])
+
+    assert code == 1
+    assert capsys.readouterr().err == (
+        "error: operand 'o1' not found in target 'one': "
+        'no file, run name or hash prefix matches\n'
+    )
+    assert main(['compare', 'a.json', 'o1', '--target', 'two']) == 0
+
+
+@pytest.mark.usefixtures('result_a')
 def test_compare_empty_database(
     sqlite_url: str,
     capsys: pytest.CaptureFixture[str],
