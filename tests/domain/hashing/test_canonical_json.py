@@ -18,7 +18,7 @@ def test_canonical_json_sorts_nested_keys() -> None:
 
 
 def test_canonical_json_keeps_unicode_as_utf8() -> None:
-    document = {'name': 'ж', 'value': 1.5}
+    document = {'name': '\u0436', 'value': 1.5}
 
     assert canonical_json(document) == (b'{"name":"\xd0\xb6","value":1.5}')
 
