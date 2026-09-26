@@ -15,6 +15,9 @@ dependencies = [
     "rich>=15,<16",
 ]
 
+[project.urls]
+Author = "https://ashm-dev.github.io"
+
 [project.optional-dependencies]
 db = [
     "pymysql>=1.2,<2",
