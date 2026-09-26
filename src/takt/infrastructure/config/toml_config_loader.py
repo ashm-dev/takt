@@ -33,6 +33,7 @@ def load_toml_config(path: Path) -> TaktConfig:
     return TaktConfig(
         targets=_read_targets(path, document.get('targets', {})),
         name_template=name_template,
+        path=path,
     )
 
 
@@ -48,7 +49,7 @@ def load_config(sources: ConfigSources) -> TaktConfig:
     default = sources.cwd / _DEFAULT_FILE_NAME
     if default.is_file():
         return load_toml_config(default)
-    return TaktConfig(targets={}, name_template=None)
+    return TaktConfig(targets={}, name_template=None, path=None)
 
 
 def _read_document(path: Path) -> dict[str, object]:

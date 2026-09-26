@@ -12,7 +12,7 @@ from takt.infrastructure.config.toml_config_loader import (
 from tests.domain.exact_pattern import exact_pattern
 from tests.infrastructure.config.config_inputs import FULL_FILE, sources
 
-EMPTY_CONFIG = TaktConfig(targets={}, name_template=None)
+EMPTY_CONFIG = TaktConfig(targets={}, name_template=None, path=None)
 
 
 @pytest.fixture
@@ -36,7 +36,10 @@ def test_full_file(config_file: Path) -> None:
 def test_empty_file(config_file: Path) -> None:
     config_file.write_text('', encoding='utf-8')
 
-    assert load_toml_config(config_file) == EMPTY_CONFIG
+    assert load_toml_config(config_file) == replace(
+        EMPTY_CONFIG,
+        path=config_file,
+    )
 
 
 def test_missing_file(config_file: Path) -> None:
