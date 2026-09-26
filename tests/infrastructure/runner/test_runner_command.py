@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import pytest
@@ -34,9 +35,11 @@ def test_pyperformance_empty_arguments() -> None:
     'arguments',
     [
         ('-o', 'r.json'),
+        ('-or.json',),
+        ('-o=r.json',),
         ('--output', 'r.json'),
         ('--output=r.json',),
-        ('-or.json',),
+        ('--out', 'r.json'),
         ('-b', 'nbody', '-o', 'r.json', '--fast'),
     ],
 )
@@ -50,6 +53,12 @@ def test_output_goes_before_double_dash() -> None:
     tail = ('--', '-o', 'x')
     command = (PY, 'bench.py', '-o', 'r.json', *USER_EXTRA, *tail)
     assert _build('bench.py', '-o', 'r.json', *tail) == (command, USER_OUT)
+
+
+def test_output_after_double_dash_is_not_read() -> None:
+    tail = ('--', '-o', 'x')
+    command = (*PYPERFORMANCE, '-b', 'nbody', *DEFAULT_EXTRA, *tail)
+    assert _build('-b', 'nbody', *tail) == (command, OUT)
 
 
 @pytest.mark.parametrize(
@@ -73,6 +82,12 @@ def test_missing_output_value(arguments: tuple[str, ...]) -> None:
         match=r'^option -o/--output requires a file path$',
     ):
         _build(*arguments)
+
+
+def test_output_without_sys_argv(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delattr(sys, 'argv')
+    command = (*PYPERFORMANCE, '-o', 'r.json', *USER_EXTRA)
+    assert _build('-o', 'r.json') == (command, USER_OUT)
 
 
 def test_capital_o_is_not_output() -> None:
