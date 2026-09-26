@@ -51,3 +51,17 @@ def test_snapshot_no_rows() -> None:
     assert render_markdown(table) == (
         'Benchmark hidden because not significant (1): a\n'
     )
+
+
+def test_pipe_in_label_and_name_stays_in_its_cell() -> None:
+    table = CompareTable(
+        headers=('Benchmark', 'base', 'jit|pgo'),
+        rows=(('a|b', '1 ms', '2 ms: 2.00x slower'),),
+        hidden_not_significant=(),
+        ignored=(),
+    )
+
+    header, _, row = render_markdown(table).splitlines()
+
+    assert header == r'| Benchmark | base | jit\|pgo           |'
+    assert row == r'| a\|b      | 1 ms | 2 ms: 2.00x slower |'
