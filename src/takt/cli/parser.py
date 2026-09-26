@@ -1,9 +1,9 @@
 """Argument parser of the takt command."""
 
 import argparse
-from pathlib import Path
 
 from takt import __version__
+from takt.domain.operand.expand_home import expand_home
 from takt.infrastructure.runner.takt_flags import (
     CONFIG_FLAG,
     DB_FLAG,
@@ -47,6 +47,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     Abbreviations are disabled everywhere so that pyperformance flags like
     ``--tags`` are never taken for ``--target``.
+    Every path argument expands ``~`` itself, because a shell leaves it in
+    ``--config=~/takt.toml``.
 
     :returns: The root parser with its subcommands.
     """
@@ -96,7 +98,7 @@ def _add_import(
     )
     import_parser.add_argument(
         'path',
-        type=Path,
+        type=expand_home,
         metavar='PATH',
         help='pyperf or pyperformance JSON result (.json or .json.gz).',
     )
@@ -121,7 +123,7 @@ def _add_compare(
     _add_target_flags(compare, 'only the first target is read')
     compare.add_argument(
         '--markdown',
-        type=Path,
+        type=expand_home,
         default=None,
         metavar='PATH',
         help='Also write the table as Markdown to PATH.',
@@ -145,7 +147,7 @@ def _add_target_flags(parser: argparse.ArgumentParser, note: str) -> None:
     )
     parser.add_argument(
         CONFIG_FLAG,
-        type=Path,
+        type=expand_home,
         default=None,
         metavar='PATH',
         help='Path to takt.toml.',
