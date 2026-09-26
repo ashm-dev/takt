@@ -45,10 +45,18 @@ def _parse_tagged(text: str) -> TaggedOperand:
         return TaggedOperand(
             text=text,
             name=name,
-            index=int(tail),
+            index=_run_index(text=text, tail=tail),
             hash_prefix=None,
         )
     return _parse_hash_prefix(text=text, name=name, tail=tail)
+
+
+def _run_index(*, text: str, tail: str) -> int:
+    try:
+        return int(tail)
+    except ValueError:
+        msg = f'invalid operand {text!r}: run index is too large'
+        raise OperandNotFoundError(msg) from None
 
 
 def _validate_tag(*, text: str, name: str, tail: str) -> None:
