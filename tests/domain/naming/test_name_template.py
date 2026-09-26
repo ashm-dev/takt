@@ -10,7 +10,7 @@ from takt.domain.naming.name_values import NameValues
 
 VALUES = NameValues(
     now=datetime(2026, 9, 25, 13, 46, 1, tzinfo=UTC),
-    result_path=Path('/tmp/takt-20260925T134601Z.json'),  # noqa: S108 path text
+    result_path=Path('results/takt-20260925T134601Z.json'),
     python_version='3.14.0 (64-bit)',
     hostname='bench-host',
     suite_hash='3fa2b1c4d5e6'.ljust(64, '0'),
@@ -77,7 +77,7 @@ def test_escaped_braces() -> None:
 def test_path_variants(filename: str, expected: str) -> None:
     values = NameValues(
         now=VALUES.now,
-        result_path=Path(f'/tmp/{filename}'),  # noqa: S108 path text
+        result_path=Path(f'results/{filename}'),
         python_version=VALUES.python_version,
         hostname=VALUES.hostname,
         suite_hash=VALUES.suite_hash,
