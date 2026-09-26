@@ -271,6 +271,23 @@ def test_compare_empty_database(
 
 
 @pytest.mark.usefixtures('result_a')
+def test_compare_does_not_create_mistyped_database(
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    typo = tmp_path / 'typo.db'
+
+    code = main(['compare', 'a.json', 'base', '--db', f'sqlite:///{typo}'])
+
+    assert code == 1
+    assert capsys.readouterr().err == (
+        f'error: cannot connect to database sqlite:///{typo}: '
+        f'database file not found: {typo}\n'
+    )
+    assert not typo.exists()
+
+
+@pytest.mark.usefixtures('result_a')
 def test_compare_unreachable_database(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
