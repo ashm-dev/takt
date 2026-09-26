@@ -89,8 +89,16 @@ def test_missing_driver(monkeypatch: pytest.MonkeyPatch) -> None:
     assert error.value.exit_code == 2
 
 
-def test_invalid_url() -> None:
+@pytest.mark.parametrize(
+    'url',
+    [
+        'not a url',
+        'mariadb+pymysql://u:p@h:abc/db',
+        'mariadb+pymysql://u:p@h:/db',
+    ],
+)
+def test_invalid_url(url: str) -> None:
     with pytest.raises(ConfigurationError) as error:
-        dialect_for_url('not a url')
+        dialect_for_url(url)
 
-    assert str(error.value) == "invalid database URL: 'not a url'"
+    assert str(error.value) == f'invalid database URL: {url!r}'
