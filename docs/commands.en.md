@@ -76,8 +76,11 @@ Then there is one line per target:
 | `already loaded as '<name>'` | This database already had the result under this name |
 | `already loaded (unnamed)` | This database already had the result without a name |
 | `failed: <error>` | Writing to this database failed |
+| `failed: compensation failed: <error>` | The result was written, but takt could not remove it after another database failed |
 | `rolled back` | The result was written, then removed because another database failed |
 | `not attempted` | takt stopped before it got to this database |
+
+After `compensation failed` the result stays in that database: see "All or nothing" below.
 
 ### When writing fails
 
@@ -141,8 +144,36 @@ takt writes the result either to all selected databases or to none of them:
 3. Then takt commits the databases one by one.
 4. If a commit fails after other databases were already committed, takt deletes the result from those databases again.
 
-Known limitation: if the takt process is killed while it commits, the result can stay in some of the databases.
-Run the same `takt import` again: it skips the databases that already have the result and writes it to the rest.
+In these cases the result still stays in some of the databases:
+
+- takt could not delete the result in step 4. Such a database shows `failed: compensation failed: <error>`.
+- The takt process was killed, or interrupted with Ctrl+C, while it committed. takt then prints no report; after Ctrl+C it exits with code 130.
+
+After `compensation failed`, the `Result` line of the failed command shows the first 12 characters of the result hash and the name stored in that database.
+After a stop there is no such line.
+The stopped command stored the result with the same `loaded_at` time in every database it reached, so in those databases this query shows it as the newest result:
+
+```sql
+SELECT hash, name, loaded_at FROM takt_suite ORDER BY loaded_at DESC LIMIT 1;
+```
+
+To have the result in every database, run `takt import` for the result file again: it skips the databases that already have the result and writes it to the rest.
+If the name template has `{date}` or `{datetime}`, takt fills them in with the new time, so the rest can get another name.
+To give the rest the same name, pass the stored name with `--name`.
+
+To remove the result instead, run these queries, in this order, only in the databases where the failed command left it: the ones with `compensation failed`, or, after a stop, the ones where the query above shows it with the `loaded_at` of that command.
+Do not run them in a database that shows `already loaded`: it had the result before this command.
+Child tables go first: MariaDB does not delete a row while other rows refer to it.
+Put the first 12 characters of the result hash in place of `3fa2b1c4d5e6`.
+
+```sql
+DELETE FROM takt_measurement WHERE suite_hash LIKE '3fa2b1c4d5e6%';
+DELETE FROM takt_run_metadata WHERE suite_hash LIKE '3fa2b1c4d5e6%';
+DELETE FROM takt_worker_run WHERE suite_hash LIKE '3fa2b1c4d5e6%';
+DELETE FROM takt_benchmark WHERE suite_hash LIKE '3fa2b1c4d5e6%';
+DELETE FROM takt_suite WHERE hash LIKE '3fa2b1c4d5e6%';
+DELETE FROM takt_loaded_hash WHERE hash LIKE '3fa2b1c4d5e6%';
+```
 
 ## takt compare
 
