@@ -210,6 +210,19 @@ def test_run_imports_runner_result(
     assert recording.calls == [('-b', 'nbody')]
 
 
+def test_run_name_reaches_report(
+    result_file: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        SubprocessBenchmarkRunner, 'run', RecordingRun(result_file)
+    )
+
+    report = takt.run(['-b', 'nbody'], db=[URL], name='nightly')
+
+    assert report.name == 'nightly'
+
+
 def test_run_uses_config_and_target(
     tmp_path: Path,
     result_file: Path,
