@@ -97,6 +97,7 @@ takt import result.json --db sqlite:///bench.db --name patched
 - The file can be `.json` or gzip-compressed `.json.gz`.
 - It accepts the same `--db`, `--target`, `--config` and `--name` flags as `takt run`.
 - The output is the same as for `takt run`.
+- takt refuses a file that is not a valid pyperf result, for example with a measured value that is NaN or infinite, or with a benchmark name that is not a string. It prints `error: invalid pyperf result <file>: <reason>` and exits with code 1.
 
 ### Result hash
 
