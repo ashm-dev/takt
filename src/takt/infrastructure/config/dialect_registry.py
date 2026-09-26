@@ -57,7 +57,7 @@ def dialect_for_url(url: str) -> DialectInfo:
 def _split_drivername(url: str) -> tuple[str, str]:
     try:
         drivername = make_url(url).drivername
-    except ArgumentError:
+    except ArgumentError, ValueError:
         message = f'invalid database URL: {url!r}'
         raise ConfigurationError(message) from None
     # get_driver_name() imports the driver, so the name is split by hand.
