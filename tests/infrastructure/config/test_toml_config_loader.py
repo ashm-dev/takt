@@ -1,37 +1,17 @@
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from takt.domain.errors.configuration_error import ConfigurationError
-from takt.infrastructure.config.config_sources import ConfigSources
 from takt.infrastructure.config.takt_config import TaktConfig
 from takt.infrastructure.config.toml_config_loader import (
     load_config,
     load_toml_config,
 )
-
-FULL_FILE = """\
-name_template = "default {date}"
-
-[targets.local]
-url = "sqlite:///bench.sqlite"
-
-[targets.maria_ci]
-url = "mariadb+pymysql://user:pass@db.local:3306/bench"
-"""
+from tests.infrastructure.config.config_inputs import FULL_FILE, sources
 
 EMPTY_CONFIG = TaktConfig(targets={}, name_template=None)
-
-
-def sources(tmp_path: Path, config_path: Path | None = None) -> ConfigSources:
-    return ConfigSources(
-        db_flags=(),
-        target_flags=(),
-        config_path=config_path,
-        name_flag=None,
-        environ={},
-        cwd=tmp_path,
-    )
 
 
 def config_error(path: Path, text: str | None = None) -> str:
@@ -162,6 +142,6 @@ def test_load_config_explicit_missing(tmp_path: Path) -> None:
     path = tmp_path / 'x.toml'
 
     with pytest.raises(ConfigurationError) as error:
-        load_config(sources(tmp_path, config_path=path))
+        load_config(replace(sources(tmp_path), config_path=path))
 
     assert str(error.value) == f'config file not found: {path}'

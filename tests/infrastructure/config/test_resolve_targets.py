@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -8,18 +8,8 @@ from takt.domain.errors.unsupported_dialect_error import (
     UnsupportedDialectError,
 )
 from takt.domain.model.target import Target
-from takt.infrastructure.config.config_sources import ConfigSources
 from takt.infrastructure.config.resolve_targets import resolve_targets
-
-FULL_FILE = """\
-name_template = "default {date}"
-
-[targets.local]
-url = "sqlite:///bench.sqlite"
-
-[targets.maria_ci]
-url = "mariadb+pymysql://user:pass@db.local:3306/bench"
-"""
+from tests.infrastructure.config.config_inputs import FULL_FILE, sources
 
 LOCAL = Target(name='local', url='sqlite:///bench.sqlite', dialect='sqlite')
 MARIA_CI = Target(
@@ -27,24 +17,6 @@ MARIA_CI = Target(
     url='mariadb+pymysql://user:pass@db.local:3306/bench',
     dialect='mariadb',
 )
-
-
-def sources(
-    tmp_path: Path,
-    *,
-    db_flags: tuple[str, ...] = (),
-    target_flags: tuple[str, ...] = (),
-    config_path: Path | None = None,
-    environ: Mapping[str, str] | None = None,
-) -> ConfigSources:
-    return ConfigSources(
-        db_flags=db_flags,
-        target_flags=target_flags,
-        config_path=config_path,
-        name_flag=None,
-        environ=environ or {},
-        cwd=tmp_path,
-    )
 
 
 def sqlite_target(url: str) -> Target:
@@ -64,7 +36,7 @@ def test_toml_level(with_toml: Path) -> None:
 def test_env_replaces_toml(with_toml: Path) -> None:
     environ = {'TAKT_DB': 'sqlite:///a.sqlite  sqlite:///b.sqlite'}
 
-    assert resolve_targets(sources(with_toml, environ=environ)) == (
+    assert resolve_targets(replace(sources(with_toml), environ=environ)) == (
         sqlite_target('sqlite:///a.sqlite'),
         sqlite_target('sqlite:///b.sqlite'),
     )
@@ -73,7 +45,7 @@ def test_env_replaces_toml(with_toml: Path) -> None:
 def test_blank_env_is_ignored(with_toml: Path) -> None:
     environ = {'TAKT_DB': '   '}
 
-    assert resolve_targets(sources(with_toml, environ=environ)) == (
+    assert resolve_targets(replace(sources(with_toml), environ=environ)) == (
         LOCAL,
         MARIA_CI,
     )
@@ -81,8 +53,8 @@ def test_blank_env_is_ignored(with_toml: Path) -> None:
 
 def test_flags_replace_env_and_toml(with_toml: Path) -> None:
     resolved = resolve_targets(
-        sources(
-            with_toml,
+        replace(
+            sources(with_toml),
             db_flags=('sqlite:///c.sqlite',),
             environ={'TAKT_DB': 'sqlite:///a.sqlite'},
         ),
@@ -93,8 +65,8 @@ def test_flags_replace_env_and_toml(with_toml: Path) -> None:
 
 def test_db_and_target_flags_union(with_toml: Path) -> None:
     resolved = resolve_targets(
-        sources(
-            with_toml,
+        replace(
+            sources(with_toml),
             db_flags=('sqlite:///c.sqlite',),
             target_flags=('maria_ci',),
         ),
@@ -105,7 +77,7 @@ def test_db_and_target_flags_union(with_toml: Path) -> None:
 
 def test_unknown_target(with_toml: Path) -> None:
     with pytest.raises(ConfigurationError) as error:
-        resolve_targets(sources(with_toml, target_flags=('nope',)))
+        resolve_targets(replace(sources(with_toml), target_flags=('nope',)))
 
     assert str(error.value) == (
         "unknown target 'nope'; known targets: local, maria_ci"
@@ -114,7 +86,7 @@ def test_unknown_target(with_toml: Path) -> None:
 
 def test_unknown_target_without_toml(tmp_path: Path) -> None:
     with pytest.raises(ConfigurationError) as error:
-        resolve_targets(sources(tmp_path, target_flags=('x',)))
+        resolve_targets(replace(sources(tmp_path), target_flags=('x',)))
 
     assert str(error.value) == "unknown target 'x'; known targets: none"
 
@@ -122,7 +94,7 @@ def test_unknown_target_without_toml(tmp_path: Path) -> None:
 def test_duplicates_removed(tmp_path: Path) -> None:
     url = 'sqlite:///c.sqlite'
 
-    resolved = resolve_targets(sources(tmp_path, db_flags=(url, url)))
+    resolved = resolve_targets(replace(sources(tmp_path), db_flags=(url, url)))
 
     assert resolved == (sqlite_target(url),)
 
@@ -145,7 +117,7 @@ def test_explicit_config_path(tmp_path: Path) -> None:
     other = tmp_path / 'other.toml'
     other.write_text(FULL_FILE, encoding='utf-8')
 
-    assert resolve_targets(sources(tmp_path, config_path=other)) == (
+    assert resolve_targets(replace(sources(tmp_path), config_path=other)) == (
         LOCAL,
         MARIA_CI,
     )
