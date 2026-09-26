@@ -18,6 +18,12 @@ ROOT = 'root'
 
 
 @pytest.fixture
+def no_color(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv('PYTHON_COLORS', '0')
+    monkeypatch.setenv('NO_COLOR', '1')
+
+
+@pytest.fixture
 def sqlite_target(tmp_path: Path) -> Target:
     database_path = tmp_path / 'takt.sqlite'
     return Target(

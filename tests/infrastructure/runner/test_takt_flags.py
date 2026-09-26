@@ -1,6 +1,7 @@
-import os
 import subprocess
 import sys
+
+import pytest
 
 from takt.infrastructure.runner.takt_flags import TAKT_FLAGS
 from tests.help_flags import help_flags
@@ -12,7 +13,6 @@ def _help_flags(command: tuple[str, ...]) -> set[str]:
         capture_output=True,
         text=True,
         check=True,
-        env={**os.environ, 'PYTHON_COLORS': '0', 'NO_COLOR': '1'},
     )
     return help_flags(completed.stdout)
 
@@ -21,6 +21,7 @@ def test_values() -> None:
     assert TAKT_FLAGS == ('--db', '--target', '--config', '--name')
 
 
+@pytest.mark.usefixtures('no_color')
 def test_no_collision_with_pyperformance() -> None:
     flags = _help_flags(
         (sys.executable, '-m', 'pyperformance', 'run', '--help')
@@ -29,6 +30,7 @@ def test_no_collision_with_pyperformance() -> None:
     assert not flags.intersection(TAKT_FLAGS)
 
 
+@pytest.mark.usefixtures('no_color')
 def test_no_collision_with_pyperf_runner() -> None:
     flags = _help_flags(
         (
