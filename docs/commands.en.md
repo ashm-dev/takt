@@ -199,6 +199,7 @@ takt checks every operand in this order and takes the first match:
 After `:` only digits mean a number; anything else means a hash prefix.
 An operand that fits none of these forms is an error with exit code 1, for example an empty operand, `default:`, `:1`, `a:b:c` or `default:XYZ`.
 Runs with the same result date are sorted by hash, so the numbers are the same in every database.
+Runs without a result date come last; the list of candidates shows them with `unknown date`.
 
 If a name matches several runs, takt lists them:
 
