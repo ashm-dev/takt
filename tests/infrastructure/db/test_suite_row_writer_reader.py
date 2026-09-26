@@ -1,3 +1,4 @@
+import dataclasses
 from types import MappingProxyType
 
 import pytest
@@ -141,6 +142,32 @@ def test_insert_stores_sql_null_only_for_tuple_key_types(
         ).scalar_one()
 
     assert null_tags == 0
+
+
+def test_read_decodes_json_for_tuple_key_types(
+    engine: sa.Engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with engine.begin() as connection:
+        insert_suite(connection, make_record())
+        connection.execute(
+            RUN_METADATA_TABLE.update().values(hostname='["a", "b"]'),
+        )
+    monkeypatch.setattr(
+        'takt.infrastructure.db.suite_row_reader.METADATA_KEY_TYPES',
+        MappingProxyType({**METADATA_KEY_TYPES, 'hostname': tuple}),
+    )
+
+    with engine.connect() as connection:
+        stored = read_suite(connection, 'a' * 64)
+
+    assert stored is not None
+    hostnames = {
+        dataclasses.asdict(run.metadata)['hostname']
+        for benchmark in stored.suite.benchmarks
+        for run in benchmark.runs
+    }
+    assert hostnames == {('a', 'b')}
 
 
 def test_insert_with_null_name_and_date(engine: sa.Engine) -> None:
