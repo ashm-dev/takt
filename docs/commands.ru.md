@@ -175,9 +175,10 @@ takt compare base.json new.json --markdown compare.md
 Пример Markdown-файла:
 
 ```markdown
-| Benchmark | base.json | new.json              |
-|-----------|:---------:|:---------------------:|
-| nbody     | 100 ms    | 90.0 ms: 1.11x faster |
+| Benchmark      | base.json | new.json              |
+|----------------|:---------:|:---------------------:|
+| nbody          | 100 ms    | 90.0 ms: 1.11x faster |
+| Geometric mean | (ref)     | 1.04x faster          |
 
 Benchmark hidden because not significant (2): a, b
 Ignored benchmarks (1) of new.json: x
