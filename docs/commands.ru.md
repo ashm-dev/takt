@@ -245,6 +245,7 @@ error: operand 'default' is ambiguous, candidates:
 
 - В одном сравнении можно смешивать файлы и прогоны из БД.
 - Прогоны читаются из первой цели в списке. Другую цель выбирает `--target`.
+- `takt compare` только читает БД и никогда не создаёт файл SQLite. Опечатка в пути SQLite даёт `error: cannot connect to database <цель>: database file not found: <путь>`, а БД без таблиц takt — `error: no takt results in database <цель>`; код выхода 1.
 - Если все операнды — файлы, БД не нужна, и takt не читает `--db`, `--target`, `--config`, `TAKT_DB` и `takt.toml`.
 - Если операнд не файл, а ни одной цели не задано, takt пишет `error: operand '<операнд>' is not a file and no database target is configured` и завершается с кодом 2. Операнд, который не подходит ни под одну форму, и тогда даёт код 1: форму всех операндов takt проверяет раньше.
 

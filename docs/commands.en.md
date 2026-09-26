@@ -245,6 +245,7 @@ error: operand 'default' is ambiguous, candidates:
 
 - You can mix files and runs from a database in one comparison.
 - Runs are read from the first target in the list. Use `--target` to pick another one.
+- `takt compare` only reads the database and never creates a SQLite file. A mistyped SQLite path gives `error: cannot connect to database <target>: database file not found: <path>`, and a database without takt tables gives `error: no takt results in database <target>`; the exit code is 1.
 - If all operands are files, takt does not need any database and does not read `--db`, `--target`, `--config`, `TAKT_DB` or `takt.toml`.
 - If an operand is not a file and no target is configured, takt prints `error: operand '<operand>' is not a file and no database target is configured` and exits with code 2. An operand that fits no form still gives exit code 1: takt checks the form of every operand first.
 
