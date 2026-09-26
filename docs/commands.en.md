@@ -243,7 +243,7 @@ How to read it:
 - Other columns show the mean value and the change against the base: `1.11x faster`, `1.05x slower`, `no change` or `not significant`.
 - The `Geometric mean` row appears when the results have more than one benchmark in common and the table shows at least one of them.
 - `Benchmark hidden because not significant` lists benchmarks where no difference is significant; they are not shown in the table.
-- `Ignored benchmarks … of <operand>` lists benchmarks of that operand that the other operands do not have. Only benchmarks present in all operands are compared.
+- `Ignored benchmarks … of <operand>` lists benchmarks of that operand that are not compared. Only benchmarks that every operand has with measured values are compared: a benchmark that some operand lacks, or has only warmup values for, is ignored.
 
 The numbers and the significance test are the same as in `pyperf compare_to --table`.
 
