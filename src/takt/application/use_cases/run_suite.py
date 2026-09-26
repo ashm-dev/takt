@@ -5,12 +5,8 @@ from takt.application.use_cases.import_report import ImportReport
 from takt.application.use_cases.import_request import ImportRequest
 from takt.application.use_cases.import_suite import ImportSuite
 from takt.application.use_cases.run_request import RunRequest
-from takt.domain.errors.configuration_error import ConfigurationError
+from takt.domain.errors.no_targets_error import NoTargetsError
 from takt.domain.model.suite_source import SuiteSource
-
-_NO_TARGETS_MESSAGE = (
-    'no database targets configured: use --db, --target, TAKT_DB or takt.toml'
-)
 
 
 class RunSuite:
@@ -41,7 +37,7 @@ class RunSuite:
         :raises InvalidRunNameError: If the rendered run name is invalid.
         """
         if not request.targets:
-            raise ConfigurationError(_NO_TARGETS_MESSAGE)
+            raise NoTargetsError
         path = self._runner.run(request.runner_arguments)
         return self._importer.execute(
             ImportRequest(

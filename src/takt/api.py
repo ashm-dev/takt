@@ -17,7 +17,7 @@ from takt.application.use_cases.import_suite import ImportSuite
 from takt.application.use_cases.run_request import RunRequest
 from takt.application.use_cases.run_suite import RunSuite
 from takt.domain.compare.compare_table import CompareTable
-from takt.domain.errors.configuration_error import ConfigurationError
+from takt.domain.errors.no_targets_error import NoTargetsError
 from takt.domain.model.suite_source import SuiteSource
 from takt.domain.model.target import Target
 from takt.domain.naming.name_template import NameTemplate
@@ -39,10 +39,6 @@ from takt.infrastructure.db.sqlalchemy_target_connector import (
 from takt.infrastructure.pyperf.pyperf_result_reader import PyperfResultReader
 from takt.infrastructure.runner.subprocess_benchmark_runner import (
     SubprocessBenchmarkRunner,
-)
-
-_NO_TARGETS_MESSAGE = (
-    'no database targets configured: use --db, --target, TAKT_DB or takt.toml'
 )
 
 
@@ -158,7 +154,7 @@ def _configured(
     targets = resolve_targets(sources)
     template = resolve_name_template(sources)
     if not targets:
-        raise ConfigurationError(_NO_TARGETS_MESSAGE)
+        raise NoTargetsError
     return targets, template
 
 

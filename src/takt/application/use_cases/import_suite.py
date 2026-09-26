@@ -7,14 +7,10 @@ from takt.application.ports.clock import Clock
 from takt.application.ports.result_reader import ResultReader
 from takt.application.use_cases.import_report import ImportReport
 from takt.application.use_cases.import_request import ImportRequest
-from takt.domain.errors.configuration_error import ConfigurationError
+from takt.domain.errors.no_targets_error import NoTargetsError
 from takt.domain.model.suite import Suite
 from takt.domain.model.suite_record import SuiteRecord
 from takt.domain.naming.name_values import NameValues
-
-_NO_TARGETS_MESSAGE = (
-    'no database targets configured: use --db, --target, TAKT_DB or takt.toml'
-)
 
 
 class ImportSuite:
@@ -47,7 +43,7 @@ class ImportSuite:
         :raises InvalidRunNameError: If the rendered run name is invalid.
         """
         if not request.targets:
-            raise ConfigurationError(_NO_TARGETS_MESSAGE)
+            raise NoTargetsError
         suite = self._reader.read(request.path)
         now = self._clock.now()
         name = self._render_name(request, suite, now)
