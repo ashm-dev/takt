@@ -19,7 +19,7 @@ dependencies = [
 Author = "https://ashm-dev.github.io"
 
 [project.optional-dependencies]
-db = [
+mariadb = [
     "pymysql>=1.2,<2",
 ]
 
