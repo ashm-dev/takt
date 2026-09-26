@@ -37,7 +37,7 @@ def _rich_table(table: CompareTable) -> Table:
 
 
 def _print_plain(console: Console, line: str) -> None:
-    console.print(line, markup=False, highlight=False)
+    console.print(line, markup=False, highlight=False, emoji=False)
 
 
 def _hidden_line(hidden: Sequence[str]) -> str:
