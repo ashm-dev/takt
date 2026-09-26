@@ -94,12 +94,16 @@ If the result was not written to all targets, takt prints the reason for every t
 
 ```text
 error: result was not written to all targets
-Retry without re-running benchmarks: takt import /home/me/takt-20260925T101500Z.json --target local --target maria_ci
+Retry without re-running benchmarks: takt import /home/me/takt-20260925T101500Z.json --target local --target maria_ci --name 'nightly 2026-09-25'
 ```
 
 The command exits with code 1.
 The result file stays on disk, so fix the database and run the printed `takt import` command.
 The benchmarks do not run again.
+
+The printed command passes the run name that this command gave the result, not the name template: with `nightly {date}`, a retry on the next day still stores `nightly 2026-09-25`.
+Braces in that name are doubled, so they stay literal text.
+If the result has no name, the command has no `--name`.
 
 ### When the benchmarks fail
 
@@ -165,7 +169,7 @@ SELECT hash, name, loaded_at FROM takt_suite ORDER BY loaded_at DESC LIMIT 1;
 
 To have the result in every database, run `takt import` for the result file again: it skips the databases that already have the result and writes it to the rest.
 If the name template has `{date}` or `{datetime}`, takt fills them in with the new time, so the rest can get another name.
-To give the rest the same name, pass the stored name with `--name`.
+To give the rest the same name, pass the stored name with `--name`; the command that `takt run` prints after `compensation failed` already does this.
 
 To remove the result instead, run these queries, in this order, only in the databases where the failed command left it: the ones with `compensation failed`, or, after a stop, the ones where the query above shows it with the `loaded_at` of that command.
 Do not run them in a database that shows `already loaded`: it had the result before this command.
