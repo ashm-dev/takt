@@ -66,3 +66,39 @@ def test_run_owns_only_takt_flags(capsys: pytest.CaptureFixture[str]) -> None:
     options = capsys.readouterr().out.partition('options:\n')[2]
     flags = help_flags(options.partition('\n\n')[0])
     assert flags == {'-h', '--help', *TAKT_FLAGS}
+
+
+def help_text(capsys: pytest.CaptureFixture[str], command: str) -> str:
+    with pytest.raises(SystemExit):
+        build_parser().parse_known_args([command, '--help'])
+    return ' '.join(capsys.readouterr().out.split())
+
+
+@pytest.mark.usefixtures('no_color')
+def test_run_help_explains_both_modes(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    text = help_text(capsys, 'run')
+
+    assert 'takt run SCRIPT.py [takt flags] [pyperf.Runner flags ...]' in text
+    assert "goes unchanged to 'python -m pyperformance run'" in text
+    assert '-o/--output picks the result file' in text
+    assert "'python SCRIPT.py --help'" in text
+
+
+@pytest.mark.usefixtures('no_color')
+def test_compare_help_explains_operands(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    text = help_text(capsys, 'compare')
+
+    assert 'NAME:N' in text
+    assert 'the first one is the base' in text
+    assert 'only the first target is read' in text
+
+
+@pytest.mark.usefixtures('no_color')
+def test_import_help_explains_path(capsys: pytest.CaptureFixture[str]) -> None:
+    text = help_text(capsys, 'import')
+
+    assert 'PATH pyperf or pyperformance JSON result' in text
