@@ -8,8 +8,15 @@ from takt.domain.errors.execution_error import ExecutionError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
 from takt.domain.model.target import Target
 from takt.infrastructure.db.alembic_schema_migrator import AlembicSchemaMigrator
+from takt.infrastructure.db.migration_engine_factory import (
+    create_migration_engine,
+)
+from takt.infrastructure.db.schema.tables import BENCHMARK_TABLE
 from takt.infrastructure.db.sqlalchemy_target_connector import (
     SqlAlchemyTargetConnector,
+)
+from takt.infrastructure.db.sqlalchemy_target_session import (
+    SqlAlchemyTargetSession,
 )
 from tests.infrastructure.db.suite_factory import DEFAULT_HASH, make_record
 
@@ -151,6 +158,59 @@ def test_read_without_schema_raises_execution_error(
     engine_url = sqlite_target.url.replace('sqlite:', 'sqlite+pysqlite:', 1)
     assert str(read_error.value).startswith(
         f'cannot read from database {engine_url}: no such table: ',
+    )
+
+
+@pytest.mark.parametrize(
+    ('method', 'arguments'),
+    [
+        ('insert', (make_record(),)),
+        ('delete', (MISSING_HASH,)),
+    ],
+)
+def test_write_without_schema_raises_execution_error(
+    sqlite_target: Target,
+    method: str,
+    arguments: tuple[object, ...],
+) -> None:
+    with (
+        closing(SqlAlchemyTargetConnector().open(sqlite_target)) as session,
+        pytest.raises(ExecutionError) as write_error,
+    ):
+        getattr(session, method)(*arguments)
+
+    engine_url = sqlite_target.url.replace('sqlite:', 'sqlite+pysqlite:', 1)
+    assert str(write_error.value).startswith(
+        f'cannot write to database {engine_url}: no such table: ',
+    )
+
+
+def session_with_orphan_benchmark(target: Target) -> SqlAlchemyTargetSession:
+    engine = create_migration_engine(target)
+    connection = engine.connect()
+    transaction = connection.begin()
+    connection.exec_driver_sql('PRAGMA defer_foreign_keys=ON')
+    connection.execute(
+        BENCHMARK_TABLE.insert(),
+        {'suite_hash': MISSING_HASH, 'benchmark_position': 0, 'name': 'x'},
+    )
+    return SqlAlchemyTargetSession(
+        engine=engine,
+        connection=connection,
+        transaction=transaction,
+    )
+
+
+def test_commit_failure_raises_execution_error(sqlite_target: Target) -> None:
+    AlembicSchemaMigrator().upgrade(sqlite_target)
+    session = session_with_orphan_benchmark(sqlite_target)
+
+    with closing(session), pytest.raises(ExecutionError) as commit_error:
+        session.commit()
+
+    engine_url = sqlite_target.url.replace('sqlite:', 'sqlite+pysqlite:', 1)
+    assert str(commit_error.value) == (
+        f'cannot commit to database {engine_url}: FOREIGN KEY constraint failed'
     )
 
 
