@@ -11,7 +11,10 @@ from takt.infrastructure.db.alembic_schema_migrator import AlembicSchemaMigrator
 from takt.infrastructure.db.migration_engine_factory import (
     create_migration_engine,
 )
-from takt.infrastructure.db.schema.tables import BENCHMARK_TABLE
+from takt.infrastructure.db.schema.tables import (
+    BENCHMARK_TABLE,
+    LOADED_HASH_TABLE,
+)
 from takt.infrastructure.db.sqlalchemy_target_connector import (
     SqlAlchemyTargetConnector,
 )
@@ -47,6 +50,16 @@ def test_loaded_name_after_commit(target: Target) -> None:
     session.close()
 
     assert loaded_name(target) == (True, 'x')
+
+
+def test_loaded_name_without_suite_row(
+    target: Target,
+    engine: sa.Engine,
+) -> None:
+    with engine.begin() as connection:
+        connection.execute(LOADED_HASH_TABLE.insert(), {'hash': DEFAULT_HASH})
+
+    assert loaded_name(target) == (True, None)
 
 
 def test_rollback_discards_insert(target: Target) -> None:
