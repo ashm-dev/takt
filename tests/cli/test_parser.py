@@ -4,6 +4,8 @@ import pytest
 
 from takt.cli.main import main
 from takt.cli.parser import build_parser
+from takt.infrastructure.runner.takt_flags import TAKT_FLAGS
+from tests.help_flags import help_flags
 
 
 def test_run_passes_unknown_flags() -> None:
@@ -54,3 +56,12 @@ def test_command_required() -> None:
         main([])
 
     assert error.value.code == 2
+
+
+@pytest.mark.usefixtures('no_color')
+def test_run_owns_only_takt_flags(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit):
+        build_parser().parse_known_args(['run', '--help'])
+
+    flags = help_flags(capsys.readouterr().out)
+    assert flags == {'-h', '--help', *TAKT_FLAGS}
