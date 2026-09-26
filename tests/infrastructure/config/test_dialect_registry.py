@@ -135,3 +135,24 @@ def test_invalid_url(url: str) -> None:
         f'invalid database URL: {url!r}; expected a URL such as '
         'sqlite:///bench.db or mariadb+pymysql://user:password@host/db'
     )
+
+
+@pytest.mark.parametrize(
+    'url',
+    [
+        'sqlite://',
+        'sqlite:///',
+        'sqlite:///:memory:',
+        'sqlite+pysqlite:///:memory:',
+        'sqlite:///file:bench?mode=memory&uri=true',
+        'sqlite:///file::memory:?uri=true',
+    ],
+)
+def test_in_memory_sqlite(url: str) -> None:
+    with pytest.raises(ConfigurationError) as error:
+        dialect_for_url(url)
+
+    assert str(error.value) == (
+        f'in-memory SQLite cannot store results: {url!r}; '
+        'use a file URL such as sqlite:///bench.db'
+    )
