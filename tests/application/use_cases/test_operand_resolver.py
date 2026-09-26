@@ -124,6 +124,15 @@ def test_plain_hash_prefix() -> None:
     assert labeled.suite.hash == HASH_B
 
 
+def test_plain_hex_name_wins_over_prefix() -> None:
+    session = session_with(record(HASH_A, '9c01de'), record(HASH_B, None))
+
+    labeled = resolve(session, PlainOperand(text='9c01de'))
+
+    assert labeled.suite.hash == HASH_A
+    assert session.prefix_lookups == []
+
+
 def test_plain_short_prefix_is_not_searched() -> None:
     session = session_with(record(HASH_A, None))
 
