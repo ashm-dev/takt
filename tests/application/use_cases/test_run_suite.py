@@ -10,6 +10,7 @@ from takt.application.use_cases.run_suite import RunSuite
 from takt.domain.errors.benchmark_failed_error import BenchmarkFailedError
 from takt.domain.errors.configuration_error import ConfigurationError
 from takt.domain.errors.invalid_result_error import InvalidResultError
+from takt.domain.errors.invalid_run_name_error import InvalidRunNameError
 from takt.domain.model.suite_source import SuiteSource
 from takt.domain.model.target import Target
 from takt.domain.naming.name_template import NameTemplate
@@ -145,3 +146,15 @@ def test_invalid_result_propagates() -> None:
         fixture.use_case.execute(request())
 
     assert len(fixture.runner.calls) == 1
+
+
+def test_invalid_rendered_name_keeps_result_path() -> None:
+    world = FakeWorld()
+    fixture = Fixture(world)
+    template = NameTemplate.parse('{hash}' * 22)
+
+    with pytest.raises(InvalidRunNameError) as excinfo:
+        fixture.use_case.execute(request(name_template=template))
+
+    assert excinfo.value.result_path == RESULT_PATH
+    assert world.journal == []

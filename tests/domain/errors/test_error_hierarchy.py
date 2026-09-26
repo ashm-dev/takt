@@ -63,6 +63,13 @@ def test_no_targets_error() -> None:
     )
 
 
+def test_invalid_run_name_error_keeps_result_path() -> None:
+    error = InvalidRunNameError('bad name', result_path=Path('r.json'))
+
+    assert InvalidRunNameError('bad name').result_path is None
+    assert error.result_path == Path('r.json')
+
+
 def test_ambiguous_operand_error_keeps_candidates() -> None:
     candidates = (
         SuiteSummary(hash='a' * 64, name='default', result_date=None),
