@@ -55,6 +55,12 @@ It expands `~` and makes a relative path absolute from the current directory.
 Then takt adds `--output <absolute path>` after the other flags of the benchmark command, before the `--` separator if there is one.
 pyperformance and pyperf use the last `--output`, so the result goes to the file that takt reads.
 
+The folder of the result file must already exist, and takt must be able to write to it.
+Without `-o` this folder is the current directory.
+takt checks this before any benchmark runs, because pyperformance writes the file only after the last benchmark.
+Otherwise the command stops with exit code 2 and prints `error: cannot create result file <file>: folder <folder> does not exist; choose another file with -o`, or the same error with `is not writable`.
+takt does not create the folder: a typo in the path would then go unnoticed.
+
 The output of pyperformance and pyperf goes to the terminal as is.
 After the benchmarks finish, takt brings the schema of every database to the current version and writes the result.
 
