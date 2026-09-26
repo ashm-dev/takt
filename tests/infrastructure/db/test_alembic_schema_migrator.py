@@ -183,4 +183,5 @@ def test_migration_files_do_not_import_runtime_schema(dialect: str) -> None:
     ).read_text(encoding='utf-8')
 
     assert 'KNOWN_METADATA_KEYS' not in source
+    assert 'METADATA_KEY_TYPES' not in source
     assert 'schema.tables' not in source
