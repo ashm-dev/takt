@@ -392,6 +392,22 @@ def test_compare_writes_markdown(
     assert 'Markdown table written to' in capsys.readouterr().out
 
 
+def test_compare_writes_markdown_under_home(
+    fake_api: Callable[[str, object], Recorder],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_api('compare', SNAPSHOT_TABLE)
+    monkeypatch.setenv('HOME', str(tmp_path))
+
+    code = main(['compare', 'a', 'b', '--markdown=~/out.md'])
+
+    assert code == 0
+    assert (tmp_path / 'out.md').read_text(encoding='utf-8') == (
+        SNAPSHOT_MARKDOWN
+    )
+
+
 def test_compare_markdown_write_error(
     fake_api: Callable[[str, object], Recorder],
     capsys: pytest.CaptureFixture[str],

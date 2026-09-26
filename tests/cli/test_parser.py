@@ -51,6 +51,22 @@ def test_compare_markdown() -> None:
     assert args.markdown == Path('out.md')
 
 
+def test_path_arguments_expand_home(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv('HOME', '/home/tester')
+    home = Path('/home/tester')
+
+    imported, _ = build_parser().parse_known_args(
+        ['import', '~/r.json', '--config=~/takt.toml'],
+    )
+    compared, _ = build_parser().parse_known_args(
+        ['compare', 'a', 'b', '--markdown=~/cmp.md'],
+    )
+
+    assert imported.path == home / 'r.json'
+    assert imported.config == home / 'takt.toml'
+    assert compared.markdown == home / 'cmp.md'
+
+
 def test_command_required() -> None:
     with pytest.raises(SystemExit) as error:
         main([])
