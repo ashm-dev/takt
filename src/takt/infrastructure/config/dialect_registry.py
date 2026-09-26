@@ -21,11 +21,13 @@ DIALECTS: Final[Mapping[str, DialectInfo]] = MappingProxyType(
             backend='sqlite',
             allowed_drivers=('pysqlite',),
             driver_module=None,
+            extra=None,
         ),
         'mariadb': DialectInfo(
             backend='mariadb',
             allowed_drivers=('pymysql',),
             driver_module='pymysql',
+            extra='mariadb',
         ),
     }
 )
@@ -80,6 +82,6 @@ def _check_installed(dialect: DialectInfo) -> None:
     if module is not None and util.find_spec(module) is None:
         message = (
             f'database driver {module!r} for {dialect.backend} '
-            "is not installed; run: pip install 'takt[db]'"
+            f"is not installed; run: pip install 'takt[{dialect.extra}]'"
         )
         raise MissingDriverError(message)

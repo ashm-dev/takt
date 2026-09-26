@@ -84,7 +84,7 @@ def test_missing_driver(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert str(error.value) == (
         "database driver 'pymysql' for mariadb is not installed; "
-        "run: pip install 'takt[db]'"
+        "run: pip install 'takt[mariadb]'"
     )
     assert error.value.exit_code == 2
 

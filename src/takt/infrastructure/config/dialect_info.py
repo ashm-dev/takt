@@ -10,8 +10,10 @@ class DialectInfo:
     :ivar backend: SQLAlchemy backend name, ``"sqlite"`` or ``"mariadb"``.
     :ivar allowed_drivers: Drivers accepted after ``+`` in the URL.
     :ivar driver_module: Module to import for the driver, or ``None``.
+    :ivar extra: Package extra that installs the driver, or ``None``.
     """
 
     backend: str
     allowed_drivers: tuple[str, ...]
     driver_module: str | None
+    extra: str | None
