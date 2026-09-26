@@ -193,3 +193,26 @@ def test_unhashable_document_raises(tmp_path: Path, value: object) -> None:
 
     assert str(error.value).startswith(f'invalid pyperf result {path}: ')
     assert isinstance(error.value.__cause__, ValueError)
+
+
+@pytest.mark.usefixtures('local_time_plus_three_hours')
+def test_aware_date_mixes_with_naive_dates(tmp_path: Path) -> None:
+    document = _full_document()
+    _benchmark_metadata(document, 1)['date'] = '2026-09-25 06:30:00+00:00'
+
+    suite = _read(_write(tmp_path, document))
+
+    assert suite.result_date == datetime.fromisoformat('2026-09-25 09:30:00')
+
+
+@pytest.mark.usefixtures('local_time_plus_three_hours')
+def test_all_aware_dates_give_naive_date(tmp_path: Path) -> None:
+    document = _full_document()
+    for metadata in _all_metadata(document):
+        date = metadata.get('date')
+        if date is not None:
+            metadata['date'] = f'{date}+00:00'
+
+    suite = _read(_write(tmp_path, document))
+
+    assert suite.result_date == datetime.fromisoformat('2026-09-25 12:59:00')
