@@ -40,8 +40,9 @@ class NameTemplate:
             chunks = list(string.Formatter().parse(text))
         except ValueError:
             _fail(f'invalid name template {text!r}: unbalanced braces')
+        offset = 0
         for chunk in chunks:
-            _validate_chunk(text, chunk)
+            offset = _validate_chunk(text, chunk, offset)
         return cls(text=text)
 
     def render(self, values: NameValues) -> str:
@@ -61,12 +62,14 @@ def _fail(msg: str) -> NoReturn:
     raise InvalidRunNameError(msg) from None
 
 
-def _validate_chunk(text: str, chunk: _Chunk) -> None:
+def _validate_chunk(text: str, chunk: _Chunk, offset: int) -> int:
     literal, field, spec, conversion = chunk
     if ':' in literal:
         _fail(f"run name must not contain ':': {text!r}")
+    # Formatter.parse turns each doubled brace of the text into one brace.
+    offset += len(literal.replace('{', '{{').replace('}', '}}'))
     if field is None:
-        return
+        return offset
     if field == '':
         _fail(f'invalid name template {text!r}: empty placeholder')
     try:
@@ -75,11 +78,14 @@ def _validate_chunk(text: str, chunk: _Chunk) -> None:
         _fail(
             f'invalid name template {text!r}: unknown placeholder {{{field}}}',
         )
-    if spec != '' or conversion is not None:
+    # Formatter.parse gives the same empty spec for {date} and {date:}.
+    offset += len(field) + 1
+    if spec != '' or conversion is not None or text[offset] == ':':
         _fail(
             f'invalid name template {text!r}: format spec and conversion '
             f'are not allowed in {{{field}}}',
         )
+    return offset + 1
 
 
 def _render_text(
