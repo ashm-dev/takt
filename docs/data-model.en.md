@@ -32,7 +32,7 @@ One stored result, that is one pyperf JSON file.
 | `name` | VARCHAR(255) | yes | Run name; NULL if no name was given |
 | `format_version` | VARCHAR(16) | no | pyperf file format version: `1.0`, `5` or `6` |
 | `source` | VARCHAR(16) | no | `run` or `import`: the command that stored the result |
-| `result_date` | DATETIME | yes | Earliest `date` of the worker runs, local time of the benchmark machine without a time zone |
+| `result_date` | DATETIME | yes | Earliest `date` of the worker runs, local time of the benchmark machine without a time zone; a `date` with a time zone is converted to the local time of the machine that runs takt |
 | `loaded_at` | DATETIME | no | When takt stored the result, UTC without a time zone |
 
 Indexes: `name`, `result_date`.
