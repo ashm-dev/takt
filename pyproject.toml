@@ -108,8 +108,6 @@ module = [
     "pyperformance.*",
     "testcontainers",
     "testcontainers.*",
-    "setuptools",
-    "setuptools.*",
 ]
 ignore_missing_imports = true
 
