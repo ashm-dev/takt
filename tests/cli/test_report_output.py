@@ -1,48 +1,9 @@
-from pathlib import Path
-
 import pytest
 
-from takt.application.multi_target.target_outcome import TargetOutcome
 from takt.application.multi_target.target_status import TargetStatus
-from takt.application.multi_target.write_report import WriteReport
 from takt.application.use_cases.import_report import ImportReport
 from takt.cli.report_output import print_import_report
-from takt.domain.model.target import Target
-
-SUITE_HASH = '3fa2b1c4d5e6'.ljust(64, '0')
-LOCAL = Target(name='local', url='sqlite:///a.db', dialect='sqlite')
-MARIA = Target(
-    name=None,
-    url='mariadb+pymysql://u:secret@h/db',
-    dialect='mariadb',
-)
-
-
-def outcome(
-    target: Target,
-    status: TargetStatus,
-    *,
-    existing_name: str | None = None,
-    error: str | None = None,
-) -> TargetOutcome:
-    return TargetOutcome(
-        target=target,
-        status=status,
-        existing_name=existing_name,
-        error=error,
-    )
-
-
-def report(
-    *outcomes: TargetOutcome,
-    name: str | None = 'default',
-) -> ImportReport:
-    return ImportReport(
-        result_path=Path('r.json'),
-        suite_hash=SUITE_HASH,
-        name=name,
-        write=WriteReport(outcomes=outcomes),
-    )
+from tests.cli.reports import FAILED_REPORT, LOCAL, OK_REPORT, outcome, report
 
 
 def printed_lines(
@@ -54,7 +15,7 @@ def printed_lines(
 
 
 def test_ok_report(capsys: pytest.CaptureFixture[str]) -> None:
-    print_import_report(report(outcome(LOCAL, TargetStatus.WRITTEN)))
+    print_import_report(OK_REPORT)
 
     assert capsys.readouterr().out == (
         'Result 3fa2b1c4d5e6 (default) from r.json\n  local: written\n'
@@ -64,12 +25,7 @@ def test_ok_report(capsys: pytest.CaptureFixture[str]) -> None:
 def test_failed_report_hides_password(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    failed = report(
-        outcome(LOCAL, TargetStatus.ROLLED_BACK),
-        outcome(MARIA, TargetStatus.FAILED, error='connection refused'),
-    )
-
-    lines = printed_lines(capsys, failed)
+    lines = printed_lines(capsys, FAILED_REPORT)
 
     assert lines[1] == '  local: rolled back'
     assert lines[2] == (

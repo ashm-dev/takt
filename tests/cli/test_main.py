@@ -6,26 +6,16 @@ from types import MappingProxyType
 import pytest
 
 from takt import api
-from takt.application.multi_target.target_outcome import TargetOutcome
-from takt.application.multi_target.target_status import TargetStatus
-from takt.application.multi_target.write_report import WriteReport
-from takt.application.use_cases.import_report import ImportReport
 from takt.cli.main import main
 from takt.domain.compare.compare_table import CompareTable
 from takt.domain.errors.benchmark_failed_error import BenchmarkFailedError
 from takt.domain.errors.configuration_error import ConfigurationError
 from takt.domain.errors.invalid_run_name_error import InvalidRunNameError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
-from takt.domain.model.target import Target
+from tests.cli.reports import FAILED_REPORT, OK_REPORT
 
 NO_TARGETS = (
     'no database targets configured: use --db, --target, TAKT_DB or takt.toml'
-)
-LOCAL = Target(name='local', url='sqlite:///a.db', dialect='sqlite')
-MARIA = Target(
-    name=None,
-    url='mariadb+pymysql://u:secret@h/db',
-    dialect='mariadb',
 )
 SNAPSHOT_TABLE = CompareTable(
     headers=('Benchmark', 'base.json', 'new.json'),
@@ -67,41 +57,6 @@ class Recorder:
         if isinstance(self.response, BaseException):
             raise self.response
         return self.response
-
-
-def import_report(*outcomes: TargetOutcome) -> ImportReport:
-    return ImportReport(
-        result_path=Path('r.json'),
-        suite_hash='3fa2b1c4d5e6'.ljust(64, '0'),
-        name='default',
-        write=WriteReport(outcomes=outcomes),
-    )
-
-
-def written(target: Target) -> TargetOutcome:
-    return TargetOutcome(
-        target=target,
-        status=TargetStatus.WRITTEN,
-        existing_name=None,
-        error=None,
-    )
-
-
-OK_REPORT = import_report(written(LOCAL))
-FAILED_REPORT = import_report(
-    TargetOutcome(
-        target=LOCAL,
-        status=TargetStatus.ROLLED_BACK,
-        existing_name=None,
-        error=None,
-    ),
-    TargetOutcome(
-        target=MARIA,
-        status=TargetStatus.FAILED,
-        existing_name=None,
-        error='connection refused',
-    ),
-)
 
 
 @pytest.fixture
