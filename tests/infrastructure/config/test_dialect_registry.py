@@ -1,4 +1,6 @@
+import dataclasses
 from importlib import util
+from types import MappingProxyType
 
 import pytest
 
@@ -95,6 +97,22 @@ def test_missing_driver(monkeypatch: pytest.MonkeyPatch) -> None:
         "run: pip install 'takt[mariadb]'"
     )
     assert error.value.exit_code == 2
+
+
+def test_missing_driver_names_registry_extra(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(util, 'find_spec', find_spec_without_pymysql)
+    mariadb = dataclasses.replace(DIALECTS['mariadb'], extra='other')
+    monkeypatch.setattr(
+        'takt.infrastructure.config.dialect_registry.DIALECTS',
+        MappingProxyType({'mariadb': mariadb}),
+    )
+
+    with pytest.raises(MissingDriverError) as error:
+        dialect_for_url('mariadb://u:p@h/db')
+
+    assert str(error.value).endswith("pip install 'takt[other]'")
 
 
 @pytest.mark.parametrize(
