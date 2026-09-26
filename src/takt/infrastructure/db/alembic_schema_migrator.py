@@ -1,5 +1,6 @@
 """Schema migrator backed by Alembic."""
 
+import contextlib
 from pathlib import Path
 from typing import Final
 
@@ -55,12 +56,10 @@ class AlembicSchemaMigrator:
 def _upgrade(target: Target) -> None:
     config = _alembic_config(target)
     engine = create_migration_engine(target)
-    try:
-        with engine.begin() as connection:
-            config.attributes['connection'] = connection
-            command.upgrade(config, 'head')
-    finally:
-        engine.dispose()
+    with contextlib.ExitStack() as cleanup:
+        cleanup.callback(engine.dispose)
+        config.attributes['connection'] = cleanup.enter_context(engine.begin())
+        command.upgrade(config, 'head')
 
 
 def _versions_directory(target: Target) -> Path:
