@@ -70,7 +70,7 @@ One measured value or one warmup value.
 | `run_position` | INTEGER | no | Primary key part |
 | `kind` | VARCHAR(8) | no | Primary key part; `value` for a measurement, `warmup` for a warmup |
 | `position` | INTEGER | no | Primary key part; position among values of the same kind |
-| `loops` | INTEGER | yes | Number of loops of a warmup; NULL for `value` |
+| `loops` | BIGINT | yes | Number of loops of a warmup; NULL for `value` |
 | `value` | DOUBLE | no | The value in the benchmark unit (`unit` in metadata), per loop |
 
 `(suite_hash, benchmark_position, run_position)` refers to `takt_worker_run`.

@@ -70,7 +70,7 @@ takt_alembic_version  версия схемы
 | `run_position` | INTEGER | нет | часть первичного ключа |
 | `kind` | VARCHAR(8) | нет | часть первичного ключа; `value` — замер, `warmup` — прогрев |
 | `position` | INTEGER | нет | часть первичного ключа; позиция среди значений того же вида |
-| `loops` | INTEGER | да | число итераций прогрева; NULL для `value` |
+| `loops` | BIGINT | да | число итераций прогрева; NULL для `value` |
 | `value` | DOUBLE | нет | значение в единицах бенчмарка (`unit` в метаданных) на одну итерацию |
 
 `(suite_hash, benchmark_position, run_position)` ссылается на `takt_worker_run`.
