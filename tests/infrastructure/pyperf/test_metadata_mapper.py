@@ -54,6 +54,22 @@ def test_tags_list_becomes_tuple() -> None:
     assert metadata.tags == ('a', 'b')
 
 
+def test_tags_not_a_list_goes_to_custom() -> None:
+    metadata = map_metadata({'tags': 'a'})
+
+    assert metadata.tags is None
+    assert metadata.custom == {'tags': 'a'}
+
+
+def test_tags_with_non_str_element_raises() -> None:
+    with pytest.raises(InvalidResultError) as error:
+        map_metadata({'tags': ['a', 1]})
+
+    assert str(error.value) == (
+        "unsupported metadata value type for 'tags': list"
+    )
+
+
 def test_tuple_field_type_comes_from_key_types(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
