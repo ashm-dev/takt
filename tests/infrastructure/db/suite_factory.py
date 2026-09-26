@@ -27,13 +27,14 @@ def make_record(
     suite_hash: str = DEFAULT_HASH,
     name: str | None = 'default',
     result_date: datetime | None = DEFAULT_RESULT_DATE,
+    first_warmup_loops: int = 1,
 ) -> SuiteRecord:
     nbody = Benchmark(
         name='nbody',
         runs=(
             WorkerRun(
                 metadata=RunMetadata(calibrate_loops=2),
-                warmups=(warmup(1, 0.5), warmup(2, 0.25)),
+                warmups=(warmup(first_warmup_loops, 0.5), warmup(2, 0.25)),
                 values=(),
             ),
             WorkerRun(

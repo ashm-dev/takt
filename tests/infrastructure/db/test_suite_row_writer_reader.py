@@ -51,6 +51,15 @@ def test_insert_preserves_microseconds(engine: sa.Engine) -> None:
     assert stored.loaded_at == record.loaded_at
 
 
+def test_insert_stores_warmup_loops_beyond_int32(engine: sa.Engine) -> None:
+    record = make_record(first_warmup_loops=2**32)
+    with engine.begin() as connection:
+        insert_suite(connection, record)
+
+    with engine.connect() as connection:
+        assert read_suite(connection, 'a' * 64) == record
+
+
 def test_insert_writes_expected_row_counts(engine: sa.Engine) -> None:
     with engine.begin() as connection:
         insert_suite(connection, make_record())
