@@ -84,6 +84,13 @@ def test_user_output_expands_home(arguments: tuple[str, ...]) -> None:
     assert command[-2:] == ('--output', str(expanded))
 
 
+def test_unknown_user_output_is_kept() -> None:
+    arguments = ('-o', '~takt_no_such_user/r.json')
+    kept = CWD / '~takt_no_such_user/r.json'
+    command = (*PYPERFORMANCE, *arguments, '--output', str(kept))
+    assert _build(*arguments) == (command, kept)
+
+
 @pytest.mark.parametrize(
     'arguments',
     [('-o',), ('--output',), ('--output=',), ('-fo',)],
