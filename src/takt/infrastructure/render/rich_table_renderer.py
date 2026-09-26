@@ -17,14 +17,23 @@ def render_rich_table(table: CompareTable, console: Console) -> None:
     if table.rows:
         console.print(_rich_table(table))
     for line in note_lines(table):
-        console.print(line, markup=False, highlight=False, emoji=False)
+        # The terminal wraps a long line itself, so a copied path stays whole.
+        console.print(
+            line,
+            markup=False,
+            highlight=False,
+            emoji=False,
+            soft_wrap=True,
+        )
 
 
 def _rich_table(table: CompareTable) -> Table:
     rich_table = Table(show_header=True)
-    rich_table.add_column(Text(table.headers[0]), justify='left')
+    # Folding keeps a long label whole where ellipsis would cut the part
+    # that tells the columns apart.
+    rich_table.add_column(Text(table.headers[0]), overflow='fold')
     for header in table.headers[1:]:
-        rich_table.add_column(Text(header), justify='right')
+        rich_table.add_column(Text(header), justify='right', overflow='fold')
     for row in table.rows:
         rich_table.add_row(*(Text(cell) for cell in row))
     return rich_table
