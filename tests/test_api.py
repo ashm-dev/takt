@@ -128,6 +128,22 @@ def test_import_twice_is_already_loaded(
     assert outcome.existing_name == 'first'
 
 
+def test_import_with_unusable_schema_cache(
+    tmp_path: Path,
+    result_file: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    blocker = tmp_path / 'blocker'
+    blocker.write_text('not a folder', encoding='utf-8')
+    monkeypatch.setenv('XDG_CACHE_HOME', str(blocker))
+    database = tmp_path / 'uncached.db'
+
+    report = takt.import_results(result_file, db=[sqlite_url(database)])
+
+    assert single_outcome(report).status == takt.TargetStatus.WRITTEN
+    assert suite_rows(database) == 1
+
+
 def test_import_without_targets(result_file: Path) -> None:
     with pytest.raises(ConfigurationError) as error:
         takt.import_results(result_file)

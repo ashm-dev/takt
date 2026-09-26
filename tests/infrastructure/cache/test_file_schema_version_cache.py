@@ -28,6 +28,13 @@ def cache(tmp_path: Path) -> FileSchemaVersionCache:
     return FileSchemaVersionCache(file_path=tmp_path / 'cache.json')
 
 
+@pytest.fixture
+def blocked_cache(tmp_path: Path) -> FileSchemaVersionCache:
+    blocker = tmp_path / 'blocker'
+    blocker.write_text('not a folder', encoding='utf-8')
+    return FileSchemaVersionCache(file_path=blocker / 'takt' / 'cache.json')
+
+
 def test_default_uses_xdg_cache_home(tmp_path: Path) -> None:
     cache = FileSchemaVersionCache.default({'XDG_CACHE_HOME': str(tmp_path)})
 
@@ -156,3 +163,20 @@ def test_put_removes_temp_file_on_replace_error(
     cache.put(URL_A, '0001')
 
     assert list(tmp_path.glob('*.tmp')) == []
+
+
+def test_unusable_cache_folder_is_skipped(
+    blocked_cache: FileSchemaVersionCache,
+) -> None:
+    blocked_cache.put(URL_A, '0001')
+    blocked_cache.forget(URL_A)
+
+    assert blocked_cache.get(URL_A) is None
+
+
+def test_unreadable_cache_file_is_treated_as_empty(
+    cache: FileSchemaVersionCache,
+) -> None:
+    cache.file_path.mkdir()
+
+    assert cache.get(URL_B) is None
