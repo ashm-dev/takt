@@ -8,8 +8,15 @@ from takt.domain.errors.unsupported_dialect_error import (
     UnsupportedDialectError,
 )
 from takt.domain.model.target import Target
+from takt.infrastructure.config.config_sources import ConfigSources
 from takt.infrastructure.config.resolve_targets import resolve_targets
+from tests.domain.exact_pattern import exact_pattern
 from tests.infrastructure.config.config_inputs import FULL_FILE, sources
+
+UNSUPPORTED_POSTGRESQL = (
+    "unsupported database 'postgresql'; "
+    'supported in this version: mariadb, sqlite'
+)
 
 LOCAL = Target(name='local', url='sqlite:///bench.sqlite', dialect='sqlite')
 MARIA_CI = Target(
@@ -27,6 +34,11 @@ def sqlite_target(url: str) -> Target:
 def with_toml(tmp_path: Path) -> Path:
     (tmp_path / 'takt.toml').write_text(FULL_FILE, encoding='utf-8')
     return tmp_path
+
+
+@pytest.fixture
+def bare_sources(tmp_path: Path) -> ConfigSources:
+    return sources(tmp_path)
 
 
 def test_toml_level(with_toml: Path) -> None:
@@ -150,14 +162,36 @@ def test_no_targets_anywhere(tmp_path: Path) -> None:
     assert resolve_targets(sources(tmp_path)) == ()
 
 
-def test_unsupported_url_in_toml(tmp_path: Path) -> None:
-    (tmp_path / 'takt.toml').write_text(
+def test_unsupported_url_in_toml(bare_sources: ConfigSources) -> None:
+    config = bare_sources.cwd / 'takt.toml'
+    config.write_text(
         '[targets.pg]\nurl = "postgresql://u@h/db"\n',
         encoding='utf-8',
     )
+    message = f"{config}: target 'pg': {UNSUPPORTED_POSTGRESQL}"
 
-    with pytest.raises(UnsupportedDialectError):
-        resolve_targets(sources(tmp_path))
+    with pytest.raises(UnsupportedDialectError, match=exact_pattern(message)):
+        resolve_targets(bare_sources)
+
+
+def test_unsupported_url_in_env(bare_sources: ConfigSources) -> None:
+    environ = {'TAKT_DB': 'sqlite:///ok.sqlite postgresql://u:p@h/db'}
+    message = f'TAKT_DB: {UNSUPPORTED_POSTGRESQL}'
+
+    with pytest.raises(UnsupportedDialectError, match=exact_pattern(message)):
+        resolve_targets(replace(bare_sources, environ=environ))
+
+
+def test_unsupported_url_in_flag_has_no_source(
+    bare_sources: ConfigSources,
+) -> None:
+    flags = ('postgresql://u@h/db',)
+
+    with pytest.raises(
+        UnsupportedDialectError,
+        match=exact_pattern(UNSUPPORTED_POSTGRESQL),
+    ):
+        resolve_targets(replace(bare_sources, db_flags=flags))
 
 
 def test_explicit_config_path(tmp_path: Path) -> None:
