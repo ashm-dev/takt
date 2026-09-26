@@ -24,7 +24,8 @@ class TargetOutcome:
     def __post_init__(self) -> None:
         """Validate that the optional fields match the status.
 
-        :raises ValueError: If a field is set for a wrong status.
+        :raises ValueError: If ``existing_name`` or ``error`` is set for a
+            wrong status, or ``error`` is missing for ``failed``.
         """
         if (
             self.existing_name is not None
