@@ -121,6 +121,10 @@ def test_missing_driver_names_registry_extra(
         'not a url',
         'mariadb+pymysql://u:p@h:abc/db',
         'mariadb+pymysql://u:p@h:/db',
+        'bench.db',
+        './bench.db',
+        'sqlite:/bench.db',
+        'sqlite://bench.db',
     ],
 )
 def test_invalid_url(url: str) -> None:
