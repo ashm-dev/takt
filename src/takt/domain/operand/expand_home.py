@@ -8,10 +8,11 @@ def expand_home(text: str) -> Path:
 
     :param text: Path as the user wrote it.
     :returns: The expanded path, or the path as written when user
-        ``name`` does not exist, because a shell keeps it too.
+        ``name`` does not exist (a shell keeps it too) or contains a
+        NUL byte.
     """
     path = Path(text)
     try:
         return path.expanduser()
-    except RuntimeError:
+    except RuntimeError, ValueError:
         return path
