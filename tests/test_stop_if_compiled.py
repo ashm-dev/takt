@@ -1,4 +1,3 @@
-import shlex
 from pathlib import Path
 
 import pytest
@@ -17,13 +16,14 @@ def test_stops_on_nested_compiled_module(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    package = tmp_path / 'domain'
-    package.mkdir()
+    root = tmp_path / "it's src"
+    package = root / 'domain'
+    package.mkdir(parents=True)
     (package / COMPILED_NAME).touch()
 
     with pytest.raises(SystemExit) as exit_info:
-        stop_if_compiled(tmp_path)
+        stop_if_compiled(root)
 
     assert exit_info.value.code == 2
-    quoted_root = shlex.quote(str(tmp_path))
+    quoted_root = f"'{tmp_path}/it'\"'\"'s src'"
     assert f"find {quoted_root} -name '*.so' -delete" in capsys.readouterr().err
