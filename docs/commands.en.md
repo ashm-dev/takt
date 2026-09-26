@@ -226,6 +226,9 @@ takt checks every operand in this order and takes the first match:
 | `3fa2b1` | The run whose hash starts with these characters (6 or more lowercase hex characters) |
 
 After `:` only digits mean a number; anything else means a hash prefix.
+An operand that looks like a path to a result file is never taken for a run: it ends in `.json` or `.json.gz`, or starts with `/`, `./`, `../` or `~/`.
+If there is no such file, takt prints `error: result file not found: <operand>` and exits with code 1, with or without a database.
+A run name may still contain `/`, as in `release/3.14`.
 An operand that fits none of these forms is an error with exit code 1, for example an empty operand, `default:`, `:1`, `a:b:c` or `default:XYZ`.
 Runs with the same result date are sorted by hash, so the numbers are the same in every database.
 Runs without a result date come last; the list of candidates shows them with `unknown date`.
