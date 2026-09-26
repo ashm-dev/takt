@@ -12,6 +12,7 @@ from takt.domain.errors.configuration_error import ConfigurationError
 from takt.infrastructure.runner.subprocess_benchmark_runner import (
     SubprocessBenchmarkRunner,
 )
+from tests.domain.exact_pattern import exact_pattern
 
 NO_TARGETS = (
     'no database targets configured: use --db, --target, TAKT_DB or takt.toml'
@@ -174,6 +175,22 @@ def test_run_config_error_does_not_run(
         takt.run(['-b', 'nbody'])
 
     assert str(error.value) == NO_TARGETS
+    assert recording.calls == []
+
+
+def test_run_invalid_name_does_not_run(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    recording = RecordingRun(tmp_path / 'unused.json')
+    monkeypatch.setattr(SubprocessBenchmarkRunner, 'run', recording)
+
+    with pytest.raises(
+        takt.UsageError,
+        match=exact_pattern("run name must not contain ':': 'a:b'"),
+    ):
+        takt.run(['-b', 'nbody'], db=[URL], name='a:b')
+
     assert recording.calls == []
 
 
