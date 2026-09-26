@@ -20,6 +20,7 @@ A URL of any other database is an error, and takt reports it before any benchmar
 
 A SQLite URL has three slashes before a relative path, `sqlite:///bench.db`, and four before an absolute one, `sqlite:////var/lib/bench.db`.
 A bare file path such as `bench.db`, or `sqlite://bench.db` with two slashes, is not a valid URL: takt stops with exit code 2 and prints `invalid database URL` with an example of the right form.
+An in-memory SQLite URL, such as `sqlite://` or `sqlite:///:memory:`, is an error too: such a database disappears when takt exits, so it cannot keep results.
 
 ## Where targets come from
 
