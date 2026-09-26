@@ -38,7 +38,7 @@ class ImportSuite:
 
         :param request: What to import and where.
         :returns: The import report, even when a target write failed.
-        :raises ConfigurationError: If ``request.targets`` is empty.
+        :raises NoTargetsError: If ``request.targets`` is empty.
         :raises InvalidResultError: If the result file cannot be read.
         :raises InvalidRunNameError: If the rendered run name is invalid.
         """
