@@ -70,6 +70,15 @@ def test_unknown_user_home_file_wins() -> None:
     assert operand == FileOperand(text='~takt-no-such-user', path=path)
 
 
+def test_home_with_nul_byte_is_run_name() -> None:
+    is_file = _RecordingIsFile()
+
+    operand = parse_operand('~takt\x00user', is_file)
+
+    assert operand == PlainOperand(text='~takt\x00user')
+    assert is_file.calls == [Path('~takt\x00user')]
+
+
 def test_plain_name() -> None:
     operand = parse_operand('default 01.01.01', never_file)
 
