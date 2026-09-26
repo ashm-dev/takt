@@ -99,6 +99,53 @@ def test_duplicates_removed(tmp_path: Path) -> None:
     assert resolved == (sqlite_target(url),)
 
 
+def test_one_sqlite_file_in_several_spellings(tmp_path: Path) -> None:
+    spellings = (
+        'sqlite:///c.sqlite',
+        f'sqlite:///{tmp_path}/c.sqlite',
+        'sqlite+pysqlite:///./sub/../c.sqlite',
+        'sqlite:///file:c.sqlite?uri=true',
+    )
+
+    resolved = resolve_targets(
+        replace(sources(tmp_path), db_flags=spellings),
+    )
+
+    assert resolved == (sqlite_target('sqlite:///c.sqlite'),)
+
+
+def test_one_mariadb_database_in_several_spellings(with_toml: Path) -> None:
+    same_database = 'mariadb://other:secret@db.local/bench'
+    other_port = 'mariadb+pymysql://user:pass@db.local:3307/bench'
+
+    resolved = resolve_targets(
+        replace(
+            sources(with_toml),
+            db_flags=(same_database, other_port),
+            target_flags=('maria_ci',),
+        ),
+    )
+
+    assert resolved == (
+        Target(name=None, url=same_database, dialect='mariadb'),
+        Target(name=None, url=other_port, dialect='mariadb'),
+    )
+
+
+def test_first_config_name_kept_for_same_file(tmp_path: Path) -> None:
+    (tmp_path / 'takt.toml').write_text(
+        '[targets.one]\nurl = "sqlite:///bench.sqlite"\n'
+        '[targets.two]\nurl = "sqlite:///./bench.sqlite"\n',
+        encoding='utf-8',
+    )
+
+    resolved = resolve_targets(sources(tmp_path))
+
+    assert resolved == (
+        Target(name='one', url='sqlite:///bench.sqlite', dialect='sqlite'),
+    )
+
+
 def test_no_targets_anywhere(tmp_path: Path) -> None:
     assert resolve_targets(sources(tmp_path)) == ()
 

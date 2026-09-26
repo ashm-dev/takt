@@ -106,6 +106,25 @@ def test_import_to_two_sqlite_targets_via_toml(
 
 
 @pytest.mark.usefixtures('result_a')
+def test_import_to_one_file_named_twice(
+    count_suites: CountSuites,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    absolute = f'sqlite:///{tmp_path}/c.db'
+
+    code = main(
+        ['import', 'a.json', '--db', 'sqlite:///c.db', '--db', absolute]
+    )
+
+    assert code == 0
+    assert capsys.readouterr().out.splitlines()[1:] == [
+        '  sqlite:///c.db: written',
+    ]
+    assert count_suites(absolute) == 1
+
+
+@pytest.mark.usefixtures('result_a')
 def test_env_overrides_toml(
     count_suites: CountSuites,
     monkeypatch: pytest.MonkeyPatch,
