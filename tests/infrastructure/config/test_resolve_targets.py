@@ -100,7 +100,9 @@ def test_unknown_target_without_toml(tmp_path: Path) -> None:
     with pytest.raises(ConfigurationError) as error:
         resolve_targets(replace(sources(tmp_path), target_flags=('x',)))
 
-    assert str(error.value) == "unknown target 'x'; known targets: none"
+    assert str(error.value) == (
+        f"unknown target 'x': no takt.toml in {tmp_path}; use --config PATH"
+    )
 
 
 def test_duplicates_removed(tmp_path: Path) -> None:

@@ -70,18 +70,29 @@ def _named_urls(sources: ConfigSources, config: TaktConfig) -> list[_NamedUrl]:
             (None, url, None) for url in sources.db_flags
         ]
         flag_urls.extend(
-            _config_target(config, name) for name in sources.target_flags
+            _config_target(config, name, sources.cwd)
+            for name in sources.target_flags
         )
         return flag_urls
     env_urls = sources.environ.get('TAKT_DB', '').split()
     if env_urls:
         return [(None, url, 'TAKT_DB') for url in env_urls]
-    return [_config_target(config, name) for name in config.targets]
+    return [
+        _config_target(config, name, sources.cwd) for name in config.targets
+    ]
 
 
-def _config_target(config: TaktConfig, name: str) -> _NamedUrl:
+def _config_target(config: TaktConfig, name: str, cwd: Path) -> _NamedUrl:
     if name not in config.targets:
-        known = ', '.join(config.targets) or 'none'
-        message = f'unknown target {name!r}; known targets: {known}'
-        raise ConfigurationError(message)
+        raise ConfigurationError(_unknown_target(config, name, cwd))
     return (name, config.targets[name], f'{config.path}: target {name!r}')
+
+
+def _unknown_target(config: TaktConfig, name: str, cwd: Path) -> str:
+    # Running from the wrong folder is the usual reason for no targets.
+    if config.path is None:
+        return (
+            f'unknown target {name!r}: no takt.toml in {cwd}; use --config PATH'
+        )
+    known = ', '.join(config.targets) or 'none'
+    return f'unknown target {name!r}; known targets: {known}'
