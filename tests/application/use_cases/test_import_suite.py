@@ -10,6 +10,7 @@ from takt.application.use_cases.import_suite import ImportSuite
 from takt.domain.errors.configuration_error import ConfigurationError
 from takt.domain.errors.invalid_result_error import InvalidResultError
 from takt.domain.errors.invalid_run_name_error import InvalidRunNameError
+from takt.domain.errors.write_interrupted_error import WriteInterruptedError
 from takt.domain.model.suite import Suite
 from takt.domain.model.suite_source import SuiteSource
 from takt.domain.model.target import Target
@@ -19,6 +20,7 @@ from tests.application.multi_target.fakes import (
     FakeCache,
     FakeConnector,
     FakeMigrator,
+    FakeSession,
     FakeWorld,
 )
 from tests.application.use_cases.fakes import FakeReader, FixedClock, make_suite
@@ -141,6 +143,25 @@ def test_invalid_rendered_name_propagates() -> None:
         fixture.use_case.execute(request(name_template=template))
 
     assert world.journal == []
+
+
+def _press_ctrl_c(_session: FakeSession) -> None:
+    raise KeyboardInterrupt
+
+
+def test_ctrl_c_during_write_names_result_and_run_name(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(FakeSession, 'commit', _press_ctrl_c)
+    template = NameTemplate.parse('nightly {date}')
+    fixture = Fixture(FakeWorld())
+
+    with pytest.raises(KeyboardInterrupt) as caught:
+        fixture.use_case.execute(request(name_template=template))
+
+    assert isinstance(caught.value.__cause__, WriteInterruptedError)
+    assert caught.value.__cause__.result_path == RESULT_PATH
+    assert caught.value.__cause__.name == 'nightly 2026-09-25'
 
 
 def test_already_loaded_keeps_old_name() -> None:

@@ -7,6 +7,9 @@ import pyperf
 import pytest
 
 from takt.domain.errors.benchmark_failed_error import BenchmarkFailedError
+from takt.domain.errors.benchmark_interrupted_error import (
+    BenchmarkInterruptedError,
+)
 from takt.domain.errors.usage_error import UsageError
 from takt.infrastructure.clock.system_clock import SystemClock
 from takt.infrastructure.runner.runner_command import build_runner_command
@@ -37,7 +40,7 @@ class _Recorder:
         *,
         return_code: int,
         creates: Path | None,
-        error: OSError | None = None,
+        error: BaseException | None = None,
     ) -> None:
         self.return_code = return_code
         self.creates = creates
@@ -55,10 +58,10 @@ class _Recorder:
         assert not check
         self.command = command
         self.cwd = cwd
-        if self.error is not None:
-            raise self.error
         if self.creates is not None:
             self.creates.write_text('{}', encoding='utf-8')
+        if self.error is not None:
+            raise self.error
         return subprocess.CompletedProcess(command, self.return_code)
 
 
@@ -185,6 +188,37 @@ def test_cannot_start(
     ) as error:
         _runner(tmp_path).run(('-b', 'nbody'))
     assert error.value.return_code == 127
+
+
+def test_ctrl_c_after_new_result_names_it(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cwd = _cwd_needing_quotes(tmp_path)
+    partial = cwd / DEFAULT_NAME
+    interrupt = KeyboardInterrupt()
+    _patch(
+        monkeypatch,
+        _Recorder(return_code=0, creates=partial, error=interrupt),
+    )
+    with pytest.raises(KeyboardInterrupt) as caught:
+        _runner(cwd).run(('--fast',))
+    assert caught.value is interrupt
+    assert isinstance(caught.value.__cause__, BenchmarkInterruptedError)
+    assert caught.value.__cause__.result_path == partial
+
+
+def test_ctrl_c_before_any_result_stays_plain(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cwd = _cwd_needing_quotes(tmp_path)
+    (cwd / 'old.json').write_text('{}', encoding='utf-8')
+    fake = _Recorder(return_code=0, creates=None, error=KeyboardInterrupt())
+    _patch(monkeypatch, fake)
+    with pytest.raises(KeyboardInterrupt) as caught:
+        _runner(cwd).run(('-o', 'old.json'))
+    assert caught.value.__cause__ is None
 
 
 def test_missing_output_directory_stops_before_benchmarks(

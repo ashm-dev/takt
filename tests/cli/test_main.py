@@ -12,9 +12,13 @@ from takt import api
 from takt.cli.main import main
 from takt.domain.compare.compare_table import CompareTable
 from takt.domain.errors.benchmark_failed_error import BenchmarkFailedError
+from takt.domain.errors.benchmark_interrupted_error import (
+    BenchmarkInterruptedError,
+)
 from takt.domain.errors.configuration_error import ConfigurationError
 from takt.domain.errors.invalid_run_name_error import InvalidRunNameError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
+from takt.domain.errors.write_interrupted_error import WriteInterruptedError
 from tests.cli.reports import FAILED_REPORT, OK_REPORT
 
 NO_TARGETS = (
@@ -327,6 +331,42 @@ def test_keyboard_interrupt(
     fake_api('run', KeyboardInterrupt())
 
     assert main(['run', '--db', 'sqlite:///a.db']) == 130
+
+
+def test_keyboard_interrupt_names_partial_result(
+    fake_api: Callable[[str, object], Recorder],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    interrupt = KeyboardInterrupt()
+    interrupt.__cause__ = BenchmarkInterruptedError(Path('r.json'))
+    fake_api('run', interrupt)
+
+    code = main(['run', 'bench.py', '--db', 'sqlite:///a.db', '--name', 'x'])
+
+    assert code == 130
+    assert capsys.readouterr().err == (
+        'Partial result was written to r.json. '
+        'Load it without re-running benchmarks: '
+        'takt import r.json --db sqlite:///a.db --name x\n'
+    )
+
+
+def test_keyboard_interrupt_during_write_names_result(
+    fake_api: Callable[[str, object], Recorder],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    interrupt = KeyboardInterrupt()
+    interrupt.__cause__ = WriteInterruptedError(Path('r.json'), 'n 2026')
+    fake_api('run', interrupt)
+
+    code = main(['run', '--db', 'sqlite:///a.db', '--name', 'n {date}'])
+
+    assert code == 130
+    assert capsys.readouterr().err == (
+        'Result was written to r.json. '
+        'Load it without re-running benchmarks: '
+        "takt import r.json --db sqlite:///a.db --name 'n 2026'\n"
+    )
 
 
 def test_unknown_flag_for_import(capsys: pytest.CaptureFixture[str]) -> None:
