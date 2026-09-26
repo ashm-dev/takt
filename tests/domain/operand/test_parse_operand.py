@@ -2,6 +2,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 import pytest
+from tests.domain.exact_pattern import exact_pattern
 
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
 from takt.domain.operand.file_operand import FileOperand
@@ -27,18 +28,6 @@ class _RecordingIsFile:
     def __call__(self, path: Path) -> bool:
         self.calls.append(path)
         return False
-
-
-def _parse_error(
-    text: str,
-    is_file: Callable[[Path], bool] = never_file,
-) -> str:
-    try:
-        parse_operand(text, is_file)
-    except OperandNotFoundError as error:
-        return str(error)
-    msg = 'expected OperandNotFoundError'
-    raise AssertionError(msg)
 
 
 def test_file_wins() -> None:
@@ -133,25 +122,31 @@ def test_name_with_spaces() -> None:
 
 @pytest.mark.parametrize('text', ['', '   '])
 def test_empty_operand(text: str) -> None:
-    assert _parse_error(text) == 'operand must not be empty'
+    message = 'operand must not be empty'
+
+    with pytest.raises(OperandNotFoundError, match=exact_pattern(message)):
+        parse_operand(text, never_file)
 
 
 def test_missing_name() -> None:
-    assert _parse_error(':1') == (
-        "invalid operand ':1': missing run name before ':'"
-    )
+    message = "invalid operand ':1': missing run name before ':'"
+
+    with pytest.raises(OperandNotFoundError, match=exact_pattern(message)):
+        parse_operand(':1', never_file)
 
 
 def test_missing_tail() -> None:
-    assert _parse_error('default:') == (
-        "invalid operand 'default:': missing value after ':'"
-    )
+    message = "invalid operand 'default:': missing value after ':'"
+
+    with pytest.raises(OperandNotFoundError, match=exact_pattern(message)):
+        parse_operand('default:', never_file)
 
 
 def test_two_colons() -> None:
-    assert _parse_error('a:b:c') == (
-        "invalid operand 'a:b:c': only one ':' is allowed"
-    )
+    message = "invalid operand 'a:b:c': only one ':' is allowed"
+
+    with pytest.raises(OperandNotFoundError, match=exact_pattern(message)):
+        parse_operand('a:b:c', never_file)
 
 
 _TOO_LONG_HEX_TAIL = 'a' * 65
@@ -168,12 +163,13 @@ _TOO_LONG_HASH_PREFIX = f'default:{_TOO_LONG_HEX_TAIL}'
     ],
 )
 def test_bad_tail(text: str) -> None:
-    expected_suffix = (
-        'expected a number or a hash prefix of at least 6 lowercase '
-        "hex characters after ':'"
+    message = (
+        f'invalid operand {text!r}: expected a number or a hash prefix '
+        "of at least 6 lowercase hex characters after ':'"
     )
 
-    assert _parse_error(text).endswith(expected_suffix)
+    with pytest.raises(OperandNotFoundError, match=exact_pattern(message)):
+        parse_operand(text, never_file)
 
 
 def test_tagged_operand_invariant() -> None:
