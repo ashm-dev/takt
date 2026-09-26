@@ -151,6 +151,18 @@ def test_upgrade_failure_raises_execution_error(sqlite_target: Target) -> None:
     assert isinstance(migrate_error.value.__cause__, sa.exc.OperationalError)
 
 
+def test_failed_upgrade_leaves_no_takt_tables_on_sqlite(
+    sqlite_target: Target,
+) -> None:
+    add_conflicting_index(sqlite_target)
+
+    with pytest.raises(ExecutionError):
+        AlembicSchemaMigrator().upgrade(sqlite_target)
+
+    engine = create_target_engine(sqlite_target)
+    assert sa.inspect(engine).get_table_names() == ['other']
+
+
 @pytest.mark.mariadb
 def test_upgrade_creates_schema_on_mariadb(mariadb_target: Target) -> None:
     AlembicSchemaMigrator().upgrade(mariadb_target)
