@@ -10,6 +10,7 @@ from takt.cli.exit_code import ExitCode
 from takt.cli.report_output import print_import_report
 from takt.cli.retry_command import build_retry_command
 from takt.domain.errors.benchmark_failed_error import BenchmarkFailedError
+from takt.domain.errors.invalid_run_name_error import InvalidRunNameError
 
 
 def handle_run(
@@ -36,6 +37,15 @@ def handle_run(
         print_error(str(error))
         _print_partial_hint(args, error.result_path)
         return ExitCode.FAILURE
+    except InvalidRunNameError as error:
+        if error.result_path is None:
+            raise
+        print_error(str(error))
+        sys.stderr.write(
+            f'Result was written to {error.result_path}. '
+            'Load it with takt import and another --name.\n',
+        )
+        return ExitCode.USAGE
     print_import_report(report)
     if report.write.succeeded:
         return ExitCode.OK
