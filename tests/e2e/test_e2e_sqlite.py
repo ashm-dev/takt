@@ -2,6 +2,7 @@ import gzip
 from pathlib import Path
 
 import pytest
+import sqlalchemy as sa
 
 from takt.cli.main import main
 from tests.e2e.conftest import CountSuites, MakeResult
@@ -124,7 +125,9 @@ def test_env_overrides_toml(
 
     assert code == 0
     assert count_suites(env_url) == 1
-    assert count_suites(f'sqlite:///{one}') == 0
+    engine = sa.create_engine(f'sqlite:///{one}', poolclass=sa.pool.NullPool)
+    assert sa.inspect(engine).get_table_names() == []
+    engine.dispose()
 
 
 @pytest.mark.usefixtures('result_a')
