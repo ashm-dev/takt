@@ -1,5 +1,6 @@
 """Single measured or warmup value."""
 
+import math
 from dataclasses import dataclass
 
 from takt.domain.model.measurement_kind import MeasurementKind
@@ -32,14 +33,14 @@ class Measurement:
         if self.loops is not None:
             msg = 'value measurement must not have loops'
             raise ValueError(msg)
-        if self.value <= 0:
-            msg = 'value must be > 0'
+        if not (math.isfinite(self.value) and self.value > 0):
+            msg = 'value must be a finite number > 0'
             raise ValueError(msg)
 
     def _validate_warmup(self) -> None:
         if self.loops is None or self.loops < 1:
             msg = 'warmup loops must be >= 1'
             raise ValueError(msg)
-        if self.value < 0:
-            msg = 'warmup value must be >= 0'
+        if not (math.isfinite(self.value) and self.value >= 0):
+            msg = 'warmup value must be a finite number >= 0'
             raise ValueError(msg)

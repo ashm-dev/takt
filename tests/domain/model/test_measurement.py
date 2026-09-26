@@ -27,7 +27,7 @@ def test_value_measurement_rejects_loops() -> None:
 
 @pytest.mark.parametrize('value', [0.0, -1.0])
 def test_value_measurement_rejects_non_positive_value(value: float) -> None:
-    with pytest.raises(ValueError, match='value must be > 0'):
+    with pytest.raises(ValueError, match='value must be a finite number > 0'):
         Measurement(kind=MeasurementKind.VALUE, value=value, loops=None)
 
 
@@ -49,7 +49,9 @@ def test_warmup_measurement_requires_positive_loops(loops: int | None) -> None:
 
 
 def test_warmup_measurement_rejects_negative_value() -> None:
-    with pytest.raises(ValueError, match='warmup value must be >= 0'):
+    with pytest.raises(
+        ValueError, match='warmup value must be a finite number >= 0'
+    ):
         Measurement(kind=MeasurementKind.WARMUP, value=-0.1, loops=1)
 
 
