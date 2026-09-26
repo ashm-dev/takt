@@ -96,6 +96,7 @@ The value is a template. takt replaces these placeholders:
 
 - Text without placeholders is used as is: `--name "default 01.01.01"`.
 - `{{` and `}}` give literal braces.
+- takt removes spaces, tabs and line breaks at the start and at the end of the final name.
 - The character `:` is not allowed in a name, because `compare` uses it in `name:N`.
 - These are errors too: an empty name, a name longer than 255 characters, an unknown placeholder, `{date:%Y}` and `{date!r}`.
 - takt checks the template text before any benchmark runs. This finds an empty name, `:` in the text, an unknown placeholder, `{date:%Y}` and `{date!r}`.
