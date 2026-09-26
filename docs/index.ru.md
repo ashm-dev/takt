@@ -40,6 +40,12 @@ takt import result.json --db sqlite:///bench.db --name patched
 takt compare "baseline 2026-09-25" patched --db sqlite:///bench.db
 ```
 
+## Совместимость
+
+| takt | Python | pyperf | pyperformance |
+|---|---|---|---|
+| 0.1.0 | >=3.14 | >=2.10.0,<2.11 | >=1.14.0,<1.15 |
+
 ## Что читать дальше
 
 - [Настройка](configuration.md): целевые БД, `takt.toml`, переменные окружения и имена прогонов.

@@ -40,6 +40,12 @@ Compare the two runs by name:
 takt compare "baseline 2026-09-25" patched --db sqlite:///bench.db
 ```
 
+## Compatibility
+
+| takt | Python | pyperf | pyperformance |
+|---|---|---|---|
+| 0.1.0 | >=3.14 | >=2.10.0,<2.11 | >=1.14.0,<1.15 |
+
 ## Next steps
 
 - [Configuration](configuration.md): target databases, `takt.toml`, environment variables and run names.
