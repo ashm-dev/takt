@@ -41,7 +41,7 @@ class PyperfResultReader:
         pyperf_suite = _load_pyperf_suite(path)
         try:
             return _suite(result_hash(document), format_version, pyperf_suite)
-        except (ValueError, OverflowError) as exc:
+        except (ValueError, OverflowError, RecursionError) as exc:
             message = f'invalid pyperf result {path}: {exc}'
             raise InvalidResultError(message) from exc
 
