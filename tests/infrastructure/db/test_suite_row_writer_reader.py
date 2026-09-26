@@ -103,6 +103,22 @@ def test_insert_stores_null_custom_when_empty(engine: sa.Engine) -> None:
     assert null_positions == [0, 1]
 
 
+def test_insert_stores_null_tags_when_missing(engine: sa.Engine) -> None:
+    with engine.begin() as connection:
+        insert_suite(connection, make_record())
+
+    with engine.connect() as connection:
+        null_positions: list[int] = list(
+            connection.execute(
+                sa.select(RUN_METADATA_TABLE.c.benchmark_position)
+                .where(RUN_METADATA_TABLE.c.tags.is_(sa.null()))
+                .order_by(RUN_METADATA_TABLE.c.benchmark_position),
+            ).scalars(),
+        )
+
+    assert null_positions == [0, 1]
+
+
 def test_insert_with_null_name_and_date(engine: sa.Engine) -> None:
     with engine.begin() as connection:
         insert_suite(connection, make_record(name=None, result_date=None))
