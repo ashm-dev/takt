@@ -1,4 +1,5 @@
 import gzip
+import zlib
 from pathlib import Path
 
 import pytest
@@ -47,3 +48,36 @@ def test_broken_gzip_raises(tmp_path: Path) -> None:
 
     with pytest.raises(InvalidResultError):
         load_json_document(broken)
+
+
+def test_corrupted_gzip_stream_raises(tmp_path: Path) -> None:
+    gzip_header = gzip.compress(b'')[:10]
+    broken = tmp_path / 'corrupted.json.gz'
+    broken.write_bytes(gzip_header + bytes(30))
+
+    with pytest.raises(InvalidResultError) as error:
+        load_json_document(broken)
+
+    assert str(error.value).startswith('cannot read pyperf result ')
+    assert isinstance(error.value.__cause__, zlib.error)
+
+
+@pytest.mark.parametrize(
+    ('text', 'cause'),
+    [
+        ('[' * 1_000_000, RecursionError),
+        ('1' * 5000, ValueError),
+    ],
+    ids=['deep-nesting', 'long-integer'],
+)
+def test_unreadable_json_raises(
+    tmp_path: Path, text: str, cause: type[Exception]
+) -> None:
+    broken = tmp_path / 'broken.json'
+    broken.write_text(text, encoding='utf-8')
+
+    with pytest.raises(InvalidResultError) as error:
+        load_json_document(broken)
+
+    assert str(error.value).startswith('cannot read pyperf result ')
+    assert isinstance(error.value.__cause__, cause)
