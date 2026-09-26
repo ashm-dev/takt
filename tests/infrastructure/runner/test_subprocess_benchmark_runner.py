@@ -60,18 +60,23 @@ class _Recorder:
         return subprocess.CompletedProcess(command, self.return_code)
 
 
-def _runner(tmp_path: Path) -> SubprocessBenchmarkRunner:
-    return SubprocessBenchmarkRunner(
-        clock=_FixedClock(), cwd=tmp_path, python=PY
-    )
+def _runner(cwd: Path) -> SubprocessBenchmarkRunner:
+    return SubprocessBenchmarkRunner(clock=_FixedClock(), cwd=cwd, python=PY)
 
 
 def _patch(monkeypatch: pytest.MonkeyPatch, fake: _Recorder) -> None:
     monkeypatch.setattr(subprocess, 'run', fake)
 
 
-def _exit_message(tmp_path: Path, return_code: int) -> str:
-    output = tmp_path / DEFAULT_NAME
+def _cwd_needing_quotes(tmp_path: Path) -> Path:
+    cwd = tmp_path / "it's out"
+    cwd.mkdir()
+    return cwd
+
+
+def _exit_message(cwd: Path, return_code: int) -> str:
+    # Shell form of cwd / DEFAULT_NAME for a cwd from _cwd_needing_quotes.
+    output = f"'{cwd.parent}/it'\"'\"'s out/{DEFAULT_NAME}'"
     return (
         f'benchmark command failed with exit code {return_code}: '
         f'{PY} -m pyperformance run -b nbody --output {output}'
@@ -105,12 +110,13 @@ def test_nonzero_exit(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    cwd = _cwd_needing_quotes(tmp_path)
     _patch(monkeypatch, _Recorder(return_code=3, creates=None))
-    message = _exit_message(tmp_path, 3)
+    message = _exit_message(cwd, 3)
     with pytest.raises(
         BenchmarkFailedError, match=exact_pattern(message)
     ) as error:
-        _runner(tmp_path).run(('-b', 'nbody'))
+        _runner(cwd).run(('-b', 'nbody'))
     assert error.value.return_code == 3
     assert error.value.result_path is None
 
@@ -119,13 +125,14 @@ def test_nonzero_exit_keeps_partial_result(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    partial = tmp_path / DEFAULT_NAME
+    cwd = _cwd_needing_quotes(tmp_path)
+    partial = cwd / DEFAULT_NAME
     _patch(monkeypatch, _Recorder(return_code=1, creates=partial))
-    message = _exit_message(tmp_path, 1)
+    message = _exit_message(cwd, 1)
     with pytest.raises(
         BenchmarkFailedError, match=exact_pattern(message)
     ) as error:
-        _runner(tmp_path).run(('-b', 'nbody'))
+        _runner(cwd).run(('-b', 'nbody'))
     assert error.value.return_code == 1
     assert error.value.result_path == partial
 
@@ -134,13 +141,14 @@ def test_nonzero_exit_ignores_old_result(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    (tmp_path / DEFAULT_NAME).write_text('{}', encoding='utf-8')
+    cwd = _cwd_needing_quotes(tmp_path)
+    (cwd / DEFAULT_NAME).write_text('{}', encoding='utf-8')
     _patch(monkeypatch, _Recorder(return_code=1, creates=None))
-    message = _exit_message(tmp_path, 1)
+    message = _exit_message(cwd, 1)
     with pytest.raises(
         BenchmarkFailedError, match=exact_pattern(message)
     ) as error:
-        _runner(tmp_path).run(('-b', 'nbody'))
+        _runner(cwd).run(('-b', 'nbody'))
     assert error.value.result_path is None
 
 
