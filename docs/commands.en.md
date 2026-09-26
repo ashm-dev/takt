@@ -60,7 +60,7 @@ After the benchmarks finish, takt brings the schema of every database to the cur
 ### Output
 
 ```text
-Result 3fa2b1c4d5e6 (nightly 2026-09-25) from takt-20260925T101500Z.json
+Result 3fa2b1c4d5e6 (nightly 2026-09-25) from /home/me/takt-20260925T101500Z.json
   local: written
   maria_ci: written
 ```
@@ -84,7 +84,7 @@ If the result was not written to all targets, takt prints the reason for every t
 
 ```text
 error: result was not written to all targets
-Retry without re-running benchmarks: takt import takt-20260925T101500Z.json --target local --target maria_ci
+Retry without re-running benchmarks: takt import /home/me/takt-20260925T101500Z.json --target local --target maria_ci
 ```
 
 The command exits with code 1.

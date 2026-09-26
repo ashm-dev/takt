@@ -60,7 +60,7 @@ pyperformance и pyperf берут последний `--output`, поэтому
 ### Вывод
 
 ```text
-Result 3fa2b1c4d5e6 (nightly 2026-09-25) from takt-20260925T101500Z.json
+Result 3fa2b1c4d5e6 (nightly 2026-09-25) from /home/me/takt-20260925T101500Z.json
   local: written
   maria_ci: written
 ```
@@ -84,7 +84,7 @@ Result 3fa2b1c4d5e6 (nightly 2026-09-25) from takt-20260925T101500Z.json
 
 ```text
 error: result was not written to all targets
-Retry without re-running benchmarks: takt import takt-20260925T101500Z.json --target local --target maria_ci
+Retry without re-running benchmarks: takt import /home/me/takt-20260925T101500Z.json --target local --target maria_ci
 ```
 
 Команда завершается с кодом 1.
