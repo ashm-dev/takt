@@ -65,7 +65,10 @@ def test_import_twice(
     assert first == 0
     assert ': written' in first_out
     assert second == 0
-    assert "already loaded as 'base'" in capsys.readouterr().out
+    assert capsys.readouterr().out.splitlines() == [
+        first_out.splitlines()[0],
+        f"  {sqlite_url}: already loaded as 'base'",
+    ]
     assert count_suites(sqlite_url) == 1
 
 
