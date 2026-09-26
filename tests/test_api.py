@@ -1,5 +1,7 @@
 import contextlib
+import functools
 import sqlite3
+from collections.abc import Callable
 from pathlib import Path
 
 import pyperf
@@ -16,6 +18,18 @@ NO_TARGETS = (
 )
 FAST = (0.1, 0.11, 0.1)
 SLOW = (0.2, 0.21, 0.2)
+URL = 'sqlite:///a.db'
+MISSING = Path('r.json')
+SINGLE_STRINGS = (
+    (functools.partial(takt.run, 'nbody'), 'runner_arguments'),
+    (functools.partial(takt.run, ['-b', 'nbody'], db=URL), 'db'),
+    (functools.partial(takt.run, ['-b', 'nbody'], target='local'), 'target'),
+    (functools.partial(takt.import_results, MISSING, db=URL), 'db'),
+    (functools.partial(takt.import_results, MISSING, target='local'), 'target'),
+    (functools.partial(takt.compare, 'ab'), 'operands'),
+    (functools.partial(takt.compare, ['a', 'b'], db=URL), 'db'),
+    (functools.partial(takt.compare, ['a', 'b'], target='local'), 'target'),
+)
 
 
 class RecordingRun:
@@ -148,6 +162,26 @@ def test_run_imports_runner_result(
     assert report.write.succeeded is True
     assert report.result_path == result_file
     assert recording.calls == [('-b', 'nbody')]
+
+
+@pytest.mark.parametrize(('call', 'parameter'), SINGLE_STRINGS)
+def test_single_string_is_rejected(
+    call: Callable[..., object],
+    parameter: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    recording = RecordingRun(tmp_path / 'unused.json')
+    monkeypatch.setattr(SubprocessBenchmarkRunner, 'run', recording)
+
+    with pytest.raises(takt.UsageError) as error:
+        # A missing config file fails first unless the check runs before it.
+        call(config=tmp_path / 'missing.toml')
+
+    assert str(error.value) == (
+        f'{parameter} must be a sequence of strings, not a single string'
+    )
+    assert recording.calls == []
 
 
 def test_compare_files_without_targets(tmp_path: Path) -> None:
