@@ -67,7 +67,7 @@ def run(
     :param name: Run name or name template, like ``--name``.
     :returns: The import report of the produced result file.
     :raises UsageError: If the configuration, targets or run name are
-        invalid.
+        invalid, or a string is passed instead of a sequence of strings.
     :raises ExecutionError: If the benchmarks fail or the result file
         cannot be read.
     """
@@ -104,7 +104,7 @@ def import_results(
     :param name: Run name or name template, like ``--name``.
     :returns: The import report of the result file.
     :raises UsageError: If the configuration, targets or run name are
-        invalid.
+        invalid, or a string is passed instead of a sequence of strings.
     :raises ExecutionError: If the result file cannot be read.
     """
     reject_single_strings(db=db, target=target)
@@ -138,7 +138,8 @@ def compare(
     :param config: Path to ``takt.toml`` instead of ``./takt.toml``.
     :returns: The compare table.
     :raises UsageError: If the configuration is invalid, fewer than two
-        operands are given or a stored run is requested without a target.
+        operands are given, a stored run is requested without a target,
+        or a string is passed instead of a sequence of strings.
     :raises ExecutionError: If an operand is not found or ambiguous, a
         result file cannot be read, the database cannot be connected to
         or read, or the suites share no benchmark.
