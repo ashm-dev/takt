@@ -9,19 +9,10 @@ from takt.infrastructure.config.toml_config_loader import (
     load_config,
     load_toml_config,
 )
+from tests.domain.exact_pattern import exact_pattern
 from tests.infrastructure.config.config_inputs import FULL_FILE, sources
 
 EMPTY_CONFIG = TaktConfig(targets={}, name_template=None)
-
-
-def config_error(path: Path, text: str | None = None) -> str:
-    if text is not None:
-        path.write_text(text, encoding='utf-8')
-    try:
-        load_toml_config(path)
-    except ConfigurationError as error:
-        return str(error)
-    pytest.fail('ConfigurationError was not raised')
 
 
 @pytest.fixture
@@ -49,41 +40,56 @@ def test_empty_file(config_file: Path) -> None:
 
 
 def test_missing_file(config_file: Path) -> None:
-    assert config_error(config_file) == (
-        f'config file not found: {config_file}'
-    )
+    message = f'config file not found: {config_file}'
+
+    with pytest.raises(ConfigurationError, match=exact_pattern(message)):
+        load_toml_config(config_file)
 
 
 def test_unreadable_file(config_file: Path) -> None:
     config_file.write_bytes(b'\xff\xfe')
 
-    assert config_error(config_file).startswith(
+    with pytest.raises(ConfigurationError) as error:
+        load_toml_config(config_file)
+
+    assert str(error.value).startswith(
         f'cannot read config file {config_file}: ',
     )
 
 
 def test_invalid_toml(config_file: Path) -> None:
-    assert config_error(config_file, 'name_template = \n').startswith(
-        f'{config_file}: invalid TOML: ',
-    )
+    config_file.write_text('name_template = \n', encoding='utf-8')
+
+    with pytest.raises(ConfigurationError) as error:
+        load_toml_config(config_file)
+
+    assert str(error.value).startswith(f'{config_file}: invalid TOML: ')
 
 
-def test_unknown_top_key(config_file: Path) -> None:
-    assert config_error(config_file, 'database = "x"\n') == (
-        f"{config_file}: unknown key 'database'"
-    )
+@pytest.mark.parametrize(
+    ('text', 'error'),
+    [
+        ('database = "x"\n', "unknown key 'database'"),
+        ('name_template = 1\n', "'name_template' must be a string"),
+        ('targets = "x"\n', "'targets' must be a table"),
+        (
+            '[targets.a]\nurl = "sqlite://"\npool = 1\n',
+            "target 'a': unknown key 'pool'",
+        ),
+        ('[targets.a]\n', "target 'a': missing 'url'"),
+        (
+            '[targets.a]\nurl = "  "\n',
+            "target 'a': 'url' must be a non-empty string",
+        ),
+        ('targets = { a = 1 }\n', "target 'a' must be a table"),
+    ],
+)
+def test_invalid_structure(config_file: Path, text: str, error: str) -> None:
+    config_file.write_text(text, encoding='utf-8')
+    message = f'{config_file}: {error}'
 
-
-def test_name_template_not_string(config_file: Path) -> None:
-    assert config_error(config_file, 'name_template = 1\n') == (
-        f"{config_file}: 'name_template' must be a string"
-    )
-
-
-def test_targets_not_table(config_file: Path) -> None:
-    assert config_error(config_file, 'targets = "x"\n') == (
-        f"{config_file}: 'targets' must be a table"
-    )
+    with pytest.raises(ConfigurationError, match=exact_pattern(message)):
+        load_toml_config(config_file)
 
 
 @pytest.mark.parametrize(
@@ -91,38 +97,17 @@ def test_targets_not_table(config_file: Path) -> None:
     [('"bad name"', 'bad name'), (r'"ci\n"', 'ci\n')],
 )
 def test_bad_target_name(config_file: Path, key: str, name: str) -> None:
-    text = f'[targets.{key}]\nurl = "sqlite://"\n'
-
-    assert config_error(config_file, text) == (
+    config_file.write_text(
+        f'[targets.{key}]\nurl = "sqlite://"\n',
+        encoding='utf-8',
+    )
+    message = (
         f'{config_file}: invalid target name {name!r}; '
         "use letters, digits, '_' and '-'"
     )
 
-
-def test_target_unknown_key(config_file: Path) -> None:
-    text = '[targets.a]\nurl = "sqlite://"\npool = 1\n'
-
-    assert config_error(config_file, text) == (
-        f"{config_file}: target 'a': unknown key 'pool'"
-    )
-
-
-def test_target_missing_url(config_file: Path) -> None:
-    assert config_error(config_file, '[targets.a]\n') == (
-        f"{config_file}: target 'a': missing 'url'"
-    )
-
-
-def test_target_empty_url(config_file: Path) -> None:
-    assert config_error(config_file, '[targets.a]\nurl = "  "\n') == (
-        f"{config_file}: target 'a': 'url' must be a non-empty string"
-    )
-
-
-def test_target_not_table(config_file: Path) -> None:
-    assert config_error(config_file, 'targets = { a = 1 }\n') == (
-        f"{config_file}: target 'a' must be a table"
-    )
+    with pytest.raises(ConfigurationError, match=exact_pattern(message)):
+        load_toml_config(config_file)
 
 
 def test_load_config_default_missing(tmp_path: Path) -> None:
