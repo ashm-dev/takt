@@ -1,3 +1,4 @@
+import dataclasses
 import functools
 from collections.abc import Callable
 from pathlib import Path
@@ -151,6 +152,21 @@ def test_run_failed_write_prints_retry(
     assert (
         'Retry without re-running benchmarks: '
         'takt import r.json --db sqlite:///a.db --name default'
+    ) in capsys.readouterr().err.splitlines()
+
+
+def test_retry_keeps_rendered_name_from_any_source(
+    fake_api: Callable[[str, object], Recorder],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    fake_api('run', dataclasses.replace(FAILED_REPORT, name='nightly {x}'))
+
+    code = main(['run', '-b', 'nbody', '--db', 'sqlite:///a.db'])
+
+    assert code == 1
+    assert (
+        'Retry without re-running benchmarks: '
+        "takt import r.json --db sqlite:///a.db --name 'nightly {{x}}'"
     ) in capsys.readouterr().err.splitlines()
 
 
