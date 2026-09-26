@@ -12,6 +12,7 @@ from takt.infrastructure.runner.runner_command import build_runner_command
 from takt.infrastructure.runner.subprocess_benchmark_runner import (
     SubprocessBenchmarkRunner,
 )
+from tests.domain.exact_pattern import exact_pattern
 
 NOW = datetime(2026, 9, 25, 13, 46, 1, tzinfo=UTC)
 PY = '/usr/bin/python3.14'
@@ -72,13 +73,12 @@ def _patch(monkeypatch: pytest.MonkeyPatch, fake: FakeRun) -> None:
     monkeypatch.setattr(subprocess, 'run', fake)
 
 
-def _failure(runner: SubprocessBenchmarkRunner) -> BenchmarkFailedError:
-    try:
-        runner.run(('-b', 'nbody'))
-    except BenchmarkFailedError as error:
-        return error
-    msg = 'expected BenchmarkFailedError'
-    raise AssertionError(msg)
+def _exit_message(tmp_path: Path, return_code: int) -> str:
+    output = tmp_path / DEFAULT_NAME
+    return (
+        f'benchmark command failed with exit code {return_code}: '
+        f'{PY} -m pyperformance run -b nbody --output {output}'
+    )
 
 
 def test_success_returns_default_path(
@@ -109,11 +109,13 @@ def test_nonzero_exit(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _patch(monkeypatch, _Recorder(return_code=3, creates=None))
-    error = _failure(_runner(tmp_path))
-    assert error.return_code == 3
-    assert str(error).startswith('benchmark command failed with exit code 3: ')
-    assert 'pyperformance run' in str(error)
-    assert error.result_path is None
+    message = _exit_message(tmp_path, 3)
+    with pytest.raises(
+        BenchmarkFailedError, match=exact_pattern(message)
+    ) as error:
+        _runner(tmp_path).run(('-b', 'nbody'))
+    assert error.value.return_code == 3
+    assert error.value.result_path is None
 
 
 def test_nonzero_exit_keeps_partial_result(
@@ -122,9 +124,13 @@ def test_nonzero_exit_keeps_partial_result(
 ) -> None:
     partial = tmp_path / DEFAULT_NAME
     _patch(monkeypatch, _Recorder(return_code=1, creates=partial))
-    error = _failure(_runner(tmp_path))
-    assert error.return_code == 1
-    assert error.result_path == partial
+    message = _exit_message(tmp_path, 1)
+    with pytest.raises(
+        BenchmarkFailedError, match=exact_pattern(message)
+    ) as error:
+        _runner(tmp_path).run(('-b', 'nbody'))
+    assert error.value.return_code == 1
+    assert error.value.result_path == partial
 
 
 def test_nonzero_exit_ignores_old_result(
@@ -133,7 +139,12 @@ def test_nonzero_exit_ignores_old_result(
 ) -> None:
     (tmp_path / DEFAULT_NAME).write_text('{}', encoding='utf-8')
     _patch(monkeypatch, _Recorder(return_code=1, creates=None))
-    assert _failure(_runner(tmp_path)).result_path is None
+    message = _exit_message(tmp_path, 1)
+    with pytest.raises(
+        BenchmarkFailedError, match=exact_pattern(message)
+    ) as error:
+        _runner(tmp_path).run(('-b', 'nbody'))
+    assert error.value.result_path is None
 
 
 def test_missing_result_file(
@@ -141,26 +152,32 @@ def test_missing_result_file(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _patch(monkeypatch, _Recorder(return_code=0, creates=None))
-    error = _failure(_runner(tmp_path))
-    assert error.return_code == 0
     missing = tmp_path / DEFAULT_NAME
-    assert str(error) == (
+    message = (
         f'benchmark finished but the result file was not created: {missing}'
     )
+    with pytest.raises(
+        BenchmarkFailedError, match=exact_pattern(message)
+    ) as error:
+        _runner(tmp_path).run(('-b', 'nbody'))
+    assert error.value.return_code == 0
 
 
 def test_cannot_start(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    error = FileNotFoundError('no python')
+    cause = FileNotFoundError('no python')
     _patch(
         monkeypatch,
-        _Recorder(return_code=0, creates=None, error=error),
+        _Recorder(return_code=0, creates=None, error=cause),
     )
-    failure = _failure(_runner(tmp_path))
-    assert failure.return_code == 127
-    assert str(failure) == 'cannot start benchmark command: no python'
+    message = 'cannot start benchmark command: no python'
+    with pytest.raises(
+        BenchmarkFailedError, match=exact_pattern(message)
+    ) as error:
+        _runner(tmp_path).run(('-b', 'nbody'))
+    assert error.value.return_code == 127
 
 
 @pytest.mark.slow
