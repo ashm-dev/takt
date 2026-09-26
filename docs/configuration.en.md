@@ -63,6 +63,7 @@ url = "mariadb+pymysql://user:password@db-host:3306/bench"
 
 `--target NAME` picks targets from `takt.toml` by name.
 For example, `takt import result.json --target local --target maria_ci` writes to two of the three targets above.
+If takt finds no `takt.toml`, `--target` stops with `error: unknown target '<name>': no takt.toml in <folder>; use --config PATH`.
 
 ## Environment variables
 

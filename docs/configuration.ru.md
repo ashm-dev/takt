@@ -63,6 +63,7 @@ url = "mariadb+pymysql://user:password@db-host:3306/bench"
 
 `--target NAME` выбирает цели из `takt.toml` по имени.
 Например, `takt import result.json --target local --target maria_ci` пишет в две из трёх целей выше.
+Если takt не нашёл `takt.toml`, `--target` завершается ошибкой `error: unknown target '<имя>': no takt.toml in <каталог>; use --config PATH`.
 
 ## Переменные окружения
 
