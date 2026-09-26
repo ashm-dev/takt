@@ -195,6 +195,7 @@ def test_compensation_failure_is_reported() -> None:
     )
     assert 'a' in world.stored
     assert 'b' not in world.stored
+    assert_subsequence(world.journal, ['commit:c', 'delete:a', 'close:a'])
 
 
 def test_open_failure_rolls_back_previous() -> None:
