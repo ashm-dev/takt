@@ -4,11 +4,14 @@ The whole schema lives in one module because Alembic and the repository
 work with all tables at once.
 """
 
+from collections.abc import Mapping
+from types import MappingProxyType
 from typing import Final
 
 import sqlalchemy as sa
 
-from takt.domain.model.known_metadata_keys import KNOWN_METADATA_KEYS
+from takt.domain.model.metadata_key_types import METADATA_KEY_TYPES
+from takt.domain.model.metadata_value import MetadataValue
 from takt.infrastructure.db.schema import column_types
 
 METADATA: Final = sa.MetaData(
@@ -25,33 +28,18 @@ _SUITE_HASH: Final = 'suite_hash'
 _BENCHMARK_POSITION: Final = 'benchmark_position'
 _RUN_POSITION: Final = 'run_position'
 
-_INT_METADATA_KEYS: Final = frozenset(
-    (
-        'loops',
-        'inner_loops',
-        'calibrate_loops',
-        'recalibrate_loops',
-        'calibrate_warmups',
-        'recalibrate_warmups',
-        'mem_max_rss',
-        'command_max_rss',
-        'mem_peak_pagefile_usage',
-        'cpu_count',
-        'runnable_threads',
-        'timeit_duplicate',
-    )
-)
-_FLOAT_METADATA_KEYS: Final = frozenset(
-    (
-        'duration',
-        'uptime',
-        'load_avg_1min',
-    )
-)
-_JSON_METADATA_KEYS: Final = frozenset(('tags',))
-
 _NumberType = sa.BigInteger | sa.Double[float]
 _MetadataType = _NumberType | sa.JSON | sa.Text
+_ColumnTypes = Mapping[type[MetadataValue], _MetadataType]
+
+_METADATA_COLUMN_TYPES: Final[_ColumnTypes] = MappingProxyType(
+    {
+        int: column_types.BIGINT_TYPE,
+        float: column_types.DOUBLE_TYPE,
+        str: column_types.TEXT_TYPE,
+        tuple: column_types.JSON_TYPE,
+    }
+)
 
 
 def _hash_column(name: str) -> sa.Column[str]:
@@ -81,16 +69,6 @@ def _parent_key(parent: sa.Table) -> sa.ForeignKeyConstraint:
         [column.name for column in referred],
         referred,
     )
-
-
-def _metadata_type(key: str) -> _MetadataType:
-    if key in _INT_METADATA_KEYS:
-        return column_types.BIGINT_TYPE
-    if key in _FLOAT_METADATA_KEYS:
-        return column_types.DOUBLE_TYPE
-    if key in _JSON_METADATA_KEYS:
-        return column_types.JSON_TYPE
-    return column_types.TEXT_TYPE
 
 
 SUITE_TABLE: Final[sa.Table] = sa.Table(
@@ -150,8 +128,8 @@ RUN_METADATA_TABLE: Final[sa.Table] = sa.Table(
     METADATA,
     *_run_key_columns(),
     *(
-        sa.Column(key, _metadata_type(key), nullable=True)
-        for key in KNOWN_METADATA_KEYS
+        sa.Column(key, _METADATA_COLUMN_TYPES[key_type], nullable=True)
+        for key, key_type in METADATA_KEY_TYPES.items()
     ),
     sa.Column('custom', column_types.JSON_TYPE, nullable=True),
     _parent_key(WORKER_RUN_TABLE),
