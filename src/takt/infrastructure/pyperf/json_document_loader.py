@@ -2,17 +2,19 @@
 
 import gzip
 import json
+import zlib
 from pathlib import Path
 from typing import Final, TextIO
 
 from takt.domain.errors.invalid_result_error import InvalidResultError
 
+# ValueError also covers bad UTF-8, bad JSON and integers over the digit limit.
 _READ_ERRORS: Final = (
     OSError,
-    UnicodeDecodeError,
-    json.JSONDecodeError,
     EOFError,
-    gzip.BadGzipFile,
+    ValueError,
+    RecursionError,
+    zlib.error,
 )
 
 
