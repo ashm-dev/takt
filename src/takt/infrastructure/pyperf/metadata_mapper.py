@@ -32,13 +32,13 @@ def to_run_metadata(metadata: Mapping[str, object]) -> RunMetadata:
 
 
 def _field_value(key: str, value: object) -> MetadataValue | None:
-    if key == 'tags':
+    field_type = METADATA_KEY_TYPES.get(key)
+    if field_type is tuple:
         return _string_tuple(value)
     if isinstance(value, bool):
         return None
     if key == 'python_hash_seed' and isinstance(value, int):
         return str(value)
-    field_type = METADATA_KEY_TYPES.get(key)
     if field_type is not None and isinstance(value, field_type):
         return value
     return None
