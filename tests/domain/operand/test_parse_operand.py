@@ -52,6 +52,23 @@ def test_home_is_expanded() -> None:
     assert operand.text == '~/r.json'
 
 
+def test_unknown_user_home_is_run_name() -> None:
+    is_file = _RecordingIsFile()
+
+    operand = parse_operand('~takt-no-such-user', is_file)
+
+    assert operand == PlainOperand(text='~takt-no-such-user')
+    assert is_file.calls == [Path('~takt-no-such-user')]
+
+
+def test_unknown_user_home_file_wins() -> None:
+    path = Path('~takt-no-such-user')
+
+    operand = parse_operand('~takt-no-such-user', only(path))
+
+    assert operand == FileOperand(text='~takt-no-such-user', path=path)
+
+
 def test_plain_name() -> None:
     operand = parse_operand('default 01.01.01', never_file)
 
