@@ -1,4 +1,5 @@
-from collections.abc import Callable
+import sys
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import pytest
@@ -157,6 +158,25 @@ def test_missing_tail() -> None:
 
     with pytest.raises(OperandNotFoundError, match=exact_pattern(message)):
         parse_operand('default:', never_file)
+
+
+@pytest.fixture
+def int_digit_limit() -> Iterator[int]:
+    """Pin the interpreter limit on digits that ``int()`` accepts."""
+    previous = sys.get_int_max_str_digits()
+    limit = 4300
+    sys.set_int_max_str_digits(limit)
+    yield limit
+    sys.set_int_max_str_digits(previous)
+
+
+def test_too_large_index(int_digit_limit: int) -> None:
+    digits = '1' * (int_digit_limit + 1)
+    text = f'default:{digits}'
+    message = f'invalid operand {text!r}: run index is too large'
+
+    with pytest.raises(OperandNotFoundError, match=exact_pattern(message)):
+        parse_operand(text, never_file)
 
 
 def test_two_colons() -> None:
