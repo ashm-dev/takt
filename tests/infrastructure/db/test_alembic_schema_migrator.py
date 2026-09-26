@@ -103,7 +103,6 @@ def test_head_raises_for_empty_versions_directory(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     (tmp_path / 'sqlite' / 'versions').mkdir(parents=True)
-    (tmp_path / 'env.py').write_text('', encoding='utf-8')
     monkeypatch.setattr(
         'takt.infrastructure.db.alembic_schema_migrator.MIGRATIONS_DIRECTORY',
         tmp_path,
