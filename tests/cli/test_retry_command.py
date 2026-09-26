@@ -24,3 +24,16 @@ def test_only_path() -> None:
     args = argparse.Namespace(db=[], target=[], config=None, name=None)
 
     assert build_retry_command(args, Path('r.json')) == 'takt import r.json'
+
+
+def test_config_path() -> None:
+    args = argparse.Namespace(
+        db=[],
+        target=['ci'],
+        config=Path('conf/ci.toml'),
+        name=None,
+    )
+
+    command = build_retry_command(args, Path('r.json'))
+
+    assert command == 'takt import r.json --target ci --config conf/ci.toml'
