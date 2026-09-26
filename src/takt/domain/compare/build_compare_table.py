@@ -70,10 +70,10 @@ def _table(
     norm_means: list[list[float]] = [[] for _ in present[1:]]
     for name in common:
         row = _compare_row(name, present, norm_means)
-        if row:
-            rows.append(row)
-        else:
+        if row is None:
             hidden.append(name)
+        else:
+            rows.append(row)
     if len(common) > 1 and rows:
         rows.append(
             (
@@ -97,27 +97,34 @@ def _compare_row(
     name: str,
     present: Sequence[_BenchmarksByName],
     norm_means: Sequence[list[float]],
-) -> _Row:
+) -> _Row | None:
     base_values, base_unit = _sample(present[0][name])
-    cells = [name, format_value(base_unit, statistics.mean(base_values))]
-    for benchmarks, column_means in zip(present[1:], norm_means, strict=True):
-        cells.append(_cell(base_values, benchmarks[name], column_means))
-    if all(cell == _NOT_SIGNIFICANT for cell in cells[2:]):
-        return ()
-    return tuple(cells)
+    cells = [
+        _significant_cell(base_values, benchmarks[name], column_means)
+        for benchmarks, column_means in zip(
+            present[1:], norm_means, strict=True
+        )
+    ]
+    if all(cell is None for cell in cells):
+        return None
+    return (
+        name,
+        format_value(base_unit, statistics.mean(base_values)),
+        *(_NOT_SIGNIFICANT if cell is None else cell for cell in cells),
+    )
 
 
-def _cell(
+def _significant_cell(
     base_values: Sequence[float],
     benchmark: Benchmark,
     column_means: list[float],
-) -> str:
+) -> str | None:
     values, unit = _sample(benchmark)
     mean = statistics.mean(values)
     norm_mean = mean / statistics.mean(base_values)
     column_means.append(norm_mean)
     if not is_significant(base_values, values).significant:
-        return _NOT_SIGNIFICANT
+        return None
     return ': '.join(
         (
             format_value(unit, mean),
