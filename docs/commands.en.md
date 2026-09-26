@@ -197,6 +197,7 @@ takt checks every operand in this order and takes the first match:
 | `3fa2b1` | The run whose hash starts with these characters (6 or more lowercase hex characters) |
 
 After `:` only digits mean a number; anything else means a hash prefix.
+An operand that fits none of these forms is an error with exit code 1, for example an empty operand, `default:`, `:1`, `a:b:c` or `default:XYZ`.
 Runs with the same result date are sorted by hash, so the numbers are the same in every database.
 
 If a name matches several runs, takt lists them:
@@ -212,6 +213,7 @@ error: operand 'default' is ambiguous, candidates:
 - You can mix files and runs from a database in one comparison.
 - Runs are read from the first target in the list. Use `--target` to pick another one.
 - If all operands are files, takt does not need any database.
+- If an operand is not a file and no target is configured, takt prints `error: operand '<operand>' is not a file and no database target is configured` and exits with code 2. An operand that fits no form still gives exit code 1: takt checks the form of every operand first.
 
 ### Output
 
@@ -250,8 +252,8 @@ The numbers and the significance test are the same as in `pyperf compare_to --ta
 | Code | When |
 |---|---|
 | 0 | Success, including "everything was already loaded" |
-| 1 | Runtime error: database, file, benchmark, or the result was not written to all targets |
-| 2 | Wrong arguments or configuration, found before any benchmark runs, or a final run name that breaks the rules |
+| 1 | Runtime error: database, file, benchmark, the result was not written to all targets, or a `compare` operand that fits no form, was not found or is ambiguous |
+| 2 | Wrong arguments or configuration, found before any benchmark runs, a final run name that breaks the rules, or a `compare` operand that is not a file when no target is configured |
 | 130 | Interrupted with Ctrl+C |
 
 A mistake in the command line itself, such as a missing argument or a flag without its value, is reported by argparse.
