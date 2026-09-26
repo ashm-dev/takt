@@ -55,6 +55,14 @@ def schema_differences(target: Target) -> list[object]:
         return list(compare_metadata(context, METADATA))
 
 
+def add_conflicting_index(target: Target) -> None:
+    with create_target_engine(target).begin() as connection:
+        connection.exec_driver_sql('CREATE TABLE other (x INTEGER)')
+        connection.exec_driver_sql(
+            'CREATE INDEX ix_takt_suite_result_date ON other (x)',
+        )
+
+
 def test_head_returns_initial_revision_for_sqlite(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -128,6 +136,19 @@ def test_schema_matches_metadata_on_sqlite(sqlite_target: Target) -> None:
     AlembicSchemaMigrator().upgrade(sqlite_target)
 
     assert schema_differences(sqlite_target) == []
+
+
+def test_upgrade_failure_raises_execution_error(sqlite_target: Target) -> None:
+    add_conflicting_index(sqlite_target)
+
+    with pytest.raises(ExecutionError) as migrate_error:
+        AlembicSchemaMigrator().upgrade(sqlite_target)
+
+    assert str(migrate_error.value) == (
+        f'cannot migrate database {sqlite_target.display()}: '
+        'index ix_takt_suite_result_date already exists'
+    )
+    assert isinstance(migrate_error.value.__cause__, sa.exc.OperationalError)
 
 
 @pytest.mark.mariadb
