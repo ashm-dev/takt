@@ -85,3 +85,25 @@ def test_emoji_codes_stay_text() -> None:
         'Benchmark hidden because not significant (1): :rocket:',
         'Ignored benchmarks (1) of :smile:: :fire:',
     ]
+
+
+def test_narrow_terminal_folds_long_label() -> None:
+    label = 'results/nightly/cpython-main-2026-09-20.json'
+    table = CompareTable(
+        headers=('Benchmark', label),
+        rows=(('nbody', '100 ms'),),
+        hidden_not_significant=(),
+        ignored=(),
+    )
+    console = Console(
+        record=True,
+        width=30,
+        color_system=None,
+        force_terminal=True,
+    )
+
+    render_rich_table(table, console)
+
+    text = console.export_text()
+    assert '…' not in text
+    assert 'cpython-main' in text

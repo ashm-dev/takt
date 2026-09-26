@@ -1,6 +1,7 @@
 import dataclasses
 import functools
 import io
+import re
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -85,6 +86,10 @@ class DirectOutput(io.StringIO):
     def write(self, text: str) -> int:
         self.log.append(text)
         return len(text)
+
+
+def plain_output(capsys: pytest.CaptureFixture[str]) -> str:
+    return re.sub(r'\x1b\[[0-9;]*m', '', capsys.readouterr().out)
 
 
 @pytest.fixture
@@ -406,6 +411,51 @@ def test_compare_writes_markdown_under_home(
     assert (tmp_path / 'out.md').read_text(encoding='utf-8') == (
         SNAPSHOT_MARKDOWN
     )
+
+
+def test_compare_log_keeps_full_labels(
+    fake_api: Callable[[str, object], Recorder],
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    labels = tuple(
+        f'results/nightly/cpython-main-2026-09-{day}.json'
+        for day in ('20', '21', '25')
+    )
+    note = f'Ignored benchmarks (1) of {labels[0]}: go'
+    fake_api(
+        'compare',
+        CompareTable(
+            headers=('Benchmark', *labels),
+            rows=(('nbody', '100 ms', '90.0 ms: 1.11x faster', '1 ms'),),
+            hidden_not_significant=(),
+            ignored=((labels[0], ('go',)),),
+        ),
+    )
+    monkeypatch.delenv('COLUMNS', raising=False)
+    monkeypatch.setenv('FORCE_COLOR', '1')
+
+    assert main(['compare', *labels]) == 0
+
+    lines = plain_output(capsys).splitlines()
+    assert all(label in lines[1] for label in labels)
+    assert '90.0 ms: 1.11x faster' in lines[3]
+    assert lines[-1] == note
+
+
+def test_compare_terminal_keeps_its_width(
+    fake_api: Callable[[str, object], Recorder],
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_api('compare', SNAPSHOT_TABLE)
+    monkeypatch.setattr(sys.stdout, 'isatty', lambda: True)
+    monkeypatch.setenv('COLUMNS', '30')
+
+    assert main(['compare', 'a', 'b']) == 0
+
+    lines = plain_output(capsys).splitlines()
+    assert max(len(line) for line in lines) <= 30
 
 
 def test_compare_markdown_write_error(
