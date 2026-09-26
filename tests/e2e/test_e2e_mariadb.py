@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -5,6 +6,9 @@ import sqlalchemy as sa
 
 from takt.cli.main import main
 from takt.domain.model.target import Target
+from takt.infrastructure.cache.file_schema_version_cache import (
+    FileSchemaVersionCache,
+)
 from tests.e2e.conftest import CountSuites, MakeResult
 
 pytestmark = pytest.mark.mariadb
@@ -140,7 +144,9 @@ def test_schema_cache_recovers_after_drop(
 ) -> None:
     make_result('a.json', 'nbody', NOMINAL)
     make_result('b.json', 'nbody', SLOWER)
-    main(['import', 'a.json', '--db', mariadb_target.url])
+    assert main(['import', 'a.json', '--db', mariadb_target.url]) == 0
+    cache = FileSchemaVersionCache.default(os.environ)
+    assert cache.get(mariadb_target.url) is not None
     drop_takt_tables(mariadb_target.url)
 
     code = main(['import', 'b.json', '--db', mariadb_target.url])
