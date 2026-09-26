@@ -91,6 +91,19 @@ Retry without re-running benchmarks: takt import /home/me/takt-20260925T101500Z.
 Файл результата остаётся на диске: почините БД и выполните напечатанную команду `takt import`.
 Бенчмарки заново не запускаются.
 
+### Если бенчмарки упали
+
+Если pyperformance или pyperf-скрипт завершился с ошибкой, takt ничего не пишет в БД, показывает ошибку и завершается с кодом 1.
+Если упавший процесс всё же успел записать новый файл результата, takt пишет в stderr ещё одну строку:
+
+```text
+error: benchmark command failed with exit code 1: /usr/bin/python3 -m pyperformance run -b nbody,json_dumps --output /home/me/takt-20260925T101500Z.json
+Partial result was written to /home/me/takt-20260925T101500Z.json. Load it without re-running benchmarks: takt import /home/me/takt-20260925T101500Z.json --target local
+```
+
+В файле может не быть упавших бенчмарков.
+Если остальных вам хватает, выполните напечатанную команду `takt import`.
+
 ## takt import
 
 `takt import` записывает готовый результат pyperf или pyperformance во все выбранные БД.
@@ -210,3 +223,4 @@ Ignored benchmarks (1) of new.json: x
 | 130 | прервано по Ctrl+C |
 
 Любая ошибка выводится в stderr одной строкой `error: <сообщение>`, без трейсбека.
+Если `takt run` не смог записать результат или бенчмарки упали, но файл результата всё же записан, takt ещё печатает команду `takt import`: она загружает этот файл без повторного запуска бенчмарков.

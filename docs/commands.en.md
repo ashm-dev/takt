@@ -91,6 +91,19 @@ The command exits with code 1.
 The result file stays on disk, so fix the database and run the printed `takt import` command.
 The benchmarks do not run again.
 
+### When the benchmarks fail
+
+If pyperformance or the pyperf script exits with an error, takt writes nothing to the databases, prints the error and exits with code 1.
+If the failed process still wrote a new result file, takt prints one more line to standard error:
+
+```text
+error: benchmark command failed with exit code 1: /usr/bin/python3 -m pyperformance run -b nbody,json_dumps --output /home/me/takt-20260925T101500Z.json
+Partial result was written to /home/me/takt-20260925T101500Z.json. Load it without re-running benchmarks: takt import /home/me/takt-20260925T101500Z.json --target local
+```
+
+The file may lack the benchmarks that failed.
+If the rest is enough for you, run the printed `takt import` command.
+
 ## takt import
 
 `takt import` stores a ready pyperf or pyperformance result in every selected database.
@@ -210,3 +223,4 @@ The numbers and the significance test are the same as in `pyperf compare_to --ta
 | 130 | Interrupted with Ctrl+C |
 
 Every error is printed to standard error as one line `error: <message>`, without a traceback.
+When `takt run` fails to write the result, or a benchmark fails but a result file was still written, takt also prints a `takt import` command that loads this file without re-running benchmarks.
