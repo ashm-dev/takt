@@ -120,7 +120,11 @@ def test_empty_placeholder() -> None:
 )
 def test_unknown_placeholder(field: str) -> None:
     text = f'{{{field}}}'
-    message = f'invalid name template {text!r}: unknown placeholder {{{field}}}'
+    message = (
+        f'invalid name template {text!r}: unknown placeholder {{{field}}}; '
+        'allowed: {date}, {datetime}, {path}, {python_version}, {hostname}, '
+        '{hash}'
+    )
 
     with pytest.raises(InvalidRunNameError, match=exact_pattern(message)):
         NameTemplate.parse(text)

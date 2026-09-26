@@ -12,6 +12,7 @@ from takt.domain.naming.placeholder import Placeholder
 
 _MAX_LENGTH = 255
 _HASH_LENGTH = 12
+_ALLOWED = ', '.join(f'{{{placeholder}}}' for placeholder in Placeholder)
 
 _Field = str | None
 _Chunk = tuple[str, _Field, _Field, _Field]
@@ -76,7 +77,8 @@ def _validate_chunk(text: str, chunk: _Chunk, offset: int) -> int:
         Placeholder(field)
     except ValueError:
         _fail(
-            f'invalid name template {text!r}: unknown placeholder {{{field}}}',
+            f'invalid name template {text!r}: unknown placeholder '
+            f'{{{field}}}; allowed: {_ALLOWED}',
         )
     # Formatter.parse gives the same empty spec for {date} and {date:}.
     offset += len(field) + 1
