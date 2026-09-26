@@ -1,6 +1,5 @@
 """Reader of pyperf and pyperformance result files."""
 
-from datetime import datetime
 from pathlib import Path
 from typing import Final
 
@@ -17,6 +16,7 @@ from takt.infrastructure.pyperf import (
     json_document_loader,
     metadata_flattener,
     metadata_mapper,
+    run_date_parser,
 )
 
 _FORMAT_VERSIONS: Final[frozenset[str]] = frozenset(('1.0', '5', '6'))
@@ -77,7 +77,7 @@ def _suite(
         _benchmark(bench) for bench in pyperf_suite.get_benchmarks()
     )
     dates = tuple(
-        _parse_date(worker_run.metadata.date)
+        run_date_parser.parse_run_date(worker_run.metadata.date)
         for benchmark in benchmarks
         for worker_run in benchmark.runs
     )
@@ -120,12 +120,3 @@ def _worker_run(run: pyperf.Run) -> WorkerRun:
             for run_value in run.values
         ),
     )
-
-
-def _parse_date(date: str | None) -> datetime | None:
-    if date is None:
-        return None
-    try:
-        return datetime.fromisoformat(date)
-    except ValueError:
-        return None
