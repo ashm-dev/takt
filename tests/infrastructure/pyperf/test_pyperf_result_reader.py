@@ -233,3 +233,28 @@ def test_non_string_benchmark_name_raises(
         f'invalid pyperf result {path}: '
         f'benchmark name must be a string, got {type_name}'
     )
+
+
+@pytest.mark.parametrize(
+    ('run_index', 'key', 'numbers'),
+    [
+        (1, 'values', [10**400]),
+        (0, 'warmups', [[4, 10**400]]),
+    ],
+    ids=['value', 'warmup'],
+)
+def test_number_too_large_for_float_raises(
+    tmp_path: Path, run_index: int, key: str, numbers: list[object]
+) -> None:
+    broken = _full_document()
+    benchmark = _as_dict(_as_list(broken['benchmarks'])[0])
+    _as_dict(_as_list(benchmark['runs'])[run_index])[key] = numbers
+    path = _write(tmp_path, broken)
+
+    with pytest.raises(InvalidResultError) as error:
+        _read(path)
+
+    assert str(error.value) == (
+        f'invalid pyperf result {path}: int too large to convert to float'
+    )
+    assert isinstance(error.value.__cause__, OverflowError)
