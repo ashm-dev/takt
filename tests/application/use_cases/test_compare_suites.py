@@ -73,6 +73,33 @@ def test_files_only_without_target(fixture: Fixture) -> None:
     assert fixture.connector.opened == []
 
 
+def broken_settings() -> Target | None:
+    msg = 'broken database settings'
+    raise ConfigurationError(msg)
+
+
+def test_files_only_never_read_database_settings(fixture: Fixture) -> None:
+    files = (str(fixture.base), str(fixture.new))
+    request = CompareRequest(operands=files, find_target=broken_settings)
+
+    table = fixture.use_case.execute(request)
+
+    assert table.headers == ('Benchmark', *files)
+
+
+def test_stored_run_reads_database_settings(fixture: Fixture) -> None:
+    request = CompareRequest(
+        operands=(str(fixture.base), 'default'),
+        find_target=broken_settings,
+    )
+
+    with pytest.raises(
+        ConfigurationError,
+        match=exact_pattern('broken database settings'),
+    ):
+        fixture.use_case.execute(request)
+
+
 def test_db_operand_without_target(fixture: Fixture) -> None:
     with pytest.raises(ConfigurationError) as excinfo:
         fixture.execute(str(fixture.base), 'default', target=None)

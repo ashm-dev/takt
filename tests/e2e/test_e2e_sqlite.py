@@ -206,6 +206,20 @@ def test_compare_files_without_db(make_result: MakeResult) -> None:
 
 
 @pytest.mark.usefixtures('result_a')
+def test_compare_files_ignores_broken_settings(
+    make_result: MakeResult,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    make_result('b.json', 'nbody', SLOWER)
+    (tmp_path / 'takt.toml').write_text('oops = 1\n', encoding='utf-8')
+    monkeypatch.setenv('TAKT_DB', 'postgresql://u:p@h/db')
+
+    assert main(['compare', 'a.json', 'b.json']) == 0
+    assert main(['compare', 'a.json', 'base']) == 2
+
+
+@pytest.mark.usefixtures('result_a')
 def test_compare_unknown_operand(
     sqlite_url: str,
     capsys: pytest.CaptureFixture[str],
