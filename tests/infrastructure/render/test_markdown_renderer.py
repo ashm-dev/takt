@@ -65,3 +65,21 @@ def test_pipe_in_label_and_name_stays_in_its_cell() -> None:
 
     assert header == r'| Benchmark | base | jit\|pgo           |'
     assert row == r'| a\|b      | 1 ms | 2 ms: 2.00x slower |'
+
+
+def test_ignored_line_is_apart_from_the_table() -> None:
+    table = CompareTable(
+        headers=HEADERS,
+        rows=ROWS,
+        hidden_not_significant=(),
+        ignored=(('jit|pgo', ('x',)),),
+    )
+
+    assert render_markdown(table) == '\n'.join(
+        (
+            *TABLE_LINES,
+            '',
+            'Ignored benchmarks (1) of jit|pgo: x',
+            '',
+        ),
+    )
