@@ -75,6 +75,10 @@ def run(
         sequence of strings.
     :raises ExecutionError: If the benchmarks fail or the result file
         cannot be read.
+    :raises KeyboardInterrupt: On Ctrl+C; if the benchmarks had already
+        written a new result file, or takt was writing the result to the
+        databases, its ``__cause__`` has that file in the ``result_path``
+        attribute, and during the write also the run name in ``name``.
     """
     reject_single_strings(
         runner_arguments=runner_arguments, db=db, target=target
@@ -112,6 +116,9 @@ def import_results(
     :raises UsageError: If the configuration, targets or run name are
         invalid, or a string is passed instead of a sequence of strings.
     :raises ExecutionError: If the result file cannot be read.
+    :raises KeyboardInterrupt: On Ctrl+C; during the database write its
+        ``__cause__`` has the result file in the ``result_path`` attribute
+        and the run name in ``name``.
     """
     reject_single_strings(db=db, target=target)
     targets, template = _configured(db, target, config, name)

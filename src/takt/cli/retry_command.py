@@ -4,6 +4,7 @@ import argparse
 import shlex
 from pathlib import Path
 
+from takt.domain.naming.literal_template import literal_template
 from takt.infrastructure.runner.takt_flags import (
     CONFIG_FLAG,
     DB_FLAG,
@@ -34,3 +35,20 @@ def build_retry_command(
     if name is not None:
         words.extend((NAME_FLAG, name))
     return shlex.join(words)
+
+
+def build_retry_command_for_name(
+    args: argparse.Namespace,
+    result_path: Path,
+    name: str | None,
+) -> str:
+    """Build ``takt import`` that stores the result under a final run name.
+
+    :param args: Parsed arguments of ``takt run``.
+    :param result_path: Result file left on disk by the run.
+    :param name: Run name the run gave the result, or ``None``.
+    :returns: Shell-quoted command line.
+    """
+    # A template with {date} would give the retried result another name.
+    template = None if name is None else literal_template(name)
+    return build_retry_command(args, result_path, template)

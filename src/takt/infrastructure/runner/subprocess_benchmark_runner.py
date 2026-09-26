@@ -7,6 +7,9 @@ from pathlib import Path
 
 from takt.application.ports.clock import Clock
 from takt.domain.errors.benchmark_failed_error import BenchmarkFailedError
+from takt.domain.errors.benchmark_interrupted_error import (
+    BenchmarkInterruptedError,
+)
 from takt.infrastructure.runner.default_output_path import default_output_path
 from takt.infrastructure.runner.output_directory import (
     require_output_directory,
@@ -43,6 +46,9 @@ class SubprocessBenchmarkRunner:
         :returns: Path to the JSON result.
         :raises BenchmarkFailedError: If the process cannot start, exits
             with a non-zero code or leaves no result file.
+        :raises KeyboardInterrupt: On Ctrl+C; its ``__cause__`` is a
+            ``BenchmarkInterruptedError`` if the benchmarks had already
+            written a new result file.
         :raises UsageError: If ``-o``/``--output`` has no value, or the
             folder of the result file is missing or not writable.
         """
@@ -55,9 +61,15 @@ class SubprocessBenchmarkRunner:
         require_output_directory(result_path)
         # The runners never overwrite an output file, so an old one is stale.
         existed = result_path.exists()
-        return_code = self._execute(command)
+        try:
+            return_code = self._execute(command)
+        except KeyboardInterrupt as interrupt:
+            if _is_new_file(result_path, existed=existed):
+                # mypyc drops the cause of raise ... from, so it is set here.
+                interrupt.__cause__ = BenchmarkInterruptedError(result_path)
+            raise
         if return_code != 0:
-            written = not existed and result_path.is_file()
+            written = _is_new_file(result_path, existed=existed)
             raise _failed(
                 command,
                 return_code,
@@ -88,6 +100,10 @@ class SubprocessBenchmarkRunner:
             )
             raise BenchmarkFailedError(message, return_code=0)
         return result_path
+
+
+def _is_new_file(result_path: Path, *, existed: bool) -> bool:
+    return not existed and result_path.is_file()
 
 
 def _failed(

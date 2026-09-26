@@ -14,6 +14,9 @@ class BenchmarkRunner(Protocol):
         :returns: Path to the JSON result.
         :raises BenchmarkFailedError: If the process cannot start, exits
             with a non-zero code or leaves no result file.
+        :raises KeyboardInterrupt: On Ctrl+C; its ``__cause__`` is a
+            ``BenchmarkInterruptedError`` if the benchmarks had already
+            written a new result file.
         :raises UsageError: If ``-o``/``--output`` has no value, or the
             folder of the result file is missing or not writable.
         """
