@@ -227,6 +227,7 @@ A mistake in the command line itself, such as a missing argument or a flag witho
 It prints the usage of the command and then a line like `takt import: error: the following arguments are required: PATH`.
 An unknown flag of `takt import` or `takt compare` prints the general usage of `takt` and the line `takt: error: unrecognized arguments: <flags>`.
 `takt run` does not reject unknown flags: it passes them to pyperformance or the pyperf script.
+`takt run` checks `-o`/`--output` itself: without a file path it prints only the line `error: option -o/--output requires a file path`.
 The exit code is 2.
 
 Every other error is printed to standard error as `error: <message>`, without a traceback.

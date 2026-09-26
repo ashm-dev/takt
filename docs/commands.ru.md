@@ -227,6 +227,7 @@ Ignored benchmarks (1) of new.json: x
 Он печатает подсказку по использованию команды (usage), а под ней строку вроде `takt import: error: the following arguments are required: PATH`.
 При неизвестном флаге у `takt import` или `takt compare` печатается общая подсказка `takt` и строка `takt: error: unrecognized arguments: <флаги>`.
 `takt run` неизвестные флаги не отклоняет: он передаёт их pyperformance или pyperf-скрипту.
+`-o`/`--output` у `takt run` проверяет сам takt: если пути к файлу нет, он печатает только строку `error: option -o/--output requires a file path`.
 Код выхода 2.
 
 Любая другая ошибка выводится в stderr как `error: <сообщение>`, без трейсбека.
