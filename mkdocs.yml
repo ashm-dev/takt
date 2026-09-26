@@ -1,5 +1,11 @@
 site_name: takt
 site_description: Run pyperformance and pyperf benchmarks and store the results in SQL databases.
+site_author: Shamil Abdulaev
+extra:
+  social:
+    - icon: fontawesome/solid/globe
+      link: https://ashm-dev.github.io
+      name: Shamil Abdulaev
 theme:
   name: material
   features:
