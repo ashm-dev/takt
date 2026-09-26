@@ -291,6 +291,20 @@ def test_compensation_close_failure_is_ignored() -> None:
     assert world.stored == set()
 
 
+def test_compensation_commit_failure_closes_session() -> None:
+    world = FakeWorld(fail={'commit:c': 1}, fail_at={'commit:a': 2})
+
+    report = write_expecting(world, (FL, RB, FL))
+
+    assert report.outcomes[0].error == (
+        'compensation failed: commit failed on a'
+    )
+    assert_subsequence(
+        world.journal,
+        ['commit:c', 'delete:a', 'commit:a', 'close:a'],
+    )
+
+
 def test_empty_exception_text_uses_class_name() -> None:
     world = FakeWorld(empty_errors={'insert:a'})
 

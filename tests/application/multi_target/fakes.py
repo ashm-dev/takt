@@ -14,6 +14,7 @@ class FakeWorld:
     loaded: dict[str, str | None] = field(default_factory=dict)
     stored: set[str] = field(default_factory=set)
     fail: dict[str, int] = field(default_factory=dict)
+    fail_at: dict[str, int] = field(default_factory=dict)
     heads: dict[str, str] = field(default_factory=dict)
     cache: dict[str, str] = field(default_factory=dict)
     inserted: list[SuiteRecord] = field(default_factory=list)
@@ -24,6 +25,8 @@ class FakeWorld:
         self.journal.append(key)
         if key in self.empty_errors:
             raise RuntimeError
+        if self.fail_at.get(key) == self.journal.count(key):
+            self.fail[key] = 1
         if self.fail.get(key, 0) > 0:
             self.fail[key] -= 1
             msg = f'{operation} failed on {name}'
