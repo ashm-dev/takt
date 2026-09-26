@@ -99,7 +99,7 @@ The value is a template. takt replaces these placeholders:
 - The character `:` is not allowed in a name, because `compare` uses it in `name:N`.
 - These are errors too: an empty name, a name longer than 255 characters, an unknown placeholder, `{date:%Y}` and `{date!r}`.
 - takt checks the template text before any benchmark runs. This finds an empty name, `:` in the text, an unknown placeholder, `{date:%Y}` and `{date!r}`.
-- The 255-character limit, and a `:` that comes from a value such as `{hostname}`, `{python_version}` or `{path}`, are checked only on the final name, after takt has read the result. With `takt run` this happens after the benchmarks: takt writes nothing to the databases, exits with code 2 and keeps the result file. Load that file with `takt import` and another `--name`.
+- The 255-character limit, and a `:` that comes from a value such as `{hostname}`, `{python_version}` or `{path}`, are checked only on the final name, after takt has read the result. With `takt run` this happens after the benchmarks: takt writes nothing to the databases, keeps the result file, prints its path and exits with code 2. Load that file with `takt import` and another `--name`.
 - The name is optional. A run without a name can be found only by its hash.
 - The name is not unique: several runs can have the same name.
 - Importing the same result again with another name does not change the stored name.

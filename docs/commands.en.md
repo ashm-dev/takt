@@ -233,3 +233,4 @@ The exit code is 2.
 Every other error is printed to standard error as `error: <message>`, without a traceback.
 Most messages are one line; an ambiguous operand also lists the candidates below it.
 When `takt run` fails to write the result, or a benchmark fails but a result file was still written, takt also prints a `takt import` command that loads this file without re-running benchmarks.
+When the final run name breaks the rules after the benchmarks, takt prints the path of the result file: load it with `takt import` and another `--name`.
