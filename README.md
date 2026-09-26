@@ -88,3 +88,11 @@ poetry run mypy --strict src
 ```bash
 poetry build
 ```
+
+A local build with `TAKT_MYPYC=1 poetry build` copies compiled `.so` files into `src/takt`.
+Python loads them instead of the `.py` files, so your later edits have no effect and `pytest` stops with an error.
+Remove them:
+
+```bash
+find src/takt -name '*.so' -delete
+```

@@ -88,3 +88,11 @@ poetry run mypy --strict src
 ```bash
 poetry build
 ```
+
+Локальная сборка `TAKT_MYPYC=1 poetry build` копирует скомпилированные файлы `.so` в `src/takt`.
+Python загружает их вместо файлов `.py`, поэтому ваши следующие правки не действуют, а `pytest` останавливается с ошибкой.
+Удалите их:
+
+```bash
+find src/takt -name '*.so' -delete
+```
