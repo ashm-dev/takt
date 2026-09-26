@@ -55,6 +55,7 @@ class FakeSession:
         self.records = list(records)
         self.calls: list[str] = []
         self.prefix_lookups: list[tuple[str, str | None]] = []
+        self.rollback_error: Exception | None = None
 
     def loaded_name(self, suite_hash: str) -> tuple[bool, str | None]:
         raise NotImplementedError
@@ -93,6 +94,8 @@ class FakeSession:
 
     def rollback(self) -> None:
         self.calls.append('rollback')
+        if self.rollback_error is not None:
+            raise self.rollback_error
 
     def close(self) -> None:
         self.calls.append('close')

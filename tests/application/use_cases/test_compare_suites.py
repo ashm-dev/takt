@@ -17,6 +17,7 @@ from tests.application.use_cases.compare_fakes import (
     record,
     suite,
 )
+from tests.domain.exact_pattern import exact_pattern
 
 TARGET = Target(name='main', url='sqlite:///main.db', dialect='sqlite')
 
@@ -95,5 +96,14 @@ def test_session_rolled_back_and_closed(fixture: Fixture) -> None:
 def test_session_closed_on_error(fixture: Fixture) -> None:
     with pytest.raises(OperandNotFoundError):
         fixture.execute(str(fixture.base), 'nightly')
+
+    assert fixture.session.calls == ['rollback', 'close']
+
+
+def test_session_closed_when_rollback_fails(fixture: Fixture) -> None:
+    fixture.session.rollback_error = RuntimeError('rollback failed')
+
+    with pytest.raises(RuntimeError, match=exact_pattern('rollback failed')):
+        fixture.execute('default', str(fixture.new))
 
     assert fixture.session.calls == ['rollback', 'close']
