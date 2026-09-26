@@ -36,6 +36,9 @@ from takt.infrastructure.config.resolve_targets import resolve_targets
 from takt.infrastructure.db.alembic_schema_migrator import (
     AlembicSchemaMigrator,
 )
+from takt.infrastructure.db.sqlalchemy_read_connector import (
+    SqlAlchemyReadConnector,
+)
 from takt.infrastructure.db.sqlalchemy_target_connector import (
     SqlAlchemyTargetConnector,
 )
@@ -157,13 +160,14 @@ def compare(
         a string is passed instead of a sequence of strings.
     :raises ExecutionError: If an operand is not found or ambiguous, a
         result file cannot be read, the database cannot be connected to
-        or read, or the suites share no benchmark.
+        or read, has no takt results or is a missing SQLite file, or the
+        suites share no benchmark.
     """
     reject_single_strings(operands=operands, db=db, target=target)
     sources = _sources(db, target, config, None)
     return CompareSuites(
         reader=PyperfResultReader(),
-        connector=SqlAlchemyTargetConnector(),
+        connector=SqlAlchemyReadConnector(),
     ).execute(
         CompareRequest(
             operands=tuple(operands),

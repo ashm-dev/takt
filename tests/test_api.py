@@ -369,16 +369,15 @@ def test_compare_uses_config_and_target(
 def test_compare_empty_database_raises_execution_error(
     tmp_path: Path,
 ) -> None:
-    url = sqlite_url(tmp_path / 'empty.db')
+    database = tmp_path / 'empty.db'
+    database.touch()
+    url = sqlite_url(database)
     changed = write_result(tmp_path / 'b.json', SLOW)
 
     with pytest.raises(takt.ExecutionError) as caught:
         takt.compare(['base', str(changed)], db=[url])
 
-    engine_url = url.replace('sqlite:', 'sqlite+pysqlite:', 1)
-    assert str(caught.value) == (
-        f'cannot read from database {engine_url}: no such table: takt_suite'
-    )
+    assert str(caught.value) == f'no takt results in database {url}'
 
 
 def test_public_exports() -> None:

@@ -40,6 +40,17 @@ class SqlAlchemyTargetSession:
         self._write_failure = f'cannot write to database {label}'
         self._commit_failure = f'cannot commit to database {label}'
 
+    def has_schema(self) -> bool:
+        """Check whether the takt tables exist.
+
+        :returns: Whether the table of stored runs exists.
+        :raises ExecutionError: If the database cannot be read.
+        """
+        try:
+            return sa.inspect(self._connection).has_table(SUITE_TABLE.name)
+        except SQLAlchemyError as error:
+            raise database_error(self._read_failure, error) from error
+
     def loaded_name(self, suite_hash: str) -> tuple[bool, str | None]:
         """Check whether the suite is already stored.
 

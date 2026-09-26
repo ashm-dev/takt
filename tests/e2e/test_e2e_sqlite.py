@@ -258,14 +258,15 @@ def test_compare_missing_result_file(
 def test_compare_empty_database(
     sqlite_url: str,
     capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
+    (tmp_path / 'takt.db').touch()
+
     code = main(['compare', 'a.json', 'base', '--db', sqlite_url])
 
     assert code == 1
-    engine_url = sqlite_url.replace('sqlite:', 'sqlite+pysqlite:', 1)
     assert capsys.readouterr().err == (
-        f'error: cannot read from database {engine_url}: '
-        'no such table: takt_suite\n'
+        f'error: no takt results in database {sqlite_url}\n'
     )
 
 
