@@ -39,6 +39,8 @@ takt reads only its own flags. Every other flag goes to pyperformance or to the 
 
 takt flags never clash with pyperformance or pyperf flags.
 Flag abbreviations are turned off: `--ta` is not taken for `--target`.
+takt expands `~` in every path it reads from the command line: `--config`, the file of `takt import`, `--markdown`, `takt compare` operands and `-o`/`--output`.
+So `--config=~/takt.toml` works too, although the shell leaves `~` after `=` as it is.
 How targets and names are chosen is described on the [Configuration](configuration.md) page.
 
 takt checks the targets and the text of the name template before it starts the benchmarks.
