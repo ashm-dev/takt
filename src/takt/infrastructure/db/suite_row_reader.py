@@ -9,9 +9,9 @@ import sqlalchemy as sa
 from sqlalchemy.engine import Connection, RowMapping
 
 from takt.domain.model.benchmark import Benchmark
-from takt.domain.model.known_metadata_keys import KNOWN_METADATA_KEYS
 from takt.domain.model.measurement import Measurement
 from takt.domain.model.measurement_kind import MeasurementKind
+from takt.domain.model.metadata_key_types import METADATA_KEY_TYPES
 from takt.domain.model.metadata_value import MetadataValue
 from takt.domain.model.run_metadata import RunMetadata
 from takt.domain.model.suite import Suite
@@ -152,8 +152,8 @@ def _read_metadata(
 
 def _to_metadata(row: RowMapping) -> RunMetadata:
     fields: dict[str, MetadataValue] = {}
-    for key in KNOWN_METADATA_KEYS:
-        column_value = _decoded(row[key]) if key == 'tags' else row[key]
+    for key, key_type in METADATA_KEY_TYPES.items():
+        column_value = _decoded(row[key]) if key_type is tuple else row[key]
         if isinstance(column_value, list):
             fields[key] = _string_tuple(column_value)
         elif isinstance(column_value, (int, float, str)):
