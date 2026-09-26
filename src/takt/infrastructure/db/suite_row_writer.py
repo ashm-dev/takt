@@ -5,7 +5,7 @@ from datetime import UTC
 import sqlalchemy as sa
 from sqlalchemy.engine import Connection
 
-from takt.domain.model.known_metadata_keys import KNOWN_METADATA_KEYS
+from takt.domain.model.metadata_key_types import METADATA_KEY_TYPES
 from takt.domain.model.run_metadata import RunMetadata
 from takt.domain.model.suite import Suite
 from takt.domain.model.suite_record import SuiteRecord
@@ -108,10 +108,13 @@ def _measurement_rows(key: _Row, run: WorkerRun) -> list[_Row]:
 
 
 def _metadata_columns(metadata: RunMetadata) -> _Row:
-    columns: _Row = {key: getattr(metadata, key) for key in KNOWN_METADATA_KEYS}
-    tags = metadata.tags
+    columns: _Row = {key: getattr(metadata, key) for key in METADATA_KEY_TYPES}
     # A plain None in a JSON column is stored as the JSON literal null.
-    columns['tags'] = sa.null() if tags is None else list(tags)
+    columns.update(
+        (key, sa.null())
+        for key, key_type in METADATA_KEY_TYPES.items()
+        if key_type is tuple and columns[key] is None
+    )
     custom = {
         key: list(element) if isinstance(element, tuple) else element
         for key, element in metadata.custom.items()
