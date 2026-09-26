@@ -4,6 +4,13 @@ import argparse
 import shlex
 from pathlib import Path
 
+from takt.infrastructure.runner.takt_flags import (
+    CONFIG_FLAG,
+    DB_FLAG,
+    NAME_FLAG,
+    TARGET_FLAG,
+)
+
 
 def build_retry_command(args: argparse.Namespace, result_path: Path) -> str:
     """Build ``takt import`` with the same target and name flags.
@@ -14,11 +21,11 @@ def build_retry_command(args: argparse.Namespace, result_path: Path) -> str:
     """
     words = ['takt', 'import', str(result_path)]
     for url in args.db:
-        words.extend(('--db', url))
+        words.extend((DB_FLAG, url))
     for target in args.target:
-        words.extend(('--target', target))
+        words.extend((TARGET_FLAG, target))
     if args.config is not None:
-        words.extend(('--config', str(args.config)))
+        words.extend((CONFIG_FLAG, str(args.config)))
     if args.name is not None:
-        words.extend(('--name', args.name))
+        words.extend((NAME_FLAG, args.name))
     return shlex.join(words)
