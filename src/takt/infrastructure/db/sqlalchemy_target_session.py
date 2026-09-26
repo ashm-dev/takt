@@ -41,10 +41,10 @@ class SqlAlchemyTargetSession:
         self._commit_failure = f'cannot commit to database {label}'
 
     def loaded_name(self, suite_hash: str) -> tuple[bool, str | None]:
-        """Check whether the suite hash was ever stored.
+        """Check whether the suite is already stored.
 
         :param suite_hash: Suite hash.
-        :returns: Whether the hash is stored and the suite name.
+        :returns: Whether the suite is stored and its name.
         :raises ExecutionError: If the database cannot be read.
         """
         try:
