@@ -1,6 +1,7 @@
 import gzip
 import json
 import math
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
@@ -233,6 +234,46 @@ def test_non_string_benchmark_name_raises(
         f'invalid pyperf result {path}: '
         f'benchmark name must be a string, got {type_name}'
     )
+
+
+def _bad_hash(_document: object) -> str:
+    return 'bad'
+
+
+def _overflow_stack(_document: object) -> str:
+    # A real input hits this only in a stack-dependent depth window.
+    msg = 'maximum recursion depth exceeded'
+    raise RecursionError(msg)
+
+
+@pytest.mark.parametrize(
+    ('fake_hash', 'message', 'cause'),
+    [
+        (
+            _bad_hash,
+            'suite hash must be 64 lowercase hex characters',
+            ValueError,
+        ),
+        (_overflow_stack, 'maximum recursion depth exceeded', RecursionError),
+    ],
+    ids=['domain-invariant', 'too-deep-document'],
+)
+def test_suite_build_error_raises(
+    monkeypatch: pytest.MonkeyPatch,
+    fake_hash: Callable[[object], str],
+    message: str,
+    cause: type[Exception],
+) -> None:
+    monkeypatch.setattr(
+        'takt.infrastructure.pyperf.pyperf_result_reader.result_hash',
+        fake_hash,
+    )
+
+    with pytest.raises(InvalidResultError) as error:
+        _read(FULL)
+
+    assert str(error.value) == f'invalid pyperf result {FULL}: {message}'
+    assert isinstance(error.value.__cause__, cause)
 
 
 @pytest.mark.parametrize(
