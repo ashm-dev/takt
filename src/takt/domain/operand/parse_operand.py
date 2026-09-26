@@ -15,6 +15,9 @@ from takt.domain.operand.plain_operand import PlainOperand
 from takt.domain.operand.tagged_operand import TaggedOperand
 
 _INDEX_PATTERN: Final[re.Pattern[str]] = re.compile(r'[0-9]+')
+_FILE_SUFFIXES: Final = ('.json', '.json.gz')
+# A bare '/' is not enough: run names such as 'release/3.14' are valid.
+_PATH_PREFIXES: Final = ('/', './', '../', '~/')
 
 
 def parse_operand(
@@ -31,7 +34,7 @@ def parse_operand(
         and that expansion may itself read the system user database.
     :returns: The parsed operand.
     :raises OperandNotFoundError: If the operand is empty or malformed, or
-        it is a path object and no such file exists.
+        it is a path object or looks like a path, and no such file exists.
     """
     text = os.fspath(operand)
     if text.strip() == '':
@@ -40,12 +43,16 @@ def parse_operand(
     path = expand_home(text)
     if is_file(path):
         return FileOperand(text=text, path=path)
-    if not isinstance(operand, str):
+    if not isinstance(operand, str) or _looks_like_path(text):
         msg = f'result file not found: {text}'
         raise OperandNotFoundError(msg)
     if ':' not in text:
         return PlainOperand(text=text)
     return _parse_tagged(text)
+
+
+def _looks_like_path(text: str) -> bool:
+    return text.endswith(_FILE_SUFFIXES) or text.startswith(_PATH_PREFIXES)
 
 
 def _parse_tagged(text: str) -> TaggedOperand:

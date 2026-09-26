@@ -232,6 +232,7 @@ def test_is_file_called_with_expanded_path() -> None:
     expanded = Path('~/x').expanduser()
     is_file = _RecordingIsFile()
 
-    parse_operand('~/x', is_file)
+    with pytest.raises(OperandNotFoundError):
+        parse_operand('~/x', is_file)
 
     assert is_file.calls == [expanded]
