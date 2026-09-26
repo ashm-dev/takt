@@ -114,3 +114,4 @@ To skip the schema check next time, takt remembers the schema version of every t
 - Location: `$XDG_CACHE_HOME/takt/`, by default `~/.cache/takt/`.
 - Content: the schema version for every target. takt stores a hash of the URL, not the URL, so passwords do not get into the cache.
 - You can delete the cache at any time. takt then checks the schema of every target again and recreates the cache.
+- If takt cannot read or write the cache, for example when the home folder is read-only in a container or in CI, it works without the cache: it checks the schema of every target on every `run` and `import`, and the result is still written.
