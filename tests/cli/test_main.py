@@ -12,6 +12,7 @@ from takt.application.multi_target.write_report import WriteReport
 from takt.application.use_cases.import_report import ImportReport
 from takt.cli.main import main
 from takt.domain.compare.compare_table import CompareTable
+from takt.domain.errors.benchmark_failed_error import BenchmarkFailedError
 from takt.domain.errors.configuration_error import ConfigurationError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
 from takt.domain.model.target import Target
@@ -195,6 +196,52 @@ def test_run_failed_write_prints_retry(
         'Retry without re-running benchmarks: '
         'takt import r.json --db sqlite:///a.db --name x'
     ) in capsys.readouterr().err.splitlines()
+
+
+def test_run_partial_result_prints_import_hint(
+    fake_api: Callable[[str, object], Recorder],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    fake_api(
+        'run',
+        BenchmarkFailedError(
+            'benchmark command failed with exit code 1: x',
+            return_code=1,
+            result_path=Path('r.json'),
+        ),
+    )
+
+    code = main(
+        ['run', '-b', 'nbody', '--db', 'sqlite:///a.db', '--name', 'x'],
+    )
+
+    assert code == 1
+    assert capsys.readouterr().err == (
+        'error: benchmark command failed with exit code 1: x\n'
+        'Partial result was written to r.json. '
+        'Load it without re-running benchmarks: '
+        'takt import r.json --db sqlite:///a.db --name x\n'
+    )
+
+
+def test_run_failure_without_result_has_no_hint(
+    fake_api: Callable[[str, object], Recorder],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    fake_api(
+        'run',
+        BenchmarkFailedError(
+            'cannot start benchmark command: boom',
+            return_code=127,
+        ),
+    )
+
+    code = main(['run', '-b', 'nbody', '--db', 'sqlite:///a.db'])
+
+    assert code == 1
+    assert capsys.readouterr().err == (
+        'error: cannot start benchmark command: boom\n'
+    )
 
 
 def test_takt_error_exit_code(
