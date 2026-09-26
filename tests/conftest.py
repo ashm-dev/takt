@@ -10,7 +10,12 @@ import sqlalchemy as sa
 from sqlalchemy.engine import make_url
 from testcontainers.community.mysql import MySqlContainer
 
-from takt.domain.model.target import Target
+from tests.stop_if_compiled import stop_if_compiled
+
+PACKAGE_ROOT = Path(__file__).parent.parent / 'src' / 'takt'
+stop_if_compiled(PACKAGE_ROOT)
+
+from takt.domain.model.target import Target  # noqa: E402 - guard must run first
 
 MARIADB_IMAGE = 'mariadb:11.4'
 ACCOUNT = 'takt'
