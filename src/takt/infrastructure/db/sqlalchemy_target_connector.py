@@ -1,7 +1,8 @@
 """Target connector backed by SQLAlchemy."""
 
+import contextlib
+
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import SQLAlchemyError
 
 from takt.domain.model.target import Target
 from takt.infrastructure.db.database_error import database_error
@@ -23,22 +24,21 @@ class SqlAlchemyTargetConnector:
         :returns: Session with a started transaction.
         :raises ExecutionError: If the database cannot be reached.
         """
-        engine = create_target_engine(target)
         try:
-            return _start_session(engine)
-        except SQLAlchemyError as error:
-            engine.dispose()
+            return _start_session(create_target_engine(target))
+        except Exception as error:
             message = f'cannot connect to database {target.display()}'
             raise database_error(message, error) from error
-        except BaseException:
-            engine.dispose()
-            raise
 
 
 def _start_session(engine: Engine) -> SqlAlchemyTargetSession:
-    connection = engine.connect()
-    return SqlAlchemyTargetSession(
-        engine=engine,
-        connection=connection,
-        transaction=connection.begin(),
-    )
+    with contextlib.ExitStack() as on_failure:
+        on_failure.callback(engine.dispose)
+        connection = engine.connect()
+        session = SqlAlchemyTargetSession(
+            engine=engine,
+            connection=connection,
+            transaction=connection.begin(),
+        )
+        on_failure.pop_all()
+    return session
