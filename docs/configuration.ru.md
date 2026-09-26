@@ -10,7 +10,7 @@
 | БД | URL | v0 |
 |---|---|---|
 | SQLite | `sqlite:///path.db` | поддерживается, ничего ставить не нужно |
-| MariaDB | `mariadb+pymysql://user:password@host:3306/db` | поддерживается, нужен `pip install "takt[db]"`; `mariadb://…` тоже можно |
+| MariaDB | `mariadb+pymysql://user:password@host:3306/db` | поддерживается, нужен `pip install "takt[mariadb]"`; `mariadb://…` тоже можно |
 | MySQL | | позже |
 | PostgreSQL | | позже |
 | DuckDB | | позже |

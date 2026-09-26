@@ -12,10 +12,10 @@ takt запускает бенчмарки pyperformance или ваши pyperf-
 pip install takt
 ```
 
-С драйверами других БД (в v0 — MariaDB):
+С поддержкой MariaDB:
 
 ```bash
-pip install "takt[db]"
+pip install "takt[mariadb]"
 ```
 
 Нужен Python 3.14 или новее.

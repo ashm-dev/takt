@@ -12,10 +12,10 @@ SQLite only:
 pip install takt
 ```
 
-With drivers for other databases (in v0: MariaDB):
+With MariaDB support:
 
 ```bash
-pip install "takt[db]"
+pip install "takt[mariadb]"
 ```
 
 takt needs Python 3.14 or newer.
