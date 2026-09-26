@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 
 from takt.domain.errors.usage_error import UsageError
+from takt.domain.operand.expand_home import expand_home
 
 _MISSING_OUTPUT = 'option -o/--output requires a file path'
 _OUTPUT_OPTION = '-o/--output'
@@ -33,7 +34,7 @@ def build_runner_command(
     :raises UsageError: If ``-o``/``--output`` has no value.
     """
     user_output = _find_output(arguments)
-    chosen = output if user_output is None else Path(user_output).expanduser()
+    chosen = output if user_output is None else expand_home(user_output)
     result_path = cwd / chosen
     options = _with_output(arguments, result_path)
     if _is_script(arguments):
