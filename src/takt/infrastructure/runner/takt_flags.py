@@ -2,4 +2,8 @@
 
 from typing import Final
 
-TAKT_FLAGS: Final[tuple[str, ...]] = ('--db', '--target', '--config', '--name')
+DB_FLAG: Final = '--db'
+TARGET_FLAG: Final = '--target'
+CONFIG_FLAG: Final = '--config'
+NAME_FLAG: Final = '--name'
+TAKT_FLAGS: Final = (DB_FLAG, TARGET_FLAG, CONFIG_FLAG, NAME_FLAG)

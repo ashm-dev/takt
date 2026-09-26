@@ -4,6 +4,12 @@ import argparse
 from pathlib import Path
 
 from takt import __version__
+from takt.infrastructure.runner.takt_flags import (
+    CONFIG_FLAG,
+    DB_FLAG,
+    NAME_FLAG,
+    TARGET_FLAG,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -80,21 +86,21 @@ def _add_compare(
 
 def _add_target_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        '--db',
+        DB_FLAG,
         action='append',
         default=[],
         metavar='URL',
         help='SQLAlchemy URL of a target database (repeatable).',
     )
     parser.add_argument(
-        '--target',
+        TARGET_FLAG,
         action='append',
         default=[],
         metavar='NAME',
         help='Named target from takt.toml (repeatable).',
     )
     parser.add_argument(
-        '--config',
+        CONFIG_FLAG,
         type=Path,
         default=None,
         metavar='PATH',
@@ -104,7 +110,7 @@ def _add_target_flags(parser: argparse.ArgumentParser) -> None:
 
 def _add_name_flag(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        '--name',
+        NAME_FLAG,
         default=None,
         metavar='TEMPLATE',
         help='Run name or name template.',
