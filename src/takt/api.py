@@ -14,6 +14,9 @@ from takt.application.use_cases.compare_suites import CompareSuites
 from takt.application.use_cases.import_report import ImportReport
 from takt.application.use_cases.import_request import ImportRequest
 from takt.application.use_cases.import_suite import ImportSuite
+from takt.application.use_cases.reject_single_strings import (
+    reject_single_strings,
+)
 from takt.application.use_cases.run_request import RunRequest
 from takt.application.use_cases.run_suite import RunSuite
 from takt.domain.compare.compare_table import CompareTable
@@ -68,6 +71,9 @@ def run(
     :raises ExecutionError: If the benchmarks fail or the result file
         cannot be read.
     """
+    reject_single_strings(
+        runner_arguments=runner_arguments, db=db, target=target
+    )
     targets, template = _configured(db, target, config, name)
     runner = SubprocessBenchmarkRunner(clock=SystemClock(), cwd=Path.cwd())
     return RunSuite(runner=runner, importer=_importer()).execute(
@@ -101,6 +107,7 @@ def import_results(
         invalid.
     :raises ExecutionError: If the result file cannot be read.
     """
+    reject_single_strings(db=db, target=target)
     targets, template = _configured(db, target, config, name)
     return _importer().execute(
         ImportRequest(
@@ -136,6 +143,7 @@ def compare(
         result file cannot be read, the database cannot be connected to
         or read, or the suites share no benchmark.
     """
+    reject_single_strings(operands=operands, db=db, target=target)
     targets = resolve_targets(_sources(db, target, config, None))
     selected = targets[0] if targets else None
     return CompareSuites(
