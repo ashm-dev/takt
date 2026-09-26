@@ -1,3 +1,4 @@
+import os
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -6,6 +7,7 @@ import pyperf
 import pytest
 
 from takt.domain.errors.benchmark_failed_error import BenchmarkFailedError
+from takt.domain.errors.usage_error import UsageError
 from takt.infrastructure.clock.system_clock import SystemClock
 from takt.infrastructure.runner.runner_command import build_runner_command
 from takt.infrastructure.runner.subprocess_benchmark_runner import (
@@ -183,6 +185,43 @@ def test_cannot_start(
     ) as error:
         _runner(tmp_path).run(('-b', 'nbody'))
     assert error.value.return_code == 127
+
+
+def test_missing_output_directory_stops_before_benchmarks(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    recorder = _Recorder(return_code=0, creates=None)
+    _patch(monkeypatch, recorder)
+    missing = tmp_path / 'nosuchdir'
+    message = (
+        f'cannot create result file {missing}/r.json: folder {missing} '
+        'does not exist; choose another file with -o'
+    )
+    with pytest.raises(UsageError, match=exact_pattern(message)):
+        _runner(tmp_path).run(('-o', 'nosuchdir/r.json'))
+    assert recorder.command == ()
+
+
+@pytest.mark.skipif(
+    os.geteuid() == 0,
+    reason='root can write to a read-only folder',
+)
+def test_read_only_default_folder_stops_before_benchmarks(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    locked = tmp_path / 'locked'
+    locked.mkdir(mode=0o500)
+    recorder = _Recorder(return_code=0, creates=None)
+    _patch(monkeypatch, recorder)
+    message = (
+        f'cannot create result file {locked}/{DEFAULT_NAME}: folder '
+        f'{locked} is not writable; choose another file with -o'
+    )
+    with pytest.raises(UsageError, match=exact_pattern(message)):
+        _runner(locked).run(('--fast',))
+    assert recorder.command == ()
 
 
 @pytest.mark.slow
