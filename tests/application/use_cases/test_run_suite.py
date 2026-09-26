@@ -26,6 +26,7 @@ from tests.application.use_cases.fakes import (
     FixedClock,
     make_suite,
 )
+from tests.domain.exact_pattern import exact_pattern
 
 TARGET = Target(name='a', url='sqlite:///a.db', dialect='sqlite')
 NOW = datetime(2026, 9, 25, 13, 46, 1, tzinfo=UTC)
@@ -153,7 +154,10 @@ def test_invalid_rendered_name_keeps_result_path() -> None:
     fixture = Fixture(world)
     template = NameTemplate.parse('{hash}' * 22)
 
-    with pytest.raises(InvalidRunNameError) as excinfo:
+    with pytest.raises(
+        InvalidRunNameError,
+        match=exact_pattern('run name must be at most 255 characters, got 264'),
+    ) as excinfo:
         fixture.use_case.execute(request(name_template=template))
 
     assert excinfo.value.result_path == RESULT_PATH
