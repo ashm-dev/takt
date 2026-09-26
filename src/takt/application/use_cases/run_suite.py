@@ -5,6 +5,7 @@ from takt.application.use_cases.import_report import ImportReport
 from takt.application.use_cases.import_request import ImportRequest
 from takt.application.use_cases.import_suite import ImportSuite
 from takt.application.use_cases.run_request import RunRequest
+from takt.domain.errors.invalid_run_name_error import InvalidRunNameError
 from takt.domain.errors.no_targets_error import NoTargetsError
 from takt.domain.model.suite_source import SuiteSource
 
@@ -36,16 +37,19 @@ class RunSuite:
             has no value.
         :raises BenchmarkFailedError: If the benchmark process fails.
         :raises InvalidResultError: If the result file cannot be read.
-        :raises InvalidRunNameError: If the rendered run name is invalid.
+        :raises InvalidRunNameError: If the rendered run name is invalid;
+            ``result_path`` then names the result file of the benchmarks.
         """
         if not request.targets:
             raise NoTargetsError
         path = self._runner.run(request.runner_arguments)
-        return self._importer.execute(
-            ImportRequest(
-                path=path,
-                targets=request.targets,
-                name_template=request.name_template,
-                source=SuiteSource.RUN,
-            ),
+        import_request = ImportRequest(
+            path=path,
+            targets=request.targets,
+            name_template=request.name_template,
+            source=SuiteSource.RUN,
         )
+        try:
+            return self._importer.execute(import_request)
+        except InvalidRunNameError as error:
+            raise InvalidRunNameError(str(error), result_path=path) from error
