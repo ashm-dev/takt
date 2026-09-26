@@ -1,11 +1,9 @@
 import os
-import re
 import subprocess
 import sys
 
 from takt.infrastructure.runner.takt_flags import TAKT_FLAGS
-
-FLAG_PATTERN = re.compile(r'(?<![\w-])--?[A-Za-z][\w-]*')
+from tests.help_flags import help_flags
 
 
 def _help_flags(command: tuple[str, ...]) -> set[str]:
@@ -16,7 +14,7 @@ def _help_flags(command: tuple[str, ...]) -> set[str]:
         check=True,
         env={**os.environ, 'PYTHON_COLORS': '0', 'NO_COLOR': '1'},
     )
-    return set(FLAG_PATTERN.findall(completed.stdout))
+    return help_flags(completed.stdout)
 
 
 def test_values() -> None:
