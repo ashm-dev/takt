@@ -2134,6 +2134,18 @@ trino = ["trino"]
 weaviate = ["weaviate-client (>=4)"]
 
 [[package]]
+name = "types-setuptools"
+version = "84.0.0.20260812"
+description = "Typing stubs for setuptools"
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "types_setuptools-84.0.0.20260812-py3-none-any.whl", hash = "sha256:799c08e4bc6a288e8a0b538afb5f5ff320a08927ba8dbedb30c74ee3ba5d867b"},
+    {file = "types_setuptools-84.0.0.20260812.tar.gz", hash = "sha256:09bedc248ebbb7a232c9419dfcdca329706e61bf2aa5743e9424d027f1d956b4"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.16.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
@@ -2347,4 +2359,4 @@ mariadb = ["pymysql"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.14"
-content-hash = "9f8afea13f3655a9bbdc94928fc41d6e475cf1094f51702b55e292018cfd267c"
+content-hash = "9a39d7758c5c2d1a2db29dba0ae24d165a00dc93e3329dda98fb3ebf7ac01bfd"
