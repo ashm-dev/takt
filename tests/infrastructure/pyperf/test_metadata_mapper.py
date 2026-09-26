@@ -1,6 +1,10 @@
+import dataclasses
+from types import MappingProxyType
+
 import pytest
 
 from takt.domain.errors.invalid_result_error import InvalidResultError
+from takt.infrastructure.pyperf import metadata_mapper
 from takt.infrastructure.pyperf.metadata_mapper import (
     to_run_metadata as map_metadata,
 )
@@ -48,6 +52,21 @@ def test_tags_list_becomes_tuple() -> None:
     metadata = map_metadata({'tags': ['a', 'b']})
 
     assert metadata.tags == ('a', 'b')
+
+
+def test_tuple_field_type_comes_from_key_types(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        metadata_mapper,
+        'METADATA_KEY_TYPES',
+        MappingProxyType({'python_gc': tuple}),
+    )
+
+    metadata = map_metadata({'python_gc': ['a']})
+
+    assert dataclasses.asdict(metadata)['python_gc'] == ('a',)
+    assert metadata.custom == {}
 
 
 def test_custom_list_of_str_becomes_tuple() -> None:
