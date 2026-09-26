@@ -1,3 +1,4 @@
+import dataclasses
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -48,13 +49,7 @@ def test_combined() -> None:
 def test_non_utc_now_is_converted() -> None:
     tzinfo = timezone(timedelta(hours=3))
     now = datetime(2026, 9, 26, 1, 0, tzinfo=tzinfo)
-    values = NameValues(
-        now=now,
-        result_path=VALUES.result_path,
-        python_version=VALUES.python_version,
-        hostname=VALUES.hostname,
-        suite_hash=VALUES.suite_hash,
-    )
+    values = dataclasses.replace(VALUES, now=now)
 
     assert NameTemplate.parse('{date}').render(values) == '2026-09-25'
 
@@ -75,25 +70,16 @@ def test_escaped_braces() -> None:
     ],
 )
 def test_path_variants(filename: str, expected: str) -> None:
-    values = NameValues(
-        now=VALUES.now,
+    values = dataclasses.replace(
+        VALUES,
         result_path=Path(f'results/{filename}'),
-        python_version=VALUES.python_version,
-        hostname=VALUES.hostname,
-        suite_hash=VALUES.suite_hash,
     )
 
     assert NameTemplate.parse('{path}').render(values) == expected
 
 
 def test_missing_values_are_unknown() -> None:
-    values = NameValues(
-        now=VALUES.now,
-        result_path=VALUES.result_path,
-        python_version=None,
-        hostname='',
-        suite_hash=VALUES.suite_hash,
-    )
+    values = dataclasses.replace(VALUES, python_version=None, hostname='')
 
     template = NameTemplate.parse('{python_version}-{hostname}')
 
@@ -160,13 +146,7 @@ def test_colon_in_literal() -> None:
 
 
 def test_colon_from_value() -> None:
-    values = NameValues(
-        now=VALUES.now,
-        result_path=VALUES.result_path,
-        python_version=VALUES.python_version,
-        hostname='a:b',
-        suite_hash=VALUES.suite_hash,
-    )
+    values = dataclasses.replace(VALUES, hostname='a:b')
     template = NameTemplate.parse('{hostname}')
 
     with pytest.raises(
@@ -177,13 +157,7 @@ def test_colon_from_value() -> None:
 
 
 def test_rendered_empty() -> None:
-    values = NameValues(
-        now=VALUES.now,
-        result_path=VALUES.result_path,
-        python_version=' ',
-        hostname=VALUES.hostname,
-        suite_hash=VALUES.suite_hash,
-    )
+    values = dataclasses.replace(VALUES, python_version=' ')
     template = NameTemplate.parse('{python_version}')
 
     with pytest.raises(
