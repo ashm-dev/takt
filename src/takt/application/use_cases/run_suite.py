@@ -32,6 +32,8 @@ class RunSuite:
         :param request: Runner arguments, targets and the name template.
         :returns: The import report, even when a target write failed.
         :raises NoTargetsError: If ``request.targets`` is empty.
+        :raises UsageError: If ``-o``/``--output`` in the runner arguments
+            has no value.
         :raises BenchmarkFailedError: If the benchmark process fails.
         :raises InvalidResultError: If the result file cannot be read.
         :raises InvalidRunNameError: If the rendered run name is invalid.
