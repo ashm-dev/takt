@@ -1,4 +1,5 @@
 import dataclasses
+import math
 
 import pytest
 
@@ -25,8 +26,11 @@ def test_value_measurement_rejects_loops() -> None:
         Measurement(kind=MeasurementKind.VALUE, value=0.5, loops=1)
 
 
-@pytest.mark.parametrize('value', [0.0, -1.0])
-def test_value_measurement_rejects_non_positive_value(value: float) -> None:
+@pytest.mark.parametrize(
+    'value',
+    [0.0, -1.0, math.nan, math.inf, -math.inf],
+)
+def test_value_measurement_rejects_bad_value(value: float) -> None:
     with pytest.raises(ValueError, match='value must be a finite number > 0'):
         Measurement(kind=MeasurementKind.VALUE, value=value, loops=None)
 
@@ -48,11 +52,15 @@ def test_warmup_measurement_requires_positive_loops(loops: int | None) -> None:
         Measurement(kind=MeasurementKind.WARMUP, value=0.1, loops=loops)
 
 
-def test_warmup_measurement_rejects_negative_value() -> None:
+@pytest.mark.parametrize(
+    'value',
+    [-0.1, math.nan, math.inf, -math.inf],
+)
+def test_warmup_measurement_rejects_bad_value(value: float) -> None:
     with pytest.raises(
         ValueError, match='warmup value must be a finite number >= 0'
     ):
-        Measurement(kind=MeasurementKind.WARMUP, value=-0.1, loops=1)
+        Measurement(kind=MeasurementKind.WARMUP, value=value, loops=1)
 
 
 def test_measurement_is_frozen() -> None:
