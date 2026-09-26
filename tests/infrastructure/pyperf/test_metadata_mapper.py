@@ -54,6 +54,13 @@ def test_tags_list_becomes_tuple() -> None:
     assert metadata.tags == ('a', 'b')
 
 
+def test_tags_tuple_goes_to_field() -> None:
+    metadata = map_metadata({'tags': ('a', 'b')})
+
+    assert metadata.tags == ('a', 'b')
+    assert metadata.custom == {}
+
+
 def test_tags_not_a_list_goes_to_custom() -> None:
     metadata = map_metadata({'tags': 'a'})
 
