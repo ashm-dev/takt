@@ -13,7 +13,11 @@ def render_markdown(table: CompareTable) -> str:
     :returns: Markdown text ending with a newline.
     """
     lines = _table_lines(table) if table.rows else []
-    lines.extend(note_lines(table))
+    notes = note_lines(table)
+    # Markdown reads a line right under a table as one more table row.
+    if lines and notes and notes[0]:
+        lines.append('')
+    lines.extend(notes)
     text = '\n'.join(lines)
     return f'{text}\n'
 
