@@ -57,7 +57,8 @@ def run(
 
     Targets and the run name template are checked before any benchmark
     starts; the length of the final name and a ``:`` that comes from the
-    result are checked only after the benchmarks.
+    result are checked only after the benchmarks, and that error keeps the
+    result file in its ``result_path`` attribute.
     A failed write does not raise: ``report.write.succeeded`` is ``False``
     and the result file stays on disk.
 
