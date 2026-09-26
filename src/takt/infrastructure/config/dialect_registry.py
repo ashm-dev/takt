@@ -5,7 +5,7 @@ from importlib import util
 from types import MappingProxyType
 from typing import Final
 
-from sqlalchemy.engine import make_url
+from sqlalchemy.engine import URL, make_url
 from sqlalchemy.exc import ArgumentError
 
 from takt.domain.errors.configuration_error import ConfigurationError
@@ -38,12 +38,15 @@ def dialect_for_url(url: str) -> DialectInfo:
 
     :param url: SQLAlchemy URL as the user wrote it.
     :returns: The dialect of the URL.
-    :raises ConfigurationError: If the URL cannot be parsed.
+    :raises ConfigurationError: If the URL cannot be parsed, or a SQLite
+        URL has a host instead of a file path.
     :raises UnsupportedDialectError: If the backend or driver is not
         supported.
     :raises MissingDriverError: If the driver package is not installed.
     """
-    backend, driver = _split_drivername(url)
+    parsed = _parse(url)
+    # get_driver_name() imports the driver, so the name is split by hand.
+    backend, _, driver = parsed.drivername.partition('+')
     dialect = DIALECTS.get(backend)
     if dialect is None:
         message = (
@@ -52,19 +55,25 @@ def dialect_for_url(url: str) -> DialectInfo:
         )
         raise UnsupportedDialectError(message)
     _check_driver(dialect, driver)
+    # sqlite://bench.db puts the file name where the host goes.
+    if backend == 'sqlite' and parsed.host:
+        raise _invalid_url(url)
     _check_installed(dialect)
     return dialect
 
 
-def _split_drivername(url: str) -> tuple[str, str]:
+def _parse(url: str) -> URL:
     try:
-        drivername = make_url(url).drivername
+        return make_url(url)
     except ArgumentError, ValueError:
-        message = f'invalid database URL: {url!r}'
-        raise ConfigurationError(message) from None
-    # get_driver_name() imports the driver, so the name is split by hand.
-    backend, _, driver = drivername.partition('+')
-    return backend, driver
+        raise _invalid_url(url) from None
+
+
+def _invalid_url(url: str) -> ConfigurationError:
+    return ConfigurationError(
+        f'invalid database URL: {url!r}; expected a URL such as '
+        'sqlite:///bench.db or mariadb+pymysql://user:password@host/db',
+    )
 
 
 def _check_driver(dialect: DialectInfo, driver: str) -> None:
