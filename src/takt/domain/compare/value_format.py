@@ -38,7 +38,7 @@ def _format_timedelta(value: float) -> str:
     exponent = _decimal_exponent(abs(value))
     precision = 2 - exponent % 3
     scale = -(exponent // 3) if exponent < 0 else 0
-    scaled = format(value * 10 ** (scale * 3), f'.{precision}f')
+    scaled = format(value * _TEN ** (scale * 3), f'.{precision}f')
     return f'{scaled} {_TIMEDELTA_UNITS[scale]}'
 
 
