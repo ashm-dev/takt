@@ -22,16 +22,34 @@ _PLAIN_TEXTS: Final[Mapping[TargetStatus, str]] = MappingProxyType(
 def print_import_report(report: ImportReport) -> None:
     """Print the result line and one line per target outcome.
 
+    When every target already had the result, the result line shows the
+    name stored there, or no name if the targets store different names.
+
     :param report: Report returned by ``run`` or ``import_results``.
     """
     short_hash = report.suite_hash[:_HASH_PREFIX_LENGTH]
-    name = report.name or 'unnamed'
-    sys.stdout.write(
-        f'Result {short_hash} ({name}) from {report.result_path}\n',
-    )
+    name = _name_text(report)
+    sys.stdout.write(f'Result {short_hash}{name} from {report.result_path}\n')
     for outcome in report.write.outcomes:
         target = outcome.target.display()
         sys.stdout.write(f'  {target}: {_status_text(outcome)}\n')
+
+
+def _name_text(report: ImportReport) -> str:
+    outcomes = report.write.outcomes
+    statuses = {outcome.status for outcome in outcomes}
+    if statuses - {TargetStatus.ALREADY_LOADED}:
+        return _in_parentheses(report.name)
+    # Nothing was written, so the requested name is stored nowhere.
+    stored = {outcome.existing_name for outcome in outcomes}
+    if len(stored) == 1:
+        return _in_parentheses(stored.pop())
+    return ''
+
+
+def _in_parentheses(name: str | None) -> str:
+    shown = name or 'unnamed'
+    return f' ({shown})'
 
 
 def _status_text(outcome: TargetOutcome) -> str:
