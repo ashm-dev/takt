@@ -2,6 +2,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
+from tests.domain.exact_pattern import exact_pattern
 
 from takt.domain.errors.invalid_run_name_error import InvalidRunNameError
 from takt.domain.naming.name_template import NameTemplate
@@ -14,24 +15,6 @@ VALUES = NameValues(
     hostname='bench-host',
     suite_hash='3fa2b1c4d5e6'.ljust(64, '0'),
 )
-
-
-def _parse_error(text: str) -> str:
-    try:
-        NameTemplate.parse(text)
-    except InvalidRunNameError as error:
-        return str(error)
-    msg = 'expected InvalidRunNameError'
-    raise AssertionError(msg)
-
-
-def _render_error(template: NameTemplate, values: NameValues) -> str:
-    try:
-        template.render(values)
-    except InvalidRunNameError as error:
-        return str(error)
-    msg = 'expected InvalidRunNameError'
-    raise AssertionError(msg)
 
 
 def test_plain_text() -> None:
@@ -118,7 +101,11 @@ def test_missing_values_are_unknown() -> None:
 
 
 def test_empty_template() -> None:
-    assert _parse_error('   ') == 'run name must not be empty'
+    with pytest.raises(
+        InvalidRunNameError,
+        match=exact_pattern('run name must not be empty'),
+    ):
+        NameTemplate.parse('   ')
 
 
 @pytest.mark.parametrize(
@@ -129,13 +116,16 @@ def test_empty_template() -> None:
     ],
 )
 def test_unbalanced_braces(text: str, message: str) -> None:
-    assert _parse_error(text) == message
+    with pytest.raises(InvalidRunNameError, match=exact_pattern(message)):
+        NameTemplate.parse(text)
 
 
 def test_empty_placeholder() -> None:
-    assert _parse_error('a {}') == (
-        "invalid name template 'a {}': empty placeholder"
-    )
+    with pytest.raises(
+        InvalidRunNameError,
+        match=exact_pattern("invalid name template 'a {}': empty placeholder"),
+    ):
+        NameTemplate.parse('a {}')
 
 
 @pytest.mark.parametrize(
@@ -144,21 +134,29 @@ def test_empty_placeholder() -> None:
 )
 def test_unknown_placeholder(field: str) -> None:
     text = f'{{{field}}}'
+    message = f'invalid name template {text!r}: unknown placeholder {{{field}}}'
 
-    assert _parse_error(text) == (
-        f'invalid name template {text!r}: unknown placeholder {{{field}}}'
-    )
+    with pytest.raises(InvalidRunNameError, match=exact_pattern(message)):
+        NameTemplate.parse(text)
 
 
 @pytest.mark.parametrize('text', ['{date:%Y}', '{date!r}'])
 def test_spec_and_conversion_forbidden(text: str) -> None:
-    assert _parse_error(text).endswith(
-        'format spec and conversion are not allowed in {date}',
+    message = (
+        f'invalid name template {text!r}: format spec and conversion '
+        'are not allowed in {date}'
     )
+
+    with pytest.raises(InvalidRunNameError, match=exact_pattern(message)):
+        NameTemplate.parse(text)
 
 
 def test_colon_in_literal() -> None:
-    assert _parse_error('jit:pgo') == "run name must not contain ':': 'jit:pgo'"
+    with pytest.raises(
+        InvalidRunNameError,
+        match=exact_pattern("run name must not contain ':': 'jit:pgo'"),
+    ):
+        NameTemplate.parse('jit:pgo')
 
 
 def test_colon_from_value() -> None:
@@ -171,10 +169,11 @@ def test_colon_from_value() -> None:
     )
     template = NameTemplate.parse('{hostname}')
 
-    assert (
-        _render_error(template, values)
-        == "run name must not contain ':': 'a:b'"
-    )
+    with pytest.raises(
+        InvalidRunNameError,
+        match=exact_pattern("run name must not contain ':': 'a:b'"),
+    ):
+        template.render(values)
 
 
 def test_rendered_empty() -> None:
@@ -187,13 +186,19 @@ def test_rendered_empty() -> None:
     )
     template = NameTemplate.parse('{python_version}')
 
-    assert _render_error(template, values) == 'run name must not be empty'
+    with pytest.raises(
+        InvalidRunNameError,
+        match=exact_pattern('run name must not be empty'),
+    ):
+        template.render(values)
 
 
 def test_too_long() -> None:
     template = NameTemplate.parse('x' * 256)
 
-    assert _render_error(template, VALUES) == (
-        'run name must be at most 255 characters, got 256'
-    )
+    with pytest.raises(
+        InvalidRunNameError,
+        match=exact_pattern('run name must be at most 255 characters, got 256'),
+    ):
+        template.render(VALUES)
     assert NameTemplate.parse('x' * 255).render(VALUES) == 'x' * 255
