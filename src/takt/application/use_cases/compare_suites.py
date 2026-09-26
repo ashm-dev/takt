@@ -41,10 +41,13 @@ class CompareSuites:
         :returns: The compare table.
         :raises ConfigurationError: If there are fewer than two operands
             or a database operand is given without a target.
-        :raises OperandNotFoundError: If an operand matches nothing.
+        :raises OperandNotFoundError: If an operand is empty or malformed,
+            or matches nothing.
         :raises AmbiguousOperandError: If an operand matches several runs.
         :raises InvalidResultError: If a result file cannot be read.
         :raises NoCommonBenchmarksError: If the suites share no benchmark.
+        :raises ExecutionError: If the database cannot be connected to or
+            read.
         """
         if len(request.operands) < _MIN_OPERANDS:
             msg = 'compare needs at least two operands'
