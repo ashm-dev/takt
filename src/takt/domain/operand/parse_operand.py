@@ -21,8 +21,9 @@ def parse_operand(text: str, is_file: Callable[[Path], bool]) -> Operand:
 
     :param text: Operand text as the user wrote it on the command line.
     :param is_file: Predicate checking whether a path is an existing
-        file; never called by this function on its own, only through
-        this callback.
+        file; it is called at most once, with the operand path after
+        ``~`` expansion (``~name`` of an unknown user stays as written),
+        and that expansion may itself read the system user database.
     :returns: The parsed operand.
     :raises OperandNotFoundError: If the operand is empty or malformed.
     """
