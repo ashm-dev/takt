@@ -73,7 +73,11 @@ class CompareSuites:
             if not isinstance(operand, FileOperand)
         ]
         if not stored:
-            return OperandResolver(reader=self._reader, session=None)
+            return OperandResolver(
+                reader=self._reader,
+                session=None,
+                target_label=None,
+            )
         target = request.find_target()
         if target is None:
             msg = (
@@ -85,4 +89,8 @@ class CompareSuites:
         # Callbacks run in reverse order, so rollback precedes close.
         cleanup.callback(session.close)
         cleanup.callback(session.rollback)
-        return OperandResolver(reader=self._reader, session=session)
+        return OperandResolver(
+            reader=self._reader,
+            session=session,
+            target_label=target.display(),
+        )

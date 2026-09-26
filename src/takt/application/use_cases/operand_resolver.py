@@ -26,14 +26,18 @@ class OperandResolver:
         *,
         reader: ResultReader,
         session: TargetSession | None,
+        target_label: str | None,
     ) -> None:
         """Create the resolver.
 
         :param reader: Reads result files.
         :param session: Open database session, or ``None`` without a target.
+        :param target_label: Printable name of the session's target, which
+            a not-found error names because only that target is searched.
         """
         self._reader = reader
         self._session = session
+        self._target_label = target_label
 
     def resolve(self, operand: Operand) -> LabeledSuite:
         """Load the suite behind the operand.
@@ -83,11 +87,7 @@ class OperandResolver:
                 raise _ambiguous(text, _prefix_lines(matches), matches)
         if matches:
             return matches[0]
-        msg = (
-            f"operand '{text}' not found: "
-            'no file, run name or hash prefix matches'
-        )
-        raise OperandNotFoundError(msg)
+        raise self._not_found(text, 'no file, run name or hash prefix matches')
 
     def _find_tagged_index(
         self,
@@ -99,11 +99,10 @@ class OperandResolver:
         if 0 <= index < len(matches):
             return matches[index]
         count = len(matches)
-        msg = (
-            f"operand '{operand.text}' not found: "
-            f"run name '{operand.name}' has {count} run(s)"
+        raise self._not_found(
+            operand.text,
+            f"run name '{operand.name}' has {count} run(s)",
         )
-        raise OperandNotFoundError(msg)
 
     def _find_tagged_prefix(
         self,
@@ -116,11 +115,16 @@ class OperandResolver:
             raise _ambiguous(operand.text, _prefix_lines(matches), matches)
         if matches:
             return matches[0]
-        msg = (
-            f"operand '{operand.text}' not found: "
-            f"no run named '{operand.name}' with hash prefix '{prefix}'"
+        raise self._not_found(
+            operand.text,
+            f"no run named '{operand.name}' with hash prefix '{prefix}'",
         )
-        raise OperandNotFoundError(msg)
+
+    def _not_found(self, text: str, reason: str) -> OperandNotFoundError:
+        where = f"target '{self._target_label}'"
+        return OperandNotFoundError(
+            f"operand '{text}' not found in {where}: {reason}",
+        )
 
 
 def _name_lines(text: str, matches: _Matches) -> list[str]:

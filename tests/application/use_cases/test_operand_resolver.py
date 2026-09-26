@@ -34,9 +34,11 @@ DEFAULT_RUNS = (
 
 
 def resolve(session: FakeSession | None, operand: Operand) -> LabeledSuite:
-    return OperandResolver(reader=FakeReader({}), session=session).resolve(
-        operand,
-    )
+    return OperandResolver(
+        reader=FakeReader({}),
+        session=session,
+        target_label='main',
+    ).resolve(operand)
 
 
 def tagged(
@@ -63,6 +65,7 @@ def test_file_operand() -> None:
     file_resolver = OperandResolver(
         reader=FakeReader({path: expected}),
         session=None,
+        target_label=None,
     )
 
     labeled = file_resolver.resolve(FileOperand(text='~/r.json', path=path))
@@ -132,7 +135,7 @@ def test_plain_short_prefix_is_not_searched() -> None:
     with pytest.raises(
         OperandNotFoundError,
         match=exact_pattern(
-            "operand '3fa2b' not found: "
+            "operand '3fa2b' not found in target 'main': "
             'no file, run name or hash prefix matches'
         ),
     ):
@@ -164,7 +167,7 @@ def test_plain_not_hex_not_found() -> None:
     with pytest.raises(
         OperandNotFoundError,
         match=exact_pattern(
-            "operand 'nightly' not found: "
+            "operand 'nightly' not found in target 'main': "
             'no file, run name or hash prefix matches'
         ),
     ):
@@ -179,7 +182,7 @@ def test_plain_hex_not_found() -> None:
     with pytest.raises(
         OperandNotFoundError,
         match=exact_pattern(
-            "operand 'abcdef' not found: "
+            "operand 'abcdef' not found in target 'main': "
             'no file, run name or hash prefix matches'
         ),
     ):
@@ -203,7 +206,8 @@ def test_tagged_index_out_of_range() -> None:
     with pytest.raises(
         OperandNotFoundError,
         match=exact_pattern(
-            "operand 'default:3' not found: run name 'default' has 3 run(s)"
+            "operand 'default:3' not found in target 'main': "
+            "run name 'default' has 3 run(s)"
         ),
     ):
         resolve(session, tagged('default:3', index=3))
@@ -225,7 +229,7 @@ def test_tagged_prefix_not_found() -> None:
     with pytest.raises(
         OperandNotFoundError,
         match=exact_pattern(
-            "operand 'default:9c01de' not found: "
+            "operand 'default:9c01de' not found in target 'main': "
             "no run named 'default' with hash prefix '9c01de'"
         ),
     ):

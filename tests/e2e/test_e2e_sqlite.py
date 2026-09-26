@@ -231,7 +231,7 @@ def test_compare_unknown_operand(
 
     assert code == 1
     assert capsys.readouterr().err == (
-        "error: operand 'missing' not found: "
+        f"error: operand 'missing' not found in target '{sqlite_url}': "
         'no file, run name or hash prefix matches\n'
     )
 
