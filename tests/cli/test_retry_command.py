@@ -14,7 +14,7 @@ def test_example_from_spec() -> None:
         name='nightly {date}',
     )
 
-    command = build_retry_command(args, Path('r.json'))
+    command = build_retry_command(args, Path('r.json'), args.name)
 
     assert command == (
         "takt import r.json --db sqlite:///a.db --target 'pg ci' "
@@ -25,7 +25,9 @@ def test_example_from_spec() -> None:
 def test_only_path() -> None:
     args = argparse.Namespace(db=[], target=[], config=None, name=None)
 
-    assert build_retry_command(args, Path('r.json')) == 'takt import r.json'
+    assert build_retry_command(args, Path('r.json'), None) == (
+        'takt import r.json'
+    )
 
 
 def test_config_path() -> None:
@@ -36,7 +38,7 @@ def test_config_path() -> None:
         name=None,
     )
 
-    command = build_retry_command(args, Path('r.json'))
+    command = build_retry_command(args, Path('r.json'), None)
 
     assert command == 'takt import r.json --target ci --config conf/ci.toml'
 
@@ -49,7 +51,7 @@ def test_parser_accepts_command() -> None:
         name='nightly {date}',
     )
 
-    words = shlex.split(build_retry_command(args, Path('r.json')))
+    words = shlex.split(build_retry_command(args, Path('r.json'), args.name))
     parsed = build_parser().parse_args(words[1:])
 
     assert parsed.path == Path('r.json')

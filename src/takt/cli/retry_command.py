@@ -12,11 +12,16 @@ from takt.infrastructure.runner.takt_flags import (
 )
 
 
-def build_retry_command(args: argparse.Namespace, result_path: Path) -> str:
-    """Build ``takt import`` with the same target and name flags.
+def build_retry_command(
+    args: argparse.Namespace,
+    result_path: Path,
+    name: str | None,
+) -> str:
+    """Build ``takt import`` with the same target flags and the given name.
 
     :param args: Parsed arguments of ``takt run``.
     :param result_path: Result file left on disk by the run.
+    :param name: Value of ``--name``, or ``None`` to leave the flag out.
     :returns: Shell-quoted command line.
     """
     words = ['takt', 'import', str(result_path)]
@@ -26,6 +31,6 @@ def build_retry_command(args: argparse.Namespace, result_path: Path) -> str:
         words.extend((TARGET_FLAG, target))
     if args.config is not None:
         words.extend((CONFIG_FLAG, str(args.config)))
-    if args.name is not None:
-        words.extend((NAME_FLAG, args.name))
+    if name is not None:
+        words.extend((NAME_FLAG, name))
     return shlex.join(words)

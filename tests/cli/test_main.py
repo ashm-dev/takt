@@ -150,7 +150,7 @@ def test_run_failed_write_prints_retry(
     assert fake.args == (('-b', 'nbody'),)
     assert (
         'Retry without re-running benchmarks: '
-        'takt import r.json --db sqlite:///a.db --name x'
+        'takt import r.json --db sqlite:///a.db --name default'
     ) in capsys.readouterr().err.splitlines()
 
 
