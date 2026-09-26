@@ -1,12 +1,11 @@
 """Command line of pyperformance or a pyperf script."""
 
+import argparse
 from pathlib import Path
 
 from takt.domain.errors.usage_error import UsageError
 
 _MISSING_OUTPUT = 'option -o/--output requires a file path'
-_OUTPUT_FLAGS = frozenset(('-o', '--output'))
-_OUTPUT_PREFIX = '--output='
 
 
 def build_runner_command(
@@ -57,23 +56,18 @@ def _is_script(arguments: tuple[str, ...]) -> bool:
 
 
 def _find_output(arguments: tuple[str, ...]) -> str | None:
-    for index, element in enumerate(arguments):
-        value = _output_value(element, arguments[index + 1 : index + 2])
-        if value is not None:
-            return value
-    return None
-
-
-def _output_value(element: str, following: tuple[str, ...]) -> str | None:
-    if element in _OUTPUT_FLAGS:
-        if not following:
-            raise UsageError(_MISSING_OUTPUT)
-        return following[0]
-    if element.startswith(_OUTPUT_PREFIX):
-        value = element.removeprefix(_OUTPUT_PREFIX)
-        if not value:
-            raise UsageError(_MISSING_OUTPUT)
-        return value
-    if element.startswith('-o') and not element.startswith('--'):
-        return element[2:]
-    return None
+    parser = argparse.ArgumentParser(
+        prog='takt run',
+        add_help=False,
+        allow_abbrev=True,
+        exit_on_error=False,
+    )
+    parser.add_argument('-o', '--output')
+    try:
+        namespace, _ = parser.parse_known_args(arguments)
+    except argparse.ArgumentError as exc:
+        raise UsageError(_MISSING_OUTPUT) from exc
+    user_output: str | None = namespace.output
+    if user_output == '':
+        raise UsageError(_MISSING_OUTPUT)
+    return user_output
