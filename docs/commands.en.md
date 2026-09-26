@@ -246,6 +246,9 @@ How to read it:
 - `Benchmark hidden because not significant` lists benchmarks where no difference is significant; they are not shown in the table.
 - `Ignored benchmarks … of <operand>` lists benchmarks of that operand that are not compared. Only benchmarks that every operand has with measured values are compared: a benchmark that some operand lacks, or has only warmup values for, is ignored.
 
+If no benchmark is left to compare, takt prints no table: it prints `error: benchmark suites have no benchmark in common` and exits with code 1.
+This also happens when the results have benchmarks with the same names, but some operand has only warmup values for each of them.
+
 The numbers and the significance test are the same as in `pyperf compare_to --table`.
 
 ## Exit codes
@@ -253,7 +256,7 @@ The numbers and the significance test are the same as in `pyperf compare_to --ta
 | Code | When |
 |---|---|
 | 0 | Success, including "everything was already loaded" |
-| 1 | Runtime error: database, file, benchmark, the result was not written to all targets, or a `compare` operand that fits no form, was not found or is ambiguous |
+| 1 | Runtime error: database, file, benchmark, the result was not written to all targets, a `compare` operand that fits no form, was not found or is ambiguous, or `compare` results with no benchmark in common |
 | 2 | Wrong arguments or configuration, found before any benchmark runs, a final run name that breaks the rules, or a `compare` operand that is not a file when no target is configured |
 | 130 | Interrupted with Ctrl+C |
 
