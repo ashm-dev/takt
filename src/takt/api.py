@@ -55,7 +55,9 @@ def run(
 ) -> ImportReport:
     """Run benchmarks and write the result to every selected database.
 
-    Targets and the run name are checked before any benchmark starts.
+    Targets and the run name template are checked before any benchmark
+    starts; the length of the final name and a ``:`` that comes from the
+    result are checked only after the benchmarks.
     A failed write does not raise: ``report.write.succeeded`` is ``False``
     and the result file stays on disk.
 
