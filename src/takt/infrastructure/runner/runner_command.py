@@ -6,6 +6,9 @@ from pathlib import Path
 from takt.domain.errors.usage_error import UsageError
 
 _MISSING_OUTPUT = 'option -o/--output requires a file path'
+_OUTPUT_OPTION = '-o/--output'
+# Value-less pyperformance and pyperf flags, so -fo FILE reads as -f -o FILE.
+_SWITCHES = ('-d', '-f', '-g', '-m', '-q', '-r', '-t', '-v')
 
 
 def build_runner_command(
@@ -63,9 +66,14 @@ def _find_output(arguments: tuple[str, ...]) -> str | None:
         exit_on_error=False,
     )
     parser.add_argument('-o', '--output')
+    for switch in _SWITCHES:
+        parser.add_argument(switch, action='store_true')
     try:
         namespace, _ = parser.parse_known_args(arguments)
     except argparse.ArgumentError as exc:
+        if exc.argument_name != _OUTPUT_OPTION:
+            # The runner itself rejects a flag with a value, such as -f=x.
+            return None
         raise UsageError(_MISSING_OUTPUT) from exc
     user_output: str | None = namespace.output
     if user_output == '':
