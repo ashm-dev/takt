@@ -8,7 +8,6 @@ from takt.domain.compare.labeled_suite import LabeledSuite
 from takt.domain.errors.ambiguous_operand_error import AmbiguousOperandError
 from takt.domain.errors.configuration_error import ConfigurationError
 from takt.domain.errors.operand_not_found_error import OperandNotFoundError
-from takt.domain.errors.takt_error import TaktError
 from takt.domain.model.suite_record import SuiteRecord
 from takt.domain.operand.file_operand import FileOperand
 from takt.domain.operand.operand import Operand
@@ -23,6 +22,7 @@ from tests.application.use_cases.compare_fakes import (
     record,
     suite,
 )
+from tests.domain.exact_pattern import exact_pattern
 
 FIRST_DATE = datetime.fromisoformat('2026-09-01 10:00')
 SECOND_DATE = datetime.fromisoformat('2026-09-02 10:00')
@@ -37,18 +37,6 @@ def resolve(session: FakeSession | None, operand: Operand) -> LabeledSuite:
     return OperandResolver(reader=FakeReader({}), session=session).resolve(
         operand,
     )
-
-
-def failure(
-    session: FakeSession | None,
-    operand: Operand,
-    error_type: type[TaktError],
-) -> str:
-    try:
-        resolve(session, operand)
-    except error_type as error:
-        return str(error)
-    pytest.fail('operand was resolved')
 
 
 def tagged(
@@ -84,11 +72,14 @@ def test_file_operand() -> None:
 
 
 def test_db_operand_without_session() -> None:
-    message = failure(None, PlainOperand(text='default'), ConfigurationError)
-
-    assert message == (
-        "operand 'default' is not a file and no database target is configured"
-    )
+    with pytest.raises(
+        ConfigurationError,
+        match=exact_pattern(
+            "operand 'default' is not a file and "
+            'no database target is configured'
+        ),
+    ):
+        resolve(None, PlainOperand(text='default'))
 
 
 def test_plain_unique_name() -> None:
@@ -103,15 +94,17 @@ def test_plain_unique_name() -> None:
 def test_plain_ambiguous_name() -> None:
     session = session_with(*DEFAULT_RUNS)
 
-    with pytest.raises(AmbiguousOperandError) as excinfo:
+    with pytest.raises(
+        AmbiguousOperandError,
+        match=exact_pattern(
+            "operand 'default' is ambiguous, candidates:\n"
+            '  default:0  2026-09-01 10:00:00  3fa2b1000000\n'
+            '  default:1  2026-09-02 10:00:00  9c01de000000\n'
+            '  default:2  unknown date  3fa2b2000000'
+        ),
+    ) as excinfo:
         resolve(session, PlainOperand(text='default'))
 
-    assert str(excinfo.value) == (
-        "operand 'default' is ambiguous, candidates:\n"
-        '  default:0  2026-09-01 10:00:00  3fa2b1000000\n'
-        '  default:1  2026-09-02 10:00:00  9c01de000000\n'
-        '  default:2  unknown date  3fa2b2000000'
-    )
     assert len(excinfo.value.candidates) == 3
 
 
@@ -136,11 +129,15 @@ def test_plain_hex_name_wins_over_prefix() -> None:
 def test_plain_short_prefix_is_not_searched() -> None:
     session = session_with(record(HASH_A, None))
 
-    message = failure(session, PlainOperand(text='3fa2b'), OperandNotFoundError)
+    with pytest.raises(
+        OperandNotFoundError,
+        match=exact_pattern(
+            "operand '3fa2b' not found: "
+            'no file, run name or hash prefix matches'
+        ),
+    ):
+        resolve(session, PlainOperand(text='3fa2b'))
 
-    assert message == (
-        "operand '3fa2b' not found: no file, run name or hash prefix matches"
-    )
     assert session.prefix_lookups == []
 
 
@@ -150,38 +147,43 @@ def test_plain_ambiguous_prefix() -> None:
         record('3fa2b1'.ljust(64, 'b'), None),
     )
 
-    message = failure(
-        session,
-        PlainOperand(text='3fa2b1'),
+    with pytest.raises(
         AmbiguousOperandError,
-    )
-
-    assert message.split('\n') == [
-        "operand '3fa2b1' is ambiguous, candidates:",
-        '  3fa2b1aaaaaa  unknown date  x',
-        '  3fa2b1bbbbbb  unknown date  <unnamed>',
-    ]
+        match=exact_pattern(
+            "operand '3fa2b1' is ambiguous, candidates:\n"
+            '  3fa2b1aaaaaa  unknown date  x\n'
+            '  3fa2b1bbbbbb  unknown date  <unnamed>'
+        ),
+    ):
+        resolve(session, PlainOperand(text='3fa2b1'))
 
 
 def test_plain_not_hex_not_found() -> None:
     session = session_with(record(HASH_A, 'default'))
 
-    message = failure(
-        session,
-        PlainOperand(text='nightly'),
+    with pytest.raises(
         OperandNotFoundError,
-    )
+        match=exact_pattern(
+            "operand 'nightly' not found: "
+            'no file, run name or hash prefix matches'
+        ),
+    ):
+        resolve(session, PlainOperand(text='nightly'))
 
-    assert message == (
-        "operand 'nightly' not found: no file, run name or hash prefix matches"
-    )
     assert session.prefix_lookups == []
 
 
 def test_plain_hex_not_found() -> None:
     session = session_with(record(HASH_A, 'default'))
 
-    failure(session, PlainOperand(text='abcdef'), OperandNotFoundError)
+    with pytest.raises(
+        OperandNotFoundError,
+        match=exact_pattern(
+            "operand 'abcdef' not found: "
+            'no file, run name or hash prefix matches'
+        ),
+    ):
+        resolve(session, PlainOperand(text='abcdef'))
 
     assert session.prefix_lookups == [('abcdef', None)]
 
@@ -198,15 +200,13 @@ def test_tagged_index() -> None:
 def test_tagged_index_out_of_range() -> None:
     session = session_with(*DEFAULT_RUNS)
 
-    message = failure(
-        session,
-        tagged('default:3', index=3),
+    with pytest.raises(
         OperandNotFoundError,
-    )
-
-    assert message == (
-        "operand 'default:3' not found: run name 'default' has 3 run(s)"
-    )
+        match=exact_pattern(
+            "operand 'default:3' not found: run name 'default' has 3 run(s)"
+        ),
+    ):
+        resolve(session, tagged('default:3', index=3))
 
 
 def test_tagged_prefix() -> None:
@@ -222,28 +222,25 @@ def test_tagged_prefix() -> None:
 def test_tagged_prefix_not_found() -> None:
     session = session_with(record(HASH_B, 'other'))
 
-    message = failure(
-        session,
-        tagged('default:9c01de', hash_prefix='9c01de'),
+    with pytest.raises(
         OperandNotFoundError,
-    )
-
-    assert message == (
-        "operand 'default:9c01de' not found: "
-        "no run named 'default' with hash prefix '9c01de'"
-    )
+        match=exact_pattern(
+            "operand 'default:9c01de' not found: "
+            "no run named 'default' with hash prefix '9c01de'"
+        ),
+    ):
+        resolve(session, tagged('default:9c01de', hash_prefix='9c01de'))
 
 
 def test_tagged_prefix_ambiguous() -> None:
     session = session_with(*DEFAULT_RUNS)
 
-    message = failure(
-        session,
-        tagged('default:3fa2b', hash_prefix='3fa2b'),
+    with pytest.raises(
         AmbiguousOperandError,
-    )
-
-    assert message.split('\n')[1:] == [
-        '  3fa2b1000000  2026-09-01 10:00:00  default',
-        '  3fa2b2000000  unknown date  default',
-    ]
+        match=exact_pattern(
+            "operand 'default:3fa2b' is ambiguous, candidates:\n"
+            '  3fa2b1000000  2026-09-01 10:00:00  default\n'
+            '  3fa2b2000000  unknown date  default'
+        ),
+    ):
+        resolve(session, tagged('default:3fa2b', hash_prefix='3fa2b'))
