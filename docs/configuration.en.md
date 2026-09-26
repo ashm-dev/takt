@@ -18,6 +18,9 @@ Supported databases:
 
 A URL of any other database is an error, and takt reports it before any benchmark runs.
 
+A SQLite URL has three slashes before a relative path, `sqlite:///bench.db`, and four before an absolute one, `sqlite:////var/lib/bench.db`.
+A bare file path such as `bench.db`, or `sqlite://bench.db` with two slashes, is not a valid URL: takt stops with exit code 2 and prints `invalid database URL` with an example of the right form.
+
 ## Where targets come from
 
 takt takes targets from the first source that is set, in this order:
