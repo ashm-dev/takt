@@ -118,6 +118,23 @@ Partial result was written to /home/me/takt-20260925T101500Z.json. Load it witho
 The file may lack the benchmarks that failed.
 If the rest is enough for you, run the printed `takt import` command.
 
+### After Ctrl+C
+
+If you press Ctrl+C while the benchmarks run, takt writes nothing to the databases and exits with code 130.
+A pyperf script writes each finished benchmark to the result file right away, so after Ctrl+C the file can already hold them.
+If a new result file is on disk, takt prints only the `Partial result was written to …` line, without an `error:` line.
+pyperformance writes its file only at the end, so after Ctrl+C there is usually no file and no such line.
+
+If you press Ctrl+C after the benchmarks, while takt writes the result to the databases, for example while it waits for a locked database, the result file is complete.
+takt then prints this line to standard error and exits with code 130:
+
+```text
+Result was written to /home/me/takt-20260925T101500Z.json. Load it without re-running benchmarks: takt import /home/me/takt-20260925T101500Z.json --target local --name 'nightly 2026-09-25'
+```
+
+Like the retry command above, it passes the run name that this command gave the result.
+If Ctrl+C came while takt committed, some databases can already have the result; the printed command skips them (see "All or nothing" below).
+
 ## takt import
 
 `takt import` stores a ready pyperf or pyperformance result in every selected database.
@@ -157,7 +174,7 @@ takt writes the result either to all selected databases or to none of them:
 In these cases the result still stays in some of the databases:
 
 - takt could not delete the result in step 4. Such a database shows `failed: compensation failed: <error>`.
-- The takt process was killed, or interrupted with Ctrl+C, while it committed. takt then prints no report; after Ctrl+C it exits with code 130.
+- The takt process was killed, or interrupted with Ctrl+C, while it committed. takt then prints no report; after Ctrl+C it exits with code 130, and `takt run` also prints the `Result was written to …` line.
 
 After `compensation failed`, the `Result` line of the failed command shows the first 12 characters of the result hash and the name stored in that database.
 After a stop there is no such line.
@@ -169,7 +186,7 @@ SELECT hash, name, loaded_at FROM takt_suite ORDER BY loaded_at DESC LIMIT 1;
 
 To have the result in every database, run `takt import` for the result file again: it skips the databases that already have the result and writes it to the rest.
 If the name template has `{date}` or `{datetime}`, takt fills them in with the new time, so the rest can get another name.
-To give the rest the same name, pass the stored name with `--name`; the command that `takt run` prints after `compensation failed` already does this.
+To give the rest the same name, pass the stored name with `--name`; the command that `takt run` prints after `compensation failed` or Ctrl+C already does this.
 
 To remove the result instead, run these queries, in this order, only in the databases where the failed command left it: the ones with `compensation failed`, or, after a stop, the ones where the query above shows it with the `loaded_at` of that command.
 Do not run them in a database that shows `already loaded`: it had the result before this command.
