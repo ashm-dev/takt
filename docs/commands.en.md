@@ -98,6 +98,7 @@ takt import result.json --db sqlite:///bench.db --name patched
 - It accepts the same `--db`, `--target`, `--config` and `--name` flags as `takt run`.
 - The output is the same as for `takt run`.
 - takt refuses a file that is not a valid pyperf result, for example with a measured value that is NaN or infinite, or with a benchmark name that is not a string. It prints `error: invalid pyperf result <file>: <reason>` and exits with code 1.
+- If the file cannot be opened, unpacked or parsed as JSON, takt prints `error: cannot read pyperf result <file>: <reason>` and exits with code 1.
 
 ### Result hash
 
