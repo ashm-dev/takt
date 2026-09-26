@@ -10,7 +10,9 @@ from alembic.script import ScriptDirectory
 from takt.domain.errors.execution_error import ExecutionError
 from takt.domain.model.target import Target
 from takt.infrastructure.db.database_error import database_error
-from takt.infrastructure.db.engine_factory import create_target_engine
+from takt.infrastructure.db.migration_engine_factory import (
+    create_migration_engine,
+)
 
 MIGRATIONS_DIRECTORY: Final = Path(__file__).parent / 'migrations'
 
@@ -52,7 +54,7 @@ class AlembicSchemaMigrator:
 
 def _upgrade(target: Target) -> None:
     config = _alembic_config(target)
-    engine = create_target_engine(target)
+    engine = create_migration_engine(target)
     try:
         with engine.begin() as connection:
             config.attributes['connection'] = connection
