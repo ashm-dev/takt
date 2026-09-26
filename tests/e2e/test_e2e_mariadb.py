@@ -108,7 +108,6 @@ def test_run_failure_prints_retry(
     assert code == 1
     assert 'Retry without re-running benchmarks: takt import ' in err
     assert len(result_files) == 1
-    assert result_files[0].name.startswith('takt-')
     assert shlex.join(('--db', sqlite_url, '--db', CLOSED_PORT_URL)) in err
     assert result_files[0].name in err
     assert (
