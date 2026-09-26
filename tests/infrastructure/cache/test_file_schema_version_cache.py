@@ -110,6 +110,14 @@ def test_corrupted_file_is_treated_as_empty(
     assert document == {url_key(URL_A): '0001'}
 
 
+def test_invalid_utf8_file_is_treated_as_empty(
+    cache: FileSchemaVersionCache,
+) -> None:
+    cache.file_path.write_bytes(b'\xff\xfe')
+
+    assert cache.get(URL_A) is None
+
+
 def test_non_object_root_is_treated_as_empty(
     cache: FileSchemaVersionCache,
 ) -> None:
