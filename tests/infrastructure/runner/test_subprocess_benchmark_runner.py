@@ -113,6 +113,27 @@ def test_nonzero_exit(
     assert error.return_code == 3
     assert str(error).startswith('benchmark command failed with exit code 3: ')
     assert 'pyperformance run' in str(error)
+    assert error.result_path is None
+
+
+def test_nonzero_exit_keeps_partial_result(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    partial = tmp_path / DEFAULT_NAME
+    _patch(monkeypatch, _Recorder(return_code=1, creates=partial))
+    error = _failure(_runner(tmp_path))
+    assert error.return_code == 1
+    assert error.result_path == partial
+
+
+def test_nonzero_exit_ignores_old_result(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / DEFAULT_NAME).write_text('{}', encoding='utf-8')
+    _patch(monkeypatch, _Recorder(return_code=1, creates=None))
+    assert _failure(_runner(tmp_path)).result_path is None
 
 
 def test_missing_result_file(
