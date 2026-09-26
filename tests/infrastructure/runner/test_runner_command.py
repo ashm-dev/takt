@@ -41,6 +41,8 @@ def test_pyperformance_empty_arguments() -> None:
         ('--output=r.json',),
         ('--out', 'r.json'),
         ('-b', 'nbody', '-o', 'r.json', '--fast'),
+        ('-vfor.json',),
+        ('-qo=r.json',),
     ],
 )
 def test_user_output_forms(arguments: tuple[str, ...]) -> None:
@@ -61,6 +63,16 @@ def test_output_after_double_dash_is_not_read() -> None:
     assert _build('-b', 'nbody', *tail) == (command, OUT)
 
 
+def test_output_in_short_flag_cluster() -> None:
+    command = (*PYPERFORMANCE, '-fo', 'r.json', *USER_EXTRA)
+    assert _build('-fo', 'r.json') == (command, USER_OUT)
+
+
+def test_flag_with_value_keeps_default_output() -> None:
+    command = (*PYPERFORMANCE, '-f=x', *DEFAULT_EXTRA)
+    assert _build('-f=x') == (command, OUT)
+
+
 @pytest.mark.parametrize(
     'arguments',
     [('-o', '~/r.json'), ('--output=~/r.json',)],
@@ -74,7 +86,7 @@ def test_user_output_expands_home(arguments: tuple[str, ...]) -> None:
 
 @pytest.mark.parametrize(
     'arguments',
-    [('-o',), ('--output',), ('--output=',)],
+    [('-o',), ('--output',), ('--output=',), ('-fo',)],
 )
 def test_missing_output_value(arguments: tuple[str, ...]) -> None:
     with pytest.raises(
