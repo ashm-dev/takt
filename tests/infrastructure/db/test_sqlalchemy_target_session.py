@@ -74,14 +74,14 @@ def test_close_twice_is_safe(target: Target) -> None:
 
 
 def test_open_invalid_url_disposes_engine() -> None:
-    target = Target(
+    unreachable = Target(
         name=None,
         url='mariadb+pymysql://u:p@127.0.0.1:1/db',
         dialect='mariadb',
     )
 
     with pytest.raises(ExecutionError) as connect_error:
-        SqlAlchemyTargetConnector().open(target)
+        SqlAlchemyTargetConnector().open(unreachable)
 
     assert str(connect_error.value).startswith(
         'cannot connect to database mariadb+pymysql://u:***@127.0.0.1:1/db: ',
