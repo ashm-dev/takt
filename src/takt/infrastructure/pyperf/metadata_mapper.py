@@ -12,8 +12,10 @@ from takt.domain.model.run_metadata import RunMetadata
 def to_run_metadata(metadata: Mapping[str, object]) -> RunMetadata:
     """Split raw metadata into known fields and custom keys.
 
-    A known key goes to its field only when its value has exactly the field
-    type; otherwise it goes to ``custom`` with the unknown keys.
+    A known key goes to its field when its value has exactly the field type
+    or converts to it; otherwise it goes to ``custom`` with the unknown keys.
+    An ``int`` ``python_hash_seed`` converts to a ``str``, and a ``list`` of
+    strings converts to a ``tuple`` both in ``tags`` and in ``custom``.
 
     :param metadata: Full metadata of one run.
     :returns: Metadata with known fields filled and the rest in ``custom``.
