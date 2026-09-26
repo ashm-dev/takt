@@ -1,6 +1,5 @@
 """Choice of target databases from flags, environment and takt.toml."""
 
-from collections.abc import Mapping
 from pathlib import Path
 from typing import Final
 
@@ -11,9 +10,11 @@ from takt.domain.model.target import Target
 from takt.infrastructure.config.config_sources import ConfigSources
 from takt.infrastructure.config.dialect_registry import dialect_for_url
 from takt.infrastructure.config.sqlite_file_name import sqlite_file_name
+from takt.infrastructure.config.takt_config import TaktConfig
 from takt.infrastructure.config.toml_config_loader import load_config
 
-_NamedUrl = tuple[str | None, str]
+# Target name, URL, and where the URL came from unless the user typed it.
+_NamedUrl = tuple[str | None, str, str | None]
 
 _MARIADB_PORT: Final = 3306
 
@@ -27,26 +28,35 @@ def resolve_targets(sources: ConfigSources) -> tuple[Target, ...]:
     :returns: Targets without duplicate databases, possibly empty; of
         several spellings of one database the first one is kept.
     :raises ConfigurationError: If the config file, a target name or a URL
-        is invalid.
+        is invalid; an error in a URL from ``TAKT_DB`` or ``takt.toml``
+        starts with that source.
     """
     targets: dict[str, Target] = {}
-    for name, url in _named_urls(sources, load_config(sources).targets):
-        dialect = dialect_for_url(url).backend
-        key = _database_key(url, dialect, sources.cwd)
+    for name, url, origin in _named_urls(sources, load_config(sources)):
+        target = Target(name=name, url=url, dialect=_dialect(url, origin))
         # Two sessions to one database in one transaction can deadlock.
-        if key not in targets:
-            targets[key] = Target(name=name, url=url, dialect=dialect)
+        targets.setdefault(_database_key(target, sources.cwd), target)
     return tuple(targets.values())
 
 
-def _database_key(url: str, dialect: str, cwd: Path) -> str:
-    parsed = make_url(url)
-    if dialect == 'sqlite':
+def _dialect(url: str, origin: str | None) -> str:
+    try:
+        return dialect_for_url(url).backend
+    except ConfigurationError as error:
+        if origin is None:
+            raise
+        message = f'{origin}: {error}'
+        raise type(error)(message) from None
+
+
+def _database_key(target: Target, cwd: Path) -> str:
+    parsed = make_url(target.url)
+    if target.dialect == 'sqlite':
         # A relative and an absolute path can name the same SQLite file.
         return str((cwd / sqlite_file_name(parsed)).resolve())
     # The driver, the user and the default port do not change the database.
     return URL.create(
-        drivername=dialect,
+        drivername=target.dialect,
         host=parsed.host,
         port=parsed.port or _MARIADB_PORT,
         database=parsed.database,
@@ -54,26 +64,24 @@ def _database_key(url: str, dialect: str, cwd: Path) -> str:
     ).render_as_string()
 
 
-def _named_urls(
-    sources: ConfigSources,
-    config_targets: Mapping[str, str],
-) -> list[_NamedUrl]:
+def _named_urls(sources: ConfigSources, config: TaktConfig) -> list[_NamedUrl]:
     if sources.db_flags or sources.target_flags:
-        flag_urls: list[_NamedUrl] = [(None, url) for url in sources.db_flags]
+        flag_urls: list[_NamedUrl] = [
+            (None, url, None) for url in sources.db_flags
+        ]
         flag_urls.extend(
-            (name, _config_url(config_targets, name))
-            for name in sources.target_flags
+            _config_target(config, name) for name in sources.target_flags
         )
         return flag_urls
     env_urls = sources.environ.get('TAKT_DB', '').split()
     if env_urls:
-        return [(None, url) for url in env_urls]
-    return list(config_targets.items())
+        return [(None, url, 'TAKT_DB') for url in env_urls]
+    return [_config_target(config, name) for name in config.targets]
 
 
-def _config_url(config_targets: Mapping[str, str], name: str) -> str:
-    if name not in config_targets:
-        known = ', '.join(config_targets) or 'none'
+def _config_target(config: TaktConfig, name: str) -> _NamedUrl:
+    if name not in config.targets:
+        known = ', '.join(config.targets) or 'none'
         message = f'unknown target {name!r}; known targets: {known}'
         raise ConfigurationError(message)
-    return config_targets[name]
+    return (name, config.targets[name], f'{config.path}: target {name!r}')
