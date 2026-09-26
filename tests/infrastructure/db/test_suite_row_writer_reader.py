@@ -1,7 +1,10 @@
+from types import MappingProxyType
+
 import pytest
 import sqlalchemy as sa
 from sqlalchemy.exc import IntegrityError
 
+from takt.domain.model.metadata_key_types import METADATA_KEY_TYPES
 from takt.infrastructure.db.schema.tables import (
     BENCHMARK_TABLE,
     LOADED_HASH_TABLE,
@@ -117,6 +120,27 @@ def test_insert_stores_null_tags_when_missing(engine: sa.Engine) -> None:
         )
 
     assert null_positions == [0, 1]
+
+
+def test_insert_stores_sql_null_only_for_tuple_key_types(
+    engine: sa.Engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        'takt.infrastructure.db.suite_row_writer.METADATA_KEY_TYPES',
+        MappingProxyType({**METADATA_KEY_TYPES, 'tags': str}),
+    )
+    with engine.begin() as connection:
+        insert_suite(connection, make_record())
+
+    with engine.connect() as connection:
+        null_tags = connection.execute(
+            sa.select(sa.func.count())
+            .select_from(RUN_METADATA_TABLE)
+            .where(RUN_METADATA_TABLE.c.tags.is_(sa.null())),
+        ).scalar_one()
+
+    assert null_tags == 0
 
 
 def test_insert_with_null_name_and_date(engine: sa.Engine) -> None:
