@@ -52,3 +52,7 @@ takt compare "baseline 2026-09-25" patched --db sqlite:///bench.db
 - [Commands](commands.md): `takt run`, `takt import`, `takt compare` and exit codes.
 - [Data model](data-model.md): the tables takt creates, for your own SQL queries.
 - [API](api.md): the same commands as a Python library.
+
+## Author
+
+Shamil Abdulaev, Python developer, CPython and glibc contributor: [ashm-dev.github.io](https://ashm-dev.github.io).

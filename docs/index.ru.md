@@ -52,3 +52,7 @@ takt compare "baseline 2026-09-25" patched --db sqlite:///bench.db
 - [Команды](commands.md): `takt run`, `takt import`, `takt compare` и коды выхода.
 - [Модель данных](data-model.md): таблицы, которые создаёт takt, для своих SQL-запросов.
 - [API](api.md): те же команды в виде Python-библиотеки.
+
+## Автор
+
+Шамиль Абдулаев, Python-разработчик, контрибьютор CPython и glibc: [ashm-dev.github.io](https://ashm-dev.github.io).
