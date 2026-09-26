@@ -38,10 +38,9 @@ class PyperfResultReader:
         """
         document = json_document_loader.load_json_document(path)
         format_version = _format_version(document, path)
-        suite_hash = result_hash(document)
         pyperf_suite = _load_pyperf_suite(path)
         try:
-            return _suite(suite_hash, format_version, pyperf_suite)
+            return _suite(result_hash(document), format_version, pyperf_suite)
         except ValueError as exc:
             message = f'invalid pyperf result {path}: {exc}'
             raise InvalidResultError(message) from exc
