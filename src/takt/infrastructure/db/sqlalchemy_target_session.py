@@ -37,6 +37,8 @@ class SqlAlchemyTargetSession:
         # The session does not know its Target, so the engine URL labels it.
         label = engine.url.render_as_string(hide_password=True)
         self._read_failure = f'cannot read from database {label}'
+        self._write_failure = f'cannot write to database {label}'
+        self._commit_failure = f'cannot commit to database {label}'
 
     def loaded_name(self, suite_hash: str) -> tuple[bool, str | None]:
         """Check whether the suite hash was ever stored.
@@ -54,15 +56,23 @@ class SqlAlchemyTargetSession:
         """Insert the whole suite.
 
         :param record: Suite with storage attributes.
+        :raises ExecutionError: If the database cannot be written.
         """
-        insert_suite(self._connection, record)
+        try:
+            insert_suite(self._connection, record)
+        except SQLAlchemyError as error:
+            raise database_error(self._write_failure, error) from error
 
     def delete(self, suite_hash: str) -> None:
         """Delete the suite from every table.
 
         :param suite_hash: Suite hash.
+        :raises ExecutionError: If the database cannot be written.
         """
-        delete_suite(self._connection, suite_hash)
+        try:
+            delete_suite(self._connection, suite_hash)
+        except SQLAlchemyError as error:
+            raise database_error(self._write_failure, error) from error
 
     def get(self, suite_hash: str) -> SuiteRecord:
         """Read the whole suite.
@@ -115,8 +125,14 @@ class SqlAlchemyTargetSession:
             raise database_error(self._read_failure, error) from error
 
     def commit(self) -> None:
-        """Commit the transaction."""
-        self._transaction.commit()
+        """Commit the transaction.
+
+        :raises ExecutionError: If the database rejects the commit.
+        """
+        try:
+            self._transaction.commit()
+        except SQLAlchemyError as error:
+            raise database_error(self._commit_failure, error) from error
 
     def rollback(self) -> None:
         """Roll back the transaction if it is still active."""
