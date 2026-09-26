@@ -96,3 +96,7 @@ Remove them:
 ```bash
 find src/takt -name '*.so' -delete
 ```
+
+## Author
+
+Shamil Abdulaev, Python developer, CPython and glibc contributor: [ashm-dev.github.io](https://ashm-dev.github.io).

@@ -96,3 +96,7 @@ Python загружает их вместо файлов `.py`, поэтому �
 ```bash
 find src/takt -name '*.so' -delete
 ```
+
+## Автор
+
+Шамиль Абдулаев, Python-разработчик, контрибьютор CPython и glibc: [ashm-dev.github.io](https://ashm-dev.github.io).
