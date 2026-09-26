@@ -23,9 +23,10 @@ def render_markdown(table: CompareTable) -> str:
 
 
 def _table_lines(table: CompareTable) -> list[str]:
+    lines = (table.headers, *table.rows)
     widths = [
-        max(len(cell) for cell in column)
-        for column in zip(table.headers, *table.rows, strict=True)
+        max(len(line[column]) for line in lines)
+        for column in range(len(table.headers))
     ]
     separator = [
         '-' * (widths[0] + 2),
