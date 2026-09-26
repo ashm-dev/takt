@@ -199,3 +199,16 @@ def test_empty_changed() -> None:
 
     with pytest.raises(ValueError, match='at least one changed suite'):
         build_compare_table(base, [])
+
+
+def test_row_with_one_significant_cell_is_shown() -> None:
+    base = _suite('base', {'a': SPREAD})
+    changed1 = _suite('changed1', {'a': ((10.0, 11.0),)})
+    changed2 = _suite('changed2', {'a': SPREAD_REVERSED})
+
+    table = build_compare_table(base, [changed1, changed2])
+
+    assert table.rows == (
+        ('a', '1.50 sec', '10.5 sec: 7.00x slower', 'not significant'),
+    )
+    assert table.hidden_not_significant == ()
