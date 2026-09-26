@@ -223,5 +223,6 @@ The numbers and the significance test are the same as in `pyperf compare_to --ta
 | 2 | Wrong arguments or configuration, found before any benchmark runs, or a final run name that breaks the rules |
 | 130 | Interrupted with Ctrl+C |
 
-Every error is printed to standard error as one line `error: <message>`, without a traceback.
+Every error is printed to standard error as `error: <message>`, without a traceback.
+Most messages are one line; an ambiguous operand also lists the candidates below it.
 When `takt run` fails to write the result, or a benchmark fails but a result file was still written, takt also prints a `takt import` command that loads this file without re-running benchmarks.
