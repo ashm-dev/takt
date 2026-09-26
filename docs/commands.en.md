@@ -269,6 +269,7 @@ Ignored benchmarks (1) of new.json: x
 How to read it:
 
 - The column title is the operand exactly as you typed it.
+- In the Markdown file takt writes `|` in a title or a benchmark name as `\|`, so the table keeps its columns; a Markdown viewer shows it as `|`.
 - The base column shows the mean value.
 - Other columns show the mean value and the change against the base: `1.11x faster`, `1.05x slower`, `no change` or `not significant`.
 - The `Geometric mean` row appears when the results have more than one benchmark in common and the table shows at least one of them.
