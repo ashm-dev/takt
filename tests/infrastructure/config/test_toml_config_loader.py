@@ -81,6 +81,10 @@ def test_invalid_toml(config_file: Path) -> None:
             '[targets.a]\nurl = "  "\n',
             "target 'a': 'url' must be a non-empty string",
         ),
+        (
+            '[targets.a]\nurl = 1\n',
+            "target 'a': 'url' must be a non-empty string",
+        ),
         ('targets = { a = 1 }\n', "target 'a' must be a table"),
     ],
 )
