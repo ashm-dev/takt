@@ -9,6 +9,7 @@ from alembic.script import ScriptDirectory
 
 from takt.domain.errors.execution_error import ExecutionError
 from takt.domain.model.target import Target
+from takt.infrastructure.db.database_error import database_error
 from takt.infrastructure.db.engine_factory import create_target_engine
 
 MIGRATIONS_DIRECTORY: Final = Path(__file__).parent / 'migrations'
@@ -40,15 +41,24 @@ class AlembicSchemaMigrator:
         """Bring the target database to the head revision.
 
         :param target: Target database.
+        :raises ExecutionError: If the migration fails.
         """
-        config = _alembic_config(target)
-        engine = create_target_engine(target)
         try:
-            with engine.begin() as connection:
-                config.attributes['connection'] = connection
-                command.upgrade(config, 'head')
-        finally:
-            engine.dispose()
+            _upgrade(target)
+        except Exception as error:
+            message = f'cannot migrate database {target.display()}'
+            raise database_error(message, error) from error
+
+
+def _upgrade(target: Target) -> None:
+    config = _alembic_config(target)
+    engine = create_target_engine(target)
+    try:
+        with engine.begin() as connection:
+            config.attributes['connection'] = connection
+            command.upgrade(config, 'head')
+    finally:
+        engine.dispose()
 
 
 def _versions_directory(target: Target) -> Path:
