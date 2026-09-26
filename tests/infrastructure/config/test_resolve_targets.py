@@ -105,6 +105,16 @@ def test_unknown_target_without_toml(tmp_path: Path) -> None:
     )
 
 
+def test_unknown_target_with_empty_toml(bare_sources: ConfigSources) -> None:
+    (bare_sources.cwd / 'takt.toml').write_text('', encoding='utf-8')
+
+    with pytest.raises(
+        ConfigurationError,
+        match=exact_pattern("unknown target 'x'; known targets: none"),
+    ):
+        resolve_targets(replace(bare_sources, target_flags=('x',)))
+
+
 def test_duplicates_removed(tmp_path: Path) -> None:
     url = 'sqlite:///c.sqlite'
 
