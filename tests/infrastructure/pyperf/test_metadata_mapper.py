@@ -1,12 +1,6 @@
 import pytest
 
 from takt.domain.errors.invalid_result_error import InvalidResultError
-from takt.domain.model.known_metadata_keys import KNOWN_METADATA_KEYS
-from takt.infrastructure.pyperf.metadata_mapper import (
-    _FLOAT_KEYS,
-    _INT_KEYS,
-    _STR_KEYS,
-)
 from takt.infrastructure.pyperf.metadata_mapper import (
     to_run_metadata as map_metadata,
 )
@@ -41,18 +35,6 @@ def test_type_mismatch_goes_to_custom() -> None:
     assert metadata.cpu_count is None
     assert metadata.inner_loops is None
     assert metadata.custom == raw
-
-
-def test_key_groups_cover_all_known_keys() -> None:
-    groups = (
-        _INT_KEYS,
-        _FLOAT_KEYS,
-        _STR_KEYS,
-        frozenset(('tags',)),
-    )
-
-    assert frozenset().union(*groups) == set(KNOWN_METADATA_KEYS)
-    assert sum(len(group) for group in groups) == len(KNOWN_METADATA_KEYS)
 
 
 def test_hash_seed_int_becomes_str() -> None:

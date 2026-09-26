@@ -2,72 +2,11 @@
 
 import copy
 from collections.abc import Mapping
-from typing import Final, TypeIs
 
 from takt.domain.errors.invalid_result_error import InvalidResultError
+from takt.domain.model.metadata_key_types import METADATA_KEY_TYPES
 from takt.domain.model.metadata_value import MetadataValue
 from takt.domain.model.run_metadata import RunMetadata
-
-_INT_KEYS: Final[frozenset[str]] = frozenset(
-    (
-        'loops',
-        'inner_loops',
-        'calibrate_loops',
-        'recalibrate_loops',
-        'calibrate_warmups',
-        'recalibrate_warmups',
-        'mem_max_rss',
-        'command_max_rss',
-        'mem_peak_pagefile_usage',
-        'cpu_count',
-        'runnable_threads',
-        'timeit_duplicate',
-    )
-)
-_FLOAT_KEYS: Final[frozenset[str]] = frozenset(
-    (
-        'duration',
-        'uptime',
-        'load_avg_1min',
-    )
-)
-_STR_KEYS: Final[frozenset[str]] = frozenset(
-    (
-        'name',
-        'unit',
-        'date',
-        'timer',
-        'description',
-        'python_version',
-        'python_implementation',
-        'python_executable',
-        'python_compiler',
-        'python_cflags',
-        'python_config_args',
-        'python_hash_seed',
-        'python_gc',
-        'cpu_affinity',
-        'cpu_config',
-        'cpu_freq',
-        'cpu_machine',
-        'cpu_model_name',
-        'cpu_temp',
-        'aslr',
-        'hostname',
-        'platform',
-        'boot_time',
-        'perf_version',
-        'performance_version',
-        'timeit_stmt',
-        'timeit_setup',
-        'timeit_teardown',
-        'commit_id',
-        'commit_branch',
-        'commit_date',
-        'patch_file',
-        'hooks',
-    )
-)
 
 
 def to_run_metadata(metadata: Mapping[str, object]) -> RunMetadata:
@@ -99,17 +38,10 @@ def _field_value(key: str, value: object) -> MetadataValue | None:
         return None
     if key == 'python_hash_seed' and isinstance(value, int):
         return str(value)
-    if _is_field_type(value, key):
+    field_type = METADATA_KEY_TYPES.get(key)
+    if field_type is not None and isinstance(value, field_type):
         return value
     return None
-
-
-def _is_field_type(value: object, key: str) -> TypeIs[int | float | str]:
-    return (
-        (key in _INT_KEYS and isinstance(value, int))
-        or (key in _FLOAT_KEYS and isinstance(value, float))
-        or (key in _STR_KEYS and isinstance(value, str))
-    )
 
 
 def _custom_value(key: str, value: object) -> MetadataValue:
