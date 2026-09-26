@@ -1,3 +1,4 @@
+import dataclasses
 import statistics
 from collections.abc import Mapping, Sequence
 
@@ -212,3 +213,14 @@ def test_row_with_one_significant_cell_is_shown() -> None:
         ('a', '1.50 sec', '10.5 sec: 7.00x slower', 'not significant'),
     )
     assert table.hidden_not_significant == ()
+
+
+def test_warmups_are_not_compared() -> None:
+    warmup = Measurement(kind=MeasurementKind.WARMUP, value=100.0, loops=1)
+    run = dataclasses.replace(_run('a', [1.0], 'second'), warmups=(warmup,))
+    benchmark = Benchmark(name='a', runs=(run,))
+    base = _suite('base', {}, extra=(benchmark,))
+
+    table = build_compare_table(base, [_suite('changed', {'a': TWO})])
+
+    assert table.rows == (('a', '1.00 sec', '2.00 sec: 2.00x slower'),)
