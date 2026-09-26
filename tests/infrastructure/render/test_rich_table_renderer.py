@@ -67,3 +67,21 @@ def test_brackets_are_not_markup() -> None:
 
     assert '[bold]x[/bold]' in text
     assert '[red]y' in text
+
+
+def test_emoji_codes_stay_text() -> None:
+    table = CompareTable(
+        headers=('Benchmark', ':smile:'),
+        rows=((':thumbs_up:', '1 ms'),),
+        hidden_not_significant=(':rocket:',),
+        ignored=((':smile:', (':fire:',)),),
+    )
+
+    lines = rendered(table).rstrip('\n').split('\n')
+
+    assert ':smile:' in lines[1]
+    assert ':thumbs_up:' in lines[3]
+    assert lines[-2:] == [
+        'Benchmark hidden because not significant (1): :rocket:',
+        'Ignored benchmarks (1) of :smile:: :fire:',
+    ]
