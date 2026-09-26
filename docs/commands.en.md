@@ -49,6 +49,11 @@ A mistake there stops the command with exit code 2, and no benchmark runs.
 If you do not pass `-o`/`--output`, the result goes to `./takt-<YYYYmmddTHHMMSSZ>.json`, where the time is in UTC.
 takt never deletes the result file.
 
+takt understands `-o FILE`, `-oFILE`, `--output FILE`, `--output=FILE`, a shortened `--out FILE`, and `-o` joined to other short flags, such as `-fo FILE`.
+It expands `~` and makes a relative path absolute from the current directory.
+Then takt adds `--output <absolute path>` after the other flags of the benchmark command, before the `--` separator if there is one.
+pyperformance and pyperf use the last `--output`, so the result goes to the file that takt reads.
+
 The output of pyperformance and pyperf goes to the terminal as is.
 After the benchmarks finish, takt brings the schema of every database to the current version and writes the result.
 
