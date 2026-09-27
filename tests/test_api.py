@@ -17,10 +17,20 @@ from tests.domain.exact_pattern import exact_pattern
 NO_TARGETS = (
     'no database targets configured: use --db, --target, TAKT_DB or takt.toml'
 )
+"""Error text when no database target is configured."""
+
 FAST = (0.1, 0.11, 0.1)
+"""Values of the faster result file."""
+
 SLOW = (0.2, 0.21, 0.2)
+"""Values of the slower result file."""
+
 URL = 'sqlite:///a.db'
+"""SQLite database URL."""
+
 MISSING = Path('r.json')
+"""Result file path that does not exist."""
+
 SINGLE_STRINGS = (
     (functools.partial(takt.run, 'nbody'), 'runner_arguments'),
     (functools.partial(takt.run, ['-b', 'nbody'], db=URL), 'db'),
@@ -31,6 +41,7 @@ SINGLE_STRINGS = (
     (functools.partial(takt.compare, ['a', 'b'], db=URL), 'db'),
     (functools.partial(takt.compare, ['a', 'b'], target='local'), 'target'),
 )
+"""API calls given a string instead of a list, with the parameter name."""
 
 
 class RecordingRun:
