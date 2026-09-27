@@ -9,13 +9,13 @@ It then compares results from these databases and from result files.
 SQLite only:
 
 ```bash
-pip install takt
+pip install takt-py
 ```
 
 With MariaDB support:
 
 ```bash
-pip install "takt[mariadb]"
+pip install "takt-py[mariadb]"
 ```
 
 takt needs Python 3.14 or newer.

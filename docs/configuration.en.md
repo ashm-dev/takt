@@ -10,7 +10,7 @@ Supported databases:
 | Database | URL | v0 |
 |---|---|---|
 | SQLite | `sqlite:///path.db` | supported, needs nothing extra |
-| MariaDB | `mariadb+pymysql://user:password@host:3306/db` | supported, needs `pip install "takt[mariadb]"`; `mariadb://…` also works |
+| MariaDB | `mariadb+pymysql://user:password@host:3306/db` | supported, needs `pip install "takt-py[mariadb]"`; `mariadb://…` also works |
 | MySQL | | later |
 | PostgreSQL | | later |
 | DuckDB | | later |

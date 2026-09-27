@@ -9,13 +9,13 @@ takt запускает бенчмарки pyperformance или ваши pyperf-
 Только SQLite:
 
 ```bash
-pip install takt
+pip install takt-py
 ```
 
 С поддержкой MariaDB:
 
 ```bash
-pip install "takt[mariadb]"
+pip install "takt-py[mariadb]"
 ```
 
 Нужен Python 3.14 или новее.
