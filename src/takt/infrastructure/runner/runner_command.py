@@ -7,9 +7,13 @@ from takt.domain.errors.usage_error import UsageError
 from takt.domain.operand.expand_home import expand_home
 
 _MISSING_OUTPUT = 'option -o/--output requires a file path'
+"""Error text for ``-o`` or ``--output`` without a path."""
+
 _OUTPUT_OPTION = '-o/--output'
-# Value-less pyperformance and pyperf flags, so -fo FILE reads as -f -o FILE.
+"""Name that argparse gives the output option in its errors."""
+
 _SWITCHES = ('-d', '-f', '-g', '-m', '-q', '-r', '-t', '-v')
+"""Flags without a value, so ``-fo FILE`` reads as ``-f -o FILE``."""
 
 
 def build_runner_command(

@@ -17,6 +17,7 @@ from takt.infrastructure.runner.output_directory import (
 from takt.infrastructure.runner.runner_command import build_runner_command
 
 _CANNOT_START_CODE = 127
+"""Exit code a shell gives when a command cannot start."""
 
 
 class SubprocessBenchmarkRunner:
