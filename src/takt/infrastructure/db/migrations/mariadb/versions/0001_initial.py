@@ -9,9 +9,16 @@ from alembic import op
 from sqlalchemy.dialects import mysql
 
 revision = '0001'
+"""Alembic identifier of this migration."""
+
 down_revision = None
+"""Revision this migration follows; ``None`` for the first one."""
+
 branch_labels = None
+"""Alembic branch labels; takt does not use branches."""
+
 depends_on = None
+"""Revisions this migration needs besides ``down_revision``; none."""
 
 
 def upgrade() -> None:

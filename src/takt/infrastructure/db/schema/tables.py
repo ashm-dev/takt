@@ -21,16 +21,31 @@ METADATA: Final = sa.MetaData(
         'pk': 'pk_%(table_name)s',
     },
 )
+"""Schema of all takt tables, with fixed names for keys and indexes."""
 
 _ENGINE: Final = 'InnoDB'
+"""MariaDB storage engine, which supports transactions and foreign keys."""
+
 _CHARSET: Final = 'utf8mb4'
+"""MariaDB character set that stores any Unicode text."""
+
 _SUITE_HASH: Final = 'suite_hash'
+"""Column that links a row to its suite."""
+
 _BENCHMARK_POSITION: Final = 'benchmark_position'
+"""Column with the order of a benchmark in its suite."""
+
 _RUN_POSITION: Final = 'run_position'
+"""Column with the order of a worker run in its benchmark."""
 
 _NumberType = sa.BigInteger | sa.Double[float]
+"""Column types of numeric metadata."""
+
 _MetadataType = _NumberType | sa.JSON | sa.Text
+"""Column types of all metadata values."""
+
 _ColumnTypes = Mapping[type[MetadataValue], _MetadataType]
+"""Map from a Python metadata type to its column type."""
 
 _METADATA_COLUMN_TYPES: Final[_ColumnTypes] = MappingProxyType(
     {
@@ -40,6 +55,7 @@ _METADATA_COLUMN_TYPES: Final[_ColumnTypes] = MappingProxyType(
         tuple: column_types.JSON_TYPE,
     }
 )
+"""Column type for each Python type of a metadata value."""
 
 
 def _hash_column(name: str) -> sa.Column[str]:
@@ -89,6 +105,7 @@ SUITE_TABLE: Final[sa.Table] = sa.Table(
     mariadb_engine=_ENGINE,
     mariadb_charset=_CHARSET,
 )
+"""One row per stored result file."""
 
 BENCHMARK_TABLE: Final[sa.Table] = sa.Table(
     'takt_benchmark',
@@ -100,6 +117,7 @@ BENCHMARK_TABLE: Final[sa.Table] = sa.Table(
     mariadb_engine=_ENGINE,
     mariadb_charset=_CHARSET,
 )
+"""One row per benchmark of a suite."""
 
 WORKER_RUN_TABLE: Final[sa.Table] = sa.Table(
     'takt_worker_run',
@@ -109,6 +127,7 @@ WORKER_RUN_TABLE: Final[sa.Table] = sa.Table(
     mariadb_engine=_ENGINE,
     mariadb_charset=_CHARSET,
 )
+"""One row per pyperf worker run of a benchmark."""
 
 MEASUREMENT_TABLE: Final[sa.Table] = sa.Table(
     'takt_measurement',
@@ -122,6 +141,7 @@ MEASUREMENT_TABLE: Final[sa.Table] = sa.Table(
     mariadb_engine=_ENGINE,
     mariadb_charset=_CHARSET,
 )
+"""One row per warmup or measured value of a worker run."""
 
 RUN_METADATA_TABLE: Final[sa.Table] = sa.Table(
     'takt_run_metadata',
@@ -136,6 +156,7 @@ RUN_METADATA_TABLE: Final[sa.Table] = sa.Table(
     mariadb_engine=_ENGINE,
     mariadb_charset=_CHARSET,
 )
+"""Metadata of a worker run, one column per known pyperf key."""
 
 LOADED_HASH_TABLE: Final[sa.Table] = sa.Table(
     'takt_loaded_hash',
@@ -144,3 +165,4 @@ LOADED_HASH_TABLE: Final[sa.Table] = sa.Table(
     mariadb_engine=_ENGINE,
     mariadb_charset=_CHARSET,
 )
+"""Hashes of stored results, to check quickly for a stored result."""

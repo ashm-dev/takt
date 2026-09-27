@@ -16,6 +16,7 @@ from takt.infrastructure.db.migration_engine_factory import (
 )
 
 MIGRATIONS_DIRECTORY: Final = Path(__file__).parent / 'migrations'
+"""Alembic script folder with one ``versions`` folder per dialect."""
 
 
 class AlembicSchemaMigrator:

@@ -9,6 +9,8 @@ if context.is_offline_mode():
     raise RuntimeError(message)
 
 connection = context.config.attributes['connection']
+"""Open connection that takt passes in the Alembic config."""
+
 context.configure(
     connection=connection,
     target_metadata=METADATA,

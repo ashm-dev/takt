@@ -27,9 +27,16 @@ from takt.infrastructure.db.schema.tables import (
 )
 
 _RunKey = tuple[int, int]
+"""Benchmark position and run position of a worker run."""
+
 _MeasurementKey = tuple[int, int, str]
+"""Benchmark position, run position and kind of a measurement."""
+
 _BENCHMARK_POSITION: Final = 'benchmark_position'
+"""Column with the order of a benchmark in its suite."""
+
 _RUN: Final = (_BENCHMARK_POSITION, 'run_position')
+"""Columns that order worker runs inside a suite."""
 
 
 def read_suite(connection: Connection, suite_hash: str) -> SuiteRecord | None:

@@ -20,6 +20,7 @@ from takt.infrastructure.db.schema.tables import (
 )
 
 _Row = dict[str, object]
+"""Column values of one inserted row."""
 
 
 def insert_suite(connection: Connection, record: SuiteRecord) -> None:
