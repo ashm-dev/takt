@@ -25,12 +25,17 @@ from tests.application.use_cases.compare_fakes import (
 from tests.domain.exact_pattern import exact_pattern
 
 FIRST_DATE = datetime.fromisoformat('2026-09-01 10:00')
+"""Result date of the oldest ``default`` run."""
+
 SECOND_DATE = datetime.fromisoformat('2026-09-02 10:00')
+"""Result date of the second ``default`` run."""
+
 DEFAULT_RUNS = (
     record(HASH_C, 'default'),
     record(HASH_B, 'default', SECOND_DATE),
     record(HASH_A, 'default', FIRST_DATE),
 )
+"""Three ``default`` runs: one without a result date and two dated ones."""
 
 
 def resolve(session: FakeSession | None, operand: Operand) -> LabeledSuite:

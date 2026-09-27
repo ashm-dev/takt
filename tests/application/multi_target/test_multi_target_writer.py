@@ -12,15 +12,28 @@ from tests.application.multi_target.fakes import (
 from tests.infrastructure.db.suite_factory import make_record
 
 WR = TargetStatus.WRITTEN
+"""Short alias for ``TargetStatus.WRITTEN`` in expected status tuples."""
+
 AL = TargetStatus.ALREADY_LOADED
+"""Short alias for ``TargetStatus.ALREADY_LOADED`` in expected status tuples."""
+
 FL = TargetStatus.FAILED
+"""Short alias for ``TargetStatus.FAILED`` in expected status tuples."""
+
 RB = TargetStatus.ROLLED_BACK
+"""Short alias for ``TargetStatus.ROLLED_BACK`` in expected status tuples."""
+
 NA = TargetStatus.NOT_ATTEMPTED
+"""Short alias for ``TargetStatus.NOT_ATTEMPTED`` in expected status tuples."""
+
 HEAD = '0001'
+"""Schema revision put in the cache so the writer skips the migration."""
+
 TARGETS = tuple(
     Target(name=name, url=f'sqlite:///{name}.db', dialect='sqlite')
     for name in ('a', 'b', 'c')
 )
+"""Three SQLite targets ``a``, ``b`` and ``c`` written in this order."""
 
 
 def url(name: str) -> str:

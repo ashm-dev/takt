@@ -20,6 +20,7 @@ from tests.application.use_cases.compare_fakes import (
 from tests.domain.exact_pattern import exact_pattern
 
 TARGET = Target(name='main', url='sqlite:///main.db', dialect='sqlite')
+"""Database target that ``find_target`` returns by default."""
 
 
 class Fixture:

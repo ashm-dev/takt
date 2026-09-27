@@ -6,8 +6,13 @@ from takt.application.multi_target.write_report import WriteReport
 from takt.domain.model.target import Target
 
 TARGET = Target(name='a', url='sqlite:///a.db', dialect='sqlite')
+"""Target shared by every outcome in these tests."""
+
 EXISTING_NAME_ERROR = 'existing_name is only allowed for already_loaded'
+"""Error text for ``existing_name`` set on a not already loaded outcome."""
+
 ERROR_TEXT_ERROR = 'error is required for failed and only allowed for failed'
+"""Error text for ``error`` missing on failed or set on another status."""
 
 
 def outcome(

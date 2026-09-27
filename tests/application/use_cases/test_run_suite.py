@@ -29,8 +29,13 @@ from tests.application.use_cases.fakes import (
 from tests.domain.exact_pattern import exact_pattern
 
 TARGET = Target(name='a', url='sqlite:///a.db', dialect='sqlite')
+"""Single SQLite target the run result is written to."""
+
 NOW = datetime(2026, 9, 25, 13, 46, 1, tzinfo=UTC)
+"""Time the fixed clock returns."""
+
 RESULT_PATH = Path('takt-20260925T134601Z.json')
+"""Result file path the fake runner returns."""
 
 
 class Fixture:

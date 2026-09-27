@@ -11,6 +11,7 @@ PORT_MODULES = (
     'takt.application.ports.target_connector',
     'takt.application.ports.target_session',
 )
+"""Port modules that must import without errors."""
 
 
 @pytest.mark.parametrize('module_name', PORT_MODULES)

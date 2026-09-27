@@ -9,6 +9,7 @@ from takt.domain.model.suite import Suite
 from takt.domain.model.worker_run import WorkerRun
 
 DEFAULT_HASH = 'f' * 64
+"""Hash of the suite that ``make_suite`` builds."""
 
 
 class FakeReader:

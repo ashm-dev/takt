@@ -13,9 +13,16 @@ from takt.domain.model.target import Target
 from tests.application.use_cases.fakes import make_suite
 
 HASH_A = '3fa2b1'.ljust(64, '0')
+"""Suite hash that shares the ``3fa2b`` prefix with ``HASH_C``."""
+
 HASH_B = '9c01de'.ljust(64, '0')
+"""Suite hash with a prefix that no other test hash has."""
+
 HASH_C = '3fa2b2'.ljust(64, '0')
+"""Suite hash that shares the ``3fa2b`` prefix with ``HASH_A``."""
+
 LOADED_AT = datetime(2026, 9, 25, tzinfo=UTC)
+"""Load time given to every record built by ``record``."""
 
 
 def suite(suite_hash: str, result_date: datetime | None = None) -> Suite:

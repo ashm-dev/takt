@@ -6,19 +6,37 @@ from takt.domain.model.suite_summary import SuiteSummary
 from takt.domain.model.target import Target
 
 DEFAULT_HEAD = '0001'
+"""Schema revision of a target that has no entry in ``heads``."""
 
 
 @dataclass
 class FakeWorld:
     journal: list[str] = field(default_factory=list)
+    """Every fake call in order as ``operation:target`` keys."""
+
     loaded: dict[str, str | None] = field(default_factory=dict)
+    """Stored run name per target; a present key means already loaded."""
+
     stored: set[str] = field(default_factory=set)
+    """Target names whose insert was committed."""
+
     fail: dict[str, int] = field(default_factory=dict)
+    """How many more times each ``operation:target`` call raises an error."""
+
     fail_at: dict[str, int] = field(default_factory=dict)
+    """Call number at which an ``operation:target`` call fails once."""
+
     heads: dict[str, str] = field(default_factory=dict)
+    """Schema revision per target name that ``FakeMigrator.head`` returns."""
+
     cache: dict[str, str] = field(default_factory=dict)
+    """Cached schema revision per target URL."""
+
     inserted: list[SuiteRecord] = field(default_factory=list)
+    """Records passed to ``insert`` in call order."""
+
     empty_errors: set[str] = field(default_factory=set)
+    """``operation:target`` calls that raise an error with an empty message."""
 
     def call(self, operation: str, name: str) -> None:
         key = f'{operation}:{name}'

@@ -26,8 +26,13 @@ from tests.application.multi_target.fakes import (
 from tests.application.use_cases.fakes import FakeReader, FixedClock, make_suite
 
 TARGET = Target(name='a', url='sqlite:///a.db', dialect='sqlite')
+"""Single SQLite target the suite is imported into."""
+
 NOW = datetime(2026, 9, 25, 13, 46, 1, tzinfo=UTC)
+"""Time the fixed clock returns."""
+
 RESULT_PATH = Path('results/run.json')
+"""Path of the result file to import."""
 
 
 class Fixture:
