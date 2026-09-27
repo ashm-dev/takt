@@ -135,11 +135,22 @@ class MultiTargetWriter:
 @dataclass
 class _WriteState:
     targets: tuple[Target, ...]
+    """Target databases in the order of the report."""
+
     outcomes: list[TargetOutcome] = field(init=False)
+    """Outcome per target, ``not_attempted`` until the target is reached."""
+
     heads: list[str] = field(default_factory=list)
+    """Latest schema revision per target, filled by the migration phase."""
+
     skipped: list[bool] = field(default_factory=list)
+    """Per target, ``True`` when the cached revision skipped the migration."""
+
     sessions: dict[int, TargetSession] = field(default_factory=dict)
+    """Sessions with an inserted, not yet committed suite, by target index."""
+
     current: TargetSession | None = None
+    """Session in use right now, discarded if the target fails."""
 
     def __post_init__(self) -> None:
         self.outcomes = [

@@ -8,12 +8,10 @@ from takt.application.multi_target.target_status import TargetStatus
 
 @dataclass(frozen=True, kw_only=True)
 class WriteReport:
-    """Outcomes of writing a suite to every target.
-
-    :ivar outcomes: One outcome per target, in the order of the targets.
-    """
+    """Outcomes of writing a suite to every target."""
 
     outcomes: tuple[TargetOutcome, ...]
+    """One outcome per target, in the order of the targets."""
 
     @property
     def succeeded(self) -> bool:
