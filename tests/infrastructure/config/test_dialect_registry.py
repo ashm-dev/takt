@@ -95,7 +95,7 @@ def test_missing_driver(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert str(error.value) == (
         "database driver 'pymysql' for mariadb is not installed; "
-        "run: pip install 'takt[mariadb]'"
+        "run: pip install 'takt-py[mariadb]'"
     )
     assert error.value.exit_code == 2
 
@@ -113,7 +113,7 @@ def test_missing_driver_names_registry_extra(
     with pytest.raises(MissingDriverError) as error:
         dialect_for_url('mariadb://u:p@h/db')
 
-    assert str(error.value).endswith("pip install 'takt[other]'")
+    assert str(error.value).endswith("pip install 'takt-py[other]'")
 
 
 @pytest.mark.parametrize(
