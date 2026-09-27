@@ -161,6 +161,20 @@ def test_plain_uppercase_prefix_explains_rule() -> None:
     assert session.prefix_lookups == []
 
 
+@pytest.mark.parametrize('text', ['314', 'cafe'])
+def test_plain_name_without_hash_hint(text: str) -> None:
+    session = session_with(record(HASH_A, None))
+
+    with pytest.raises(
+        OperandNotFoundError,
+        match=exact_pattern(
+            f"operand '{text}' not found in target 'main': "
+            'no file, run name or hash prefix matches'
+        ),
+    ):
+        resolve(session, PlainOperand(text=text))
+
+
 def test_plain_ambiguous_prefix() -> None:
     session = session_with(
         record('3fa2b1'.ljust(64, 'a'), 'x'),

@@ -103,6 +103,8 @@ def test_name_with_slash_is_run_name() -> None:
         ('3fa2b', False, True),
         ('3FA2B1', False, True),
         ('nightly', False, False),
+        ('314', False, False),
+        ('cafe', False, False),
     ],
 )
 def test_plain_operand_hash_checks(
