@@ -14,8 +14,13 @@ from takt.domain.model.suite import Suite
 from takt.infrastructure.pyperf.pyperf_result_reader import PyperfResultReader
 
 FIXTURES = Path(__file__).parent / 'fixtures'
+"""Folder with the pyperf result files for these tests."""
+
 FULL = FIXTURES / 'full.json'
+"""pyperf result file in format 1.0 with all metadata filled."""
+
 OLD5 = FIXTURES / 'old5.json'
+"""pyperf result file in the old format 5."""
 
 
 def _as_dict(node: object) -> dict[str, object]:

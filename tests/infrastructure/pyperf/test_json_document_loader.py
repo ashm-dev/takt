@@ -8,6 +8,7 @@ from takt.domain.errors.invalid_result_error import InvalidResultError
 from takt.infrastructure.pyperf.json_document_loader import load_json_document
 
 FULL = Path(__file__).parent / 'fixtures' / 'full.json'
+"""pyperf result file in format 1.0 with all metadata filled."""
 
 
 def test_reads_plain_json() -> None:

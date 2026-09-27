@@ -5,6 +5,7 @@ import pyperf
 from takt.infrastructure.pyperf.metadata_flattener import flatten_metadata
 
 FULL = Path(__file__).parent / 'fixtures' / 'full.json'
+"""pyperf result file in format 1.0 with all metadata filled."""
 
 
 def test_run_gets_root_and_benchmark_keys() -> None:
