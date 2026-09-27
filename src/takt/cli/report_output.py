@@ -10,6 +10,8 @@ from takt.application.multi_target.target_status import TargetStatus
 from takt.application.use_cases.import_report import ImportReport
 
 _HASH_PREFIX_LENGTH: Final = 12
+"""Number of hash characters shown in the result line."""
+
 _PLAIN_TEXTS: Final[Mapping[TargetStatus, str]] = MappingProxyType(
     {
         TargetStatus.WRITTEN: 'written',
@@ -17,6 +19,7 @@ _PLAIN_TEXTS: Final[Mapping[TargetStatus, str]] = MappingProxyType(
         TargetStatus.NOT_ATTEMPTED: 'not attempted',
     }
 )
+"""Printed text of each status that needs no extra details."""
 
 
 def print_import_report(report: ImportReport) -> None:

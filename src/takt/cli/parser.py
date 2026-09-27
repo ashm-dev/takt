@@ -15,6 +15,8 @@ _RUN_USAGE = (
     'takt run [takt flags] [pyperformance run flags ...]\n'
     '       takt run SCRIPT.py [takt flags] [pyperf.Runner flags ...]'
 )
+"""Usage line of ``takt run`` for both runner modes."""
+
 _RUN_DESCRIPTION = (
     'Run benchmarks and store the result in every selected database.\n\n'
     'Every argument that is not a takt flag goes unchanged to\n'
@@ -25,6 +27,8 @@ _RUN_DESCRIPTION = (
     '-o/--output picks the result file; the default is\n'
     './takt-<UTC time>.json.'
 )
+"""Help text of ``takt run`` that explains which arguments go to the runner."""
+
 _RUN_EPILOG = (
     '--help always shows this help. The flags of the runner itself are\n'
     "shown by 'python -m pyperformance run --help' or\n"
@@ -33,13 +37,18 @@ _RUN_EPILOG = (
     '  takt run -b nbody --fast --db sqlite:///bench.db\n'
     '  takt run bench_sort.py --values 5 --db sqlite:///bench.db'
 )
+"""Help footer of ``takt run`` with where to find runner flags and examples."""
+
 _OPERAND_HELP = (
     'Result file (.json or .json.gz), run name, NAME:N (N-th run with '
     'that name, from 0, by date), NAME:HASH_PREFIX or a hash prefix of '
     'at least 6 lowercase hex characters. Give two or more; the first one '
     'is the base.'
 )
+"""Help text of the ``takt compare`` operands with every accepted form."""
+
 _REPEATABLE = 'repeatable'
+"""Help note for target flags that may be given more than once."""
 
 
 def build_parser() -> argparse.ArgumentParser:

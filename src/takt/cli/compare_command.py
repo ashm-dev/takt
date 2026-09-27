@@ -11,8 +11,8 @@ from takt.cli.exit_code import ExitCode
 from takt.infrastructure.render.markdown_renderer import render_markdown
 from takt.infrastructure.render.rich_table_renderer import render_rich_table
 
-# Wide enough that the table and its notes never wrap in a log file.
 _REDIRECTED_WIDTH = 100_000
+"""Width wide enough that the table never wraps in a log file."""
 
 
 def handle_compare(args: argparse.Namespace) -> int:
