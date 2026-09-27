@@ -4,6 +4,7 @@ from takt.domain.compare.compare_table import CompareTable
 from takt.infrastructure.render.rich_table_renderer import render_rich_table
 
 HIDDEN_LINE = 'Benchmark hidden because not significant (2): a, b'
+"""Line that lists the benchmarks hidden as not significant."""
 
 
 def rendered(table: CompareTable) -> str:

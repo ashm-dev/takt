@@ -2,12 +2,17 @@ from takt.domain.compare.compare_table import CompareTable
 from takt.infrastructure.render.markdown_renderer import render_markdown
 
 HEADERS = ('Benchmark', 'base.json', 'new.json')
+"""Column headers of the rendered table."""
+
 ROWS = (('nbody', '100 ms', '90.0 ms: 1.11x faster'),)
+"""Single benchmark row of the rendered table."""
+
 TABLE_LINES = (
     '| Benchmark | base.json | new.json              |',
     '|-----------|:---------:|:---------------------:|',
     '| nbody     | 100 ms    | 90.0 ms: 1.11x faster |',
 )
+"""Expected Markdown lines for ``HEADERS`` and ``ROWS``."""
 
 
 def test_snapshot_single_row() -> None:
