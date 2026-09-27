@@ -9,16 +9,16 @@ from takt.domain.model.run_metadata import RunMetadata
 
 @dataclass(frozen=True, kw_only=True)
 class WorkerRun:
-    """One pyperf worker run.
-
-    :ivar metadata: Full metadata of the run.
-    :ivar warmups: Warmup measurements in file order.
-    :ivar values: Value measurements in file order.
-    """
+    """One pyperf worker run."""
 
     metadata: RunMetadata
+    """Full metadata of the run."""
+
     warmups: tuple[Measurement, ...]
+    """Warmup measurements in file order."""
+
     values: tuple[Measurement, ...]
+    """Value measurements in file order."""
 
     def __post_init__(self) -> None:
         """Validate the worker run invariants.

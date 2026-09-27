@@ -8,22 +8,24 @@ from typing import Final
 from takt.domain.model.benchmark import Benchmark
 
 _HASH_PATTERN: Final = re.compile('[0-9a-f]{64}')
+"""Valid suite hash: 64 lowercase hex characters."""
 
 
 @dataclass(frozen=True, kw_only=True)
 class Suite:
-    """One pyperf result file.
-
-    :ivar hash: SHA-256 of the canonical JSON in lowercase hex.
-    :ivar format_version: pyperf JSON format version.
-    :ivar result_date: Earliest run date, naive local time.
-    :ivar benchmarks: Benchmarks in file order.
-    """
+    """One pyperf result file."""
 
     hash: str
+    """SHA-256 of the canonical JSON in lowercase hex."""
+
     format_version: str
+    """pyperf JSON format version."""
+
     result_date: datetime | None
+    """Earliest run date, naive local time."""
+
     benchmarks: tuple[Benchmark, ...]
+    """Benchmarks in file order."""
 
     def __post_init__(self) -> None:
         """Validate the suite invariants.

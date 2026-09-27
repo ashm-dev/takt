@@ -7,14 +7,13 @@ from takt.domain.model.worker_run import WorkerRun
 
 @dataclass(frozen=True, kw_only=True)
 class Benchmark:
-    """One benchmark with its worker runs.
-
-    :ivar name: Benchmark name from pyperf metadata.
-    :ivar runs: Worker runs in file order.
-    """
+    """One benchmark with its worker runs."""
 
     name: str
+    """Benchmark name from pyperf metadata."""
+
     runs: tuple[WorkerRun, ...]
+    """Worker runs in file order."""
 
     def __post_init__(self) -> None:
         """Validate the benchmark invariants.

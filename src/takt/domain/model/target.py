@@ -7,16 +7,16 @@ from sqlalchemy.engine import make_url
 
 @dataclass(frozen=True, kw_only=True)
 class Target:
-    """Database where takt stores results.
-
-    :ivar name: Target name from ``takt.toml`` or ``None``.
-    :ivar url: SQLAlchemy URL as the user wrote it.
-    :ivar dialect: Supported dialect name.
-    """
+    """Database where takt stores results."""
 
     name: str | None
+    """Target name from ``takt.toml`` or ``None``."""
+
     url: str
+    """SQLAlchemy URL as the user wrote it."""
+
     dialect: str
+    """Supported dialect name."""
 
     def display(self) -> str:
         """Return a label that is safe to print.

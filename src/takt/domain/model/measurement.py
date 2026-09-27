@@ -8,16 +8,16 @@ from takt.domain.model.measurement_kind import MeasurementKind
 
 @dataclass(frozen=True, kw_only=True)
 class Measurement:
-    """Single value of a worker run.
-
-    :ivar kind: Measured value or warmup.
-    :ivar value: Value per loop iteration.
-    :ivar loops: Loop count, set only for warmups.
-    """
+    """Single value of a worker run."""
 
     kind: MeasurementKind
+    """Measured value or warmup."""
+
     value: float
+    """Value per loop iteration."""
+
     loops: int | None
+    """Loop count, set only for warmups."""
 
     def __post_init__(self) -> None:
         """Validate the measurement invariants.

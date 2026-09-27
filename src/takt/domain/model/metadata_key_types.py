@@ -7,6 +7,7 @@ from typing import Final, TypeAlias
 from takt.domain.model.metadata_value import MetadataValue
 
 _KeyType: TypeAlias = type[MetadataValue]
+"""Python type that the value of a known metadata key must have."""
 
 METADATA_KEY_TYPES: Final[Mapping[str, _KeyType]] = MappingProxyType(
     {
@@ -61,3 +62,4 @@ METADATA_KEY_TYPES: Final[Mapping[str, _KeyType]] = MappingProxyType(
         'hooks': str,
     }
 )
+"""Expected value type of every key that has its own ``RunMetadata`` field."""

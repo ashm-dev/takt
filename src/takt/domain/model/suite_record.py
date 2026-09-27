@@ -9,15 +9,16 @@ from takt.domain.model.suite_source import SuiteSource
 
 @dataclass(frozen=True, kw_only=True)
 class SuiteRecord:
-    """Suite with the attributes that exist only in storage.
-
-    :ivar suite: The suite itself.
-    :ivar name: Run name or ``None``.
-    :ivar source: Command that stored the suite.
-    :ivar loaded_at: Storage time in UTC.
-    """
+    """Suite with the attributes that exist only in storage."""
 
     suite: Suite
+    """The suite itself."""
+
     name: str | None
+    """Run name or ``None``."""
+
     source: SuiteSource
+    """Command that stored the suite."""
+
     loaded_at: datetime
+    """Storage time in UTC."""
