@@ -7,12 +7,25 @@ from takt.domain.errors.usage_error import UsageError
 from takt.infrastructure.runner.runner_command import build_runner_command
 
 PY = '/usr/bin/python3.14'
+"""Python interpreter path passed to the command builder."""
+
 CWD = Path('/work')
+"""Working folder that relative output paths resolve against."""
+
 OUT = Path('/work/takt-x.json')
+"""Default output path used when the user gives none."""
+
 USER_OUT = Path('/work/r.json')
+"""Output path that the user gives as ``r.json``."""
+
 PYPERFORMANCE = (PY, '-m', 'pyperformance', 'run')
+"""Command start for a pyperformance run."""
+
 DEFAULT_EXTRA = ('--output', '/work/takt-x.json')
+"""Output flag added for the default output path."""
+
 USER_EXTRA = ('--output', '/work/r.json')
+"""Output flag added for the user output path."""
 
 
 def _build(*arguments: str) -> tuple[tuple[str, ...], Path]:

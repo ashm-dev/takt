@@ -19,14 +19,21 @@ from takt.infrastructure.runner.subprocess_benchmark_runner import (
 from tests.domain.exact_pattern import exact_pattern
 
 NOW = datetime(2026, 9, 25, 13, 46, 1, tzinfo=UTC)
+"""Time that the fake clock returns."""
+
 PY = '/usr/bin/python3.14'
+"""Python interpreter path passed to the runner."""
+
 DEFAULT_NAME = 'takt-20260925T134601Z.json'
+"""Result file name that the runner builds from ``NOW``."""
+
 BENCH_SCRIPT = (
     'import pyperf\n'
     '\n'
     'runner = pyperf.Runner()\n'
     "runner.bench_func('noop', lambda: None)\n"
 )
+"""Tiny pyperf script that the slow test executes for real."""
 
 
 class _FixedClock:

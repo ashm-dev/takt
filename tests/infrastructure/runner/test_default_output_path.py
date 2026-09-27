@@ -4,7 +4,10 @@ from pathlib import Path
 from takt.infrastructure.runner.default_output_path import default_output_path
 
 PLUS_THREE = timezone(timedelta(hours=3))
+"""UTC+3 time zone, to check the name is built in UTC."""
+
 EXPECTED = Path('/work/takt-20260925T134601Z.json')
+"""Output path for 2026-09-25 13:46:01 UTC in ``/work``."""
 
 
 def test_utc_name() -> None:
