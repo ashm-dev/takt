@@ -8,6 +8,8 @@ extra:
       name: Shamil Abdulaev
 theme:
   name: material
+  logo: assets/icon.png
+  favicon: assets/icon.png
   features:
     - navigation.sections
     - content.code.copy
