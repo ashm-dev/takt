@@ -12,6 +12,8 @@ import pyperf
 runner = pyperf.Runner()
 runner.bench_func("sleep_small", time.sleep, 0.0001)
 """
+"""Tiny pyperf script that the ``run`` tests execute for real."""
+
 SCRIPT_FLAGS = (
     '--processes',
     '1',
@@ -22,11 +24,19 @@ SCRIPT_FLAGS = (
     '--loops',
     '1',
 )
+"""pyperf flags that keep the real benchmark run short."""
+
 NOMINAL = (0.1, 0.11, 0.1)
+"""Timings in seconds for the baseline result file."""
+
 SLOWER = (0.2, 0.21, 0.2)
+"""Timings in seconds about twice ``NOMINAL``, so compare sees a slowdown."""
 
 MakeResult = Callable[[Path | str, str, Sequence[float]], Path]
+"""Fixture type that writes a pyperf result file with given timings."""
+
 CountSuites = Callable[[str], int]
+"""Fixture type that returns how many suites a database URL holds."""
 
 
 @pytest.fixture(autouse=True)

@@ -19,8 +19,10 @@ from tests.e2e.conftest import (
 )
 
 pytestmark = pytest.mark.mariadb
+"""Runs these tests only when the ``mariadb`` marker is selected."""
 
 CLOSED_PORT_URL = 'mariadb+pymysql://takt:takt@127.0.0.1:1/takt'
+"""MariaDB URL on port 1 where nothing listens, so connecting fails."""
 
 
 def drop_takt_tables(url: str) -> None:
