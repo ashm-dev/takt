@@ -15,19 +15,27 @@ from takt.domain.model.suite import Suite
 from takt.domain.model.worker_run import WorkerRun
 
 Runs = Sequence[Sequence[float]]
+"""Values of each run of one benchmark."""
+
 Named = Sequence[tuple[str, Runs]]
+"""Benchmark names with their runs."""
 
 BASE: Named = (
     ('fast', ((0.01, 0.011, 0.01), (0.01, 0.012, 0.011))),
     ('slow', ((0.5, 0.52, 0.51), (0.5, 0.51, 0.52))),
     ('same', ((0.2, 0.21, 0.2), (0.21, 0.2, 0.21))),
 )
+"""Benchmarks of the base suite."""
+
 CHANGED: Named = (
     ('fast', ((0.008, 0.009, 0.008), (0.008, 0.009, 0.009))),
     ('slow', ((0.6, 0.61, 0.62), (0.6, 0.62, 0.61))),
     ('same', ((0.21, 0.2, 0.21), (0.2, 0.21, 0.2))),
 )
+"""Base benchmarks where ``fast`` sped up and ``slow`` slowed down."""
+
 HIDDEN_PREFIX = 'Benchmark hidden because not significant'
+"""Start of the line that lists benchmarks without a significant change."""
 
 
 def _dump_pyperf(benchmarks: Named, path: Path) -> str:

@@ -6,7 +6,10 @@ from takt.domain.model.run_metadata import RunMetadata
 from takt.domain.model.worker_run import WorkerRun
 
 WARMUP = Measurement(kind=MeasurementKind.WARMUP, value=0.1, loops=1)
+"""Warmup measurement."""
+
 VALUE = Measurement(kind=MeasurementKind.VALUE, value=0.2, loops=None)
+"""Value measurement."""
 
 
 @pytest.mark.parametrize(

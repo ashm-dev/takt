@@ -16,6 +16,7 @@ VALUES = NameValues(
     hostname='bench-host',
     suite_hash='3fa2b1c4d5e6'.ljust(64, '0'),
 )
+"""Values every placeholder is rendered from."""
 
 
 def test_plain_text() -> None:

@@ -19,13 +19,25 @@ from takt.domain.model.suite import Suite
 from takt.domain.model.worker_run import WorkerRun
 
 Runs = Sequence[Sequence[float]]
+"""Values of each run of one benchmark."""
 
 HASH = 'a' * 64
+"""Valid suite hash for every test suite."""
+
 ONE = ((1.0,),)
+"""One run with a single value of 1 second."""
+
 TWO = ((2.0,),)
+"""One run with a single value of 2 seconds."""
+
 HALF = ((0.5,),)
+"""One run with a single value of 0.5 seconds."""
+
 SPREAD = ((1.0, 2.0),)
+"""One run with two different values."""
+
 SPREAD_REVERSED = ((2.0, 1.0),)
+"""Same values as ``SPREAD`` in reverse order."""
 
 
 def _run(name: str, values: Sequence[float], unit: str | None) -> WorkerRun:

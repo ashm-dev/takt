@@ -12,14 +12,21 @@ RUN = WorkerRun(
     warmups=(),
     values=(Measurement(kind=MeasurementKind.VALUE, value=0.2, loops=None),),
 )
+"""Valid worker run with one value."""
+
 NBODY = Benchmark(name='nbody', runs=(RUN,))
+"""Valid benchmark with one run."""
+
 VALID_HASH = 'a' * 64
+"""Hash of 64 lowercase hex characters."""
+
 BAD_HASHES = (
     'A' * 64,
     'a' * 63,
     'g' * 64,
     '',
 )
+"""Hashes with uppercase, a short length, a non-hex character or no text."""
 
 
 def test_suite_keeps_fields() -> None:

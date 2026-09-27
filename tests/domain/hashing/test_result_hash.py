@@ -3,10 +3,15 @@ import json
 from takt.domain.hashing.result_hash import result_hash
 
 SORTED_HASH = '94a786c3662bc7beeb598efa7d8cb58d7bea25d6c275ea9785a0230ff1f8c2ba'
+"""Expected hash of ``{"a": [1, 2], "b": 1}``."""
+
 CHANGED_HASH = (
     '68b7e88ecdcf999e2736835f0354c02ff937e5c4222e67f38d1fa2682a5c15aa'
 )
+"""Expected hash of ``{"a": [1, 2], "b": 2}``."""
+
 PYPERF_HASH = '3b6aeb6c9e41c73160b194397ff641c40653fb0686c61824eef138712dcef5f5'
+"""Expected hash of the small pyperf document in the test."""
 
 
 def test_result_hash_matches_reference_value() -> None:

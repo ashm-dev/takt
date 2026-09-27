@@ -14,6 +14,7 @@ LATER = NameValues(
     hostname=None,
     suite_hash='9c01de'.ljust(64, '0'),
 )
+"""Values that would change any placeholder rendered at save time."""
 
 
 @pytest.mark.parametrize(

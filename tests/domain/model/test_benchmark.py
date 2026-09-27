@@ -11,6 +11,7 @@ RUN = WorkerRun(
     warmups=(),
     values=(Measurement(kind=MeasurementKind.VALUE, value=0.2, loops=None),),
 )
+"""Valid worker run with one value."""
 
 
 def test_benchmark_keeps_fields() -> None:

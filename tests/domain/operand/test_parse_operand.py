@@ -236,7 +236,10 @@ def test_two_colons() -> None:
 
 
 _TOO_LONG_HEX_TAIL = 'a' * 65
+"""Hex text one character longer than a full hash."""
+
 _TOO_LONG_HASH_PREFIX = f'default:{_TOO_LONG_HEX_TAIL}'
+"""Operand with a hash prefix longer than a full hash."""
 
 
 @pytest.mark.parametrize(
