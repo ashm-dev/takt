@@ -11,21 +11,28 @@ from takt.domain.naming.name_values import NameValues
 from takt.domain.naming.placeholder import Placeholder
 
 _MAX_LENGTH = 255
+"""Longest allowed rendered run name in characters."""
+
 _HASH_LENGTH = 12
+"""Number of suite hash characters that ``{hash}`` inserts."""
+
 _ALLOWED = ', '.join(f'{{{placeholder}}}' for placeholder in Placeholder)
+"""All placeholders, listed in the unknown placeholder error."""
 
 _Field = str | None
+"""Field name, format spec or conversion of a template chunk, or ``None``."""
+
 _Chunk = tuple[str, _Field, _Field, _Field]
+"""Literal text, field name, format spec and conversion from
+``Formatter.parse``."""
 
 
 @dataclass(frozen=True, kw_only=True)
 class NameTemplate:
-    """Parsed run name template, ready to render.
-
-    :ivar text: Template text as the user wrote it.
-    """
+    """Parsed run name template, ready to render."""
 
     text: str
+    """Template text as the user wrote it."""
 
     @classmethod
     def parse(cls, text: str) -> NameTemplate:
