@@ -14,6 +14,7 @@ from takt.domain.errors.takt_error import TaktError
 from takt.domain.errors.usage_error import UsageError
 
 __version__: Final[str] = version('takt')
+"""Version of the installed ``takt`` distribution."""
 
 __all__ = (
     'run',
@@ -29,3 +30,4 @@ __all__ = (
     'ExecutionError',
     '__version__',
 )
+"""Names that make up the public API of the package."""
