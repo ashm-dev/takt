@@ -25,12 +25,16 @@ from tests.cli.reports import FAILED_REPORT, OK_REPORT
 NO_TARGETS = (
     'no database targets configured: use --db, --target, TAKT_DB or takt.toml'
 )
+"""Error text when no database target is configured."""
+
 SNAPSHOT_TABLE = CompareTable(
     headers=('Benchmark', 'base.json', 'new.json'),
     rows=(('nbody', '100 ms', '90.0 ms: 1.11x faster'),),
     hidden_not_significant=(),
     ignored=(),
 )
+"""Compare table the fake ``compare`` returns."""
+
 TARGET_ARGV = (
     '--db',
     'sqlite:///a.db',
@@ -39,6 +43,8 @@ TARGET_ARGV = (
     '--config',
     'ci.toml',
 )
+"""Target options added to a command line."""
+
 TARGET_KWARGS = MappingProxyType(
     {
         'db': ['sqlite:///a.db'],
@@ -46,11 +52,14 @@ TARGET_KWARGS = MappingProxyType(
         'config': Path('ci.toml'),
     },
 )
+"""Keyword arguments the CLI passes to the API for ``TARGET_ARGV``."""
+
 SNAPSHOT_MARKDOWN = (
     '| Benchmark | base.json | new.json              |\n'
     '|-----------|:---------:|:---------------------:|\n'
     '| nbody     | 100 ms    | 90.0 ms: 1.11x faster |\n'
 )
+"""Markdown that ``SNAPSHOT_TABLE`` must render to."""
 
 
 class Recorder:

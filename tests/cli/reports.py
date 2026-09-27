@@ -9,11 +9,14 @@ from takt.application.use_cases.import_report import ImportReport
 from takt.domain.model.target import Target
 
 LOCAL = Target(name='local', url='sqlite:///a.db', dialect='sqlite')
+"""Named SQLite target."""
+
 MARIA = Target(
     name=None,
     url='mariadb+pymysql://u:secret@h/db',
     dialect='mariadb',
 )
+"""Unnamed MariaDB target whose URL has a password."""
 
 
 def outcome(
@@ -44,7 +47,10 @@ def report(
 
 
 OK_REPORT = report(outcome(LOCAL, TargetStatus.WRITTEN))
+"""Report where the only target was written."""
+
 FAILED_REPORT = report(
     outcome(LOCAL, TargetStatus.ROLLED_BACK),
     outcome(MARIA, TargetStatus.FAILED, error='connection refused'),
 )
+"""Report where one target was rolled back and the other failed."""
