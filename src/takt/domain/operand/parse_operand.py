@@ -15,9 +15,13 @@ from takt.domain.operand.plain_operand import PlainOperand
 from takt.domain.operand.tagged_operand import TaggedOperand
 
 _INDEX_PATTERN: Final[re.Pattern[str]] = re.compile(r'[0-9]+')
+"""Run index after the ``:`` of a tagged operand."""
+
 _FILE_SUFFIXES: Final = ('.json', '.json.gz')
-# A bare '/' is not enough: run names such as 'release/3.14' are valid.
+"""Suffixes that make an operand a result file path."""
+
 _PATH_PREFIXES: Final = ('/', './', '../', '~/')
+"""Path prefixes; a bare ``/`` is not one, since ``release/3.14`` is a name."""
 
 
 def parse_operand(

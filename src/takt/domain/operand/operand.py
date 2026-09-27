@@ -7,3 +7,4 @@ from takt.domain.operand.plain_operand import PlainOperand
 from takt.domain.operand.tagged_operand import TaggedOperand
 
 Operand: TypeAlias = FileOperand | PlainOperand | TaggedOperand
+"""Any compare operand that ``parse_operand`` can return."""

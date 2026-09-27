@@ -5,18 +5,19 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True, kw_only=True)
 class TaggedOperand:
-    """Compare operand made of a run name and an index or a hash prefix.
-
-    :ivar text: Operand text as the user wrote it.
-    :ivar name: Run name before the ``:``.
-    :ivar index: Zero-based position within the named run's suites.
-    :ivar hash_prefix: Lowercase hexadecimal prefix of a suite hash.
-    """
+    """Compare operand made of a run name and an index or a hash prefix."""
 
     text: str
+    """Operand text as the user wrote it."""
+
     name: str
+    """Run name before the ``:``."""
+
     index: int | None
+    """Zero-based position within the named run's suites."""
+
     hash_prefix: str | None
+    """Lowercase hexadecimal prefix of a suite hash."""
 
     def __post_init__(self) -> None:
         """Validate the tagged operand invariant.
