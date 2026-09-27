@@ -10,9 +10,16 @@ from takt.infrastructure.cache.file_schema_version_cache import (
 )
 
 URL_A = 'sqlite:///a.db'
+"""First database URL used as a cache key."""
+
 URL_B = 'sqlite:///b.db'
+"""Second database URL that must stay independent of ``URL_A``."""
+
 REPLACE_ERROR = 'boom'
+"""Message of the ``OSError`` raised by ``fail_replace``."""
+
 HOME_CACHE = Path.home() / '.cache' / 'takt' / 'schema_versions.json'
+"""Cache file path used when ``XDG_CACHE_HOME`` is not set."""
 
 
 def url_key(url: str) -> str:
