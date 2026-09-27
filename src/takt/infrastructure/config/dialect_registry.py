@@ -109,6 +109,6 @@ def _check_installed(dialect: DialectInfo) -> None:
     if module is not None and util.find_spec(module) is None:
         message = (
             f'database driver {module!r} for {dialect.backend} '
-            f"is not installed; run: pip install 'takt[{dialect.extra}]'"
+            f"is not installed; run: pip install 'takt-py[{dialect.extra}]'"
         )
         raise MissingDriverError(message)
