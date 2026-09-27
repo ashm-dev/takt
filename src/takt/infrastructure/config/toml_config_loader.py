@@ -10,9 +10,16 @@ from takt.infrastructure.config.config_sources import ConfigSources
 from takt.infrastructure.config.takt_config import TaktConfig
 
 _DEFAULT_FILE_NAME: Final = 'takt.toml'
+"""Config file that takt reads from the cwd without ``--config``."""
+
 _TOP_KEYS: Final = frozenset(('name_template', 'targets'))
+"""Keys allowed at the top level of ``takt.toml``."""
+
 _TARGET_KEYS: Final = frozenset(('url',))
+"""Keys allowed in a ``[targets.NAME]`` table."""
+
 _TARGET_NAME: Final = re.compile('[A-Za-z0-9_-]+')
+"""Pattern that a whole target name must match."""
 
 
 def load_toml_config(path: Path) -> TaktConfig:

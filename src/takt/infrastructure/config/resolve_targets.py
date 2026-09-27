@@ -13,10 +13,11 @@ from takt.infrastructure.config.sqlite_file_name import sqlite_file_name
 from takt.infrastructure.config.takt_config import TaktConfig
 from takt.infrastructure.config.toml_config_loader import load_config
 
-# Target name, URL, and where the URL came from unless the user typed it.
 _NamedUrl = tuple[str | None, str, str | None]
+"""Target name, URL, and where the URL came from unless the user typed it."""
 
 _MARIADB_PORT: Final = 3306
+"""Port that MariaDB uses when a URL has none."""
 
 
 def resolve_targets(sources: ConfigSources) -> tuple[Target, ...]:

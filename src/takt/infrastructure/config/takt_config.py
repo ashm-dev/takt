@@ -7,14 +7,13 @@ from pathlib import Path
 
 @dataclass(frozen=True, kw_only=True)
 class TaktConfig:
-    """Settings read from a ``takt.toml`` file.
-
-    :ivar targets: Target name to database URL, in file order.
-    :ivar name_template: Run name template text, or ``None``.
-    :ivar path: File the settings were read from, or ``None`` when there
-        was no file.
-    """
+    """Settings read from a ``takt.toml`` file."""
 
     targets: Mapping[str, str]
+    """Target name to database URL, in file order."""
+
     name_template: str | None
+    """Run name template text, or ``None``."""
+
     path: Path | None
+    """File the settings were read from, or ``None`` when there was no file."""

@@ -5,15 +5,16 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True, kw_only=True)
 class DialectInfo:
-    """Database dialect that takt supports.
-
-    :ivar backend: SQLAlchemy backend name, ``"sqlite"`` or ``"mariadb"``.
-    :ivar allowed_drivers: Drivers accepted after ``+`` in the URL.
-    :ivar driver_module: Module to import for the driver, or ``None``.
-    :ivar extra: Package extra that installs the driver, or ``None``.
-    """
+    """Database dialect that takt supports."""
 
     backend: str
+    """SQLAlchemy backend name, ``"sqlite"`` or ``"mariadb"``."""
+
     allowed_drivers: tuple[str, ...]
+    """Drivers accepted after ``+`` in the URL."""
+
     driver_module: str | None
+    """Module to import for the driver, or ``None``."""
+
     extra: str | None
+    """Package extra that installs the driver, or ``None``."""

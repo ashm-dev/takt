@@ -7,19 +7,22 @@ from pathlib import Path
 
 @dataclass(frozen=True, kw_only=True)
 class ConfigSources:
-    """Raw inputs that takt configuration is resolved from.
-
-    :ivar db_flags: Values of ``--db`` in input order.
-    :ivar target_flags: Values of ``--target`` in input order.
-    :ivar config_path: Value of ``--config``, or ``None``.
-    :ivar name_flag: Value of ``--name``, or ``None``.
-    :ivar environ: Process environment variables.
-    :ivar cwd: Current working directory.
-    """
+    """Raw inputs that takt configuration is resolved from."""
 
     db_flags: tuple[str, ...]
+    """Values of ``--db`` in input order."""
+
     target_flags: tuple[str, ...]
+    """Values of ``--target`` in input order."""
+
     config_path: Path | None
+    """Value of ``--config``, or ``None``."""
+
     name_flag: str | None
+    """Value of ``--name``, or ``None``."""
+
     environ: Mapping[str, str]
+    """Process environment variables."""
+
     cwd: Path
+    """Current working directory."""

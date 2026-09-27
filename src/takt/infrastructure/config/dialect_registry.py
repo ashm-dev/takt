@@ -32,6 +32,7 @@ DIALECTS: Final[Mapping[str, DialectInfo]] = MappingProxyType(
         ),
     }
 )
+"""Supported dialects by the backend name at the start of a URL."""
 
 
 def dialect_for_url(url: str) -> DialectInfo:
