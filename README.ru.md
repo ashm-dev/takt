@@ -1,5 +1,12 @@
 [English](README.md)
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ashm-dev/takt/main/docs/assets/logo-dark.png">
+    <img src="https://raw.githubusercontent.com/ashm-dev/takt/main/docs/assets/logo.png" alt="takt" width="400">
+  </picture>
+</p>
+
 # takt
 
 takt запускает бенчмарки pyperformance или ваши pyperf-скрипты.
