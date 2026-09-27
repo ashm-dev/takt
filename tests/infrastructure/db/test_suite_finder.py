@@ -12,18 +12,33 @@ from takt.infrastructure.db.suite_row_writer import insert_suite
 from tests.infrastructure.db.suite_factory import make_record
 
 FIRST_DAY = datetime.fromisoformat('2026-01-01')
+"""Earlier result date."""
+
 SECOND_DAY = datetime.fromisoformat('2026-01-02')
+"""Later result date."""
+
 ONE = '1' * 64
+"""Hash of the ``default`` suite dated ``SECOND_DAY``."""
+
 TWO = '2' * 64
+"""Hash of the ``default`` suite dated ``FIRST_DAY``."""
+
 THREE = '3' * 64
+"""Hash of the ``default`` suite without a result date."""
+
 FOUR = '4' * 64
+"""Hash of the ``other`` suite dated ``FIRST_DAY``."""
+
 FIVE = '5' * 64
+"""Hash of a suite that one test adds to tie with ``FOUR``."""
+
 STORED = (
     (ONE, 'default', SECOND_DAY),
     (TWO, 'default', FIRST_DAY),
     (THREE, 'default', None),
     (FOUR, 'other', FIRST_DAY),
 )
+"""Hash, name and result date of the suites that the fixture inserts."""
 
 
 def insert(

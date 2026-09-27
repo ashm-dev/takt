@@ -13,6 +13,7 @@ from takt.infrastructure.db.sqlalchemy_read_connector import (
 from tests.domain.exact_pattern import exact_pattern
 
 READER = SqlAlchemyReadConnector()
+"""Connector under test, shared because it keeps no state."""
 
 
 def database_path(target: Target) -> Path:

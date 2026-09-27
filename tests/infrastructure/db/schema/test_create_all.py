@@ -21,6 +21,7 @@ from tests.infrastructure.db.schema.expected_schema import (
 )
 
 SUITE_HASH = 'a' * 64
+"""Hash of the suite row that the other rows refer to."""
 
 
 def create_schema(target: Target) -> sa.Engine:

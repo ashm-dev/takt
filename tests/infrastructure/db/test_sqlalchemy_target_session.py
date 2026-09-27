@@ -24,6 +24,7 @@ from takt.infrastructure.db.sqlalchemy_target_session import (
 from tests.infrastructure.db.suite_factory import DEFAULT_HASH, make_record
 
 MISSING_HASH = 'd' * 64
+"""Suite hash that is never stored in the test database."""
 
 
 def loaded_name(target: Target) -> tuple[bool, str | None]:

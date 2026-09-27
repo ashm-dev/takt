@@ -17,7 +17,10 @@ from takt.infrastructure.db.schema.tables import METADATA
 from tests.infrastructure.db.schema.expected_schema import TABLE_NAMES
 
 VERSION_TABLE = 'takt_alembic_version'
+"""Table where Alembic stores the applied revision."""
+
 EXPECTED_TABLES = TABLE_NAMES | {VERSION_TABLE}
+"""All tables the database must have after migration."""
 
 
 def read_versions(engine: sa.Engine) -> list[str]:

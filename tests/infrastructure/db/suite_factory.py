@@ -10,8 +10,13 @@ from takt.domain.model.suite_source import SuiteSource
 from takt.domain.model.worker_run import WorkerRun
 
 DEFAULT_HASH = 'a' * 64
+"""Suite hash that ``make_record`` uses by default."""
+
 DEFAULT_RESULT_DATE = datetime.fromisoformat('2026-09-25T10:00:00.123456')
+"""Default result date of ``make_record``, with microseconds to keep."""
+
 LOADED_AT = datetime(2026, 9, 25, 12, 0, tzinfo=UTC)
+"""Time when the test record was loaded into the database."""
 
 
 def warmup(loops: int, value: float) -> Measurement:

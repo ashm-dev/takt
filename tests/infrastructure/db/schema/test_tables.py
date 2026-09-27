@@ -31,6 +31,7 @@ EXPECTED_COLUMN_TYPES = (
     (str | None, sa.Text),
     (tuple[str, ...] | None, sa.JSON),
 )
+"""Column type that each ``RunMetadata`` field annotation must map to."""
 
 
 def test_table_names() -> None:
