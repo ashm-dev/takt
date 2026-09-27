@@ -227,7 +227,7 @@ takt checks every operand in this order and takes the first match:
 | `3fa2b1` | The run whose hash starts with these characters (6 or more lowercase hex characters) |
 
 After `:` only digits mean a number; anything else means a hash prefix.
-An operand of 1 to 5 hex characters, or one with capital letters, is never searched as a hash prefix. If no run has such a name, the error says how to find a run by hash: `no file or run name matches; to find a run by hash, use 6 to 64 lowercase hex characters`.
+An operand of 1 to 5 hex characters, or one with capital letters, is never searched as a hash prefix. If no run has such a name and the operand mixes digits with the letters a to f, the error says how to find a run by hash: `no file or run name matches; to find a run by hash, use 6 to 64 lowercase hex characters`.
 An operand that looks like a path to a result file is never taken for a run: it ends in `.json` or `.json.gz`, or starts with `/`, `./`, `../` or `~/`.
 If there is no such file, takt prints `error: result file not found: <operand>` and exits with code 1, with or without a database.
 A run name may still contain `/`, as in `release/3.14`.
