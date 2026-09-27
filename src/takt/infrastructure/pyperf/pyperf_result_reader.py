@@ -20,6 +20,7 @@ from takt.infrastructure.pyperf import (
 )
 
 _FORMAT_VERSIONS: Final[frozenset[str]] = frozenset(('1.0', '5', '6'))
+"""pyperf file format versions that takt can read."""
 
 
 class PyperfResultReader:

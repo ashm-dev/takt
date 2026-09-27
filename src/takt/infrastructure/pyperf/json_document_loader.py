@@ -8,7 +8,6 @@ from typing import Final, TextIO
 
 from takt.domain.errors.invalid_result_error import InvalidResultError
 
-# ValueError also covers bad UTF-8, bad JSON and integers over the digit limit.
 _READ_ERRORS: Final = (
     OSError,
     EOFError,
@@ -16,6 +15,7 @@ _READ_ERRORS: Final = (
     RecursionError,
     zlib.error,
 )
+"""Errors of a file that is not JSON; ``ValueError`` covers bad UTF-8 too."""
 
 
 def load_json_document(path: Path) -> object:
