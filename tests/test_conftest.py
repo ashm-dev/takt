@@ -10,6 +10,7 @@ from tests.compiled_name import COMPILED_NAME
 from tests.conftest import PACKAGE_ROOT
 
 CONFTEST = Path(__file__).parent / 'conftest.py'
+"""Path of the ``conftest.py`` file under test."""
 
 
 def test_conftest_guards_the_imported_package() -> None:

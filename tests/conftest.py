@@ -13,13 +13,20 @@ from testcontainers.community.mysql import MySqlContainer
 from tests.stop_if_compiled import stop_if_compiled
 
 PACKAGE_ROOT = Path(__file__).parent.parent / 'src' / 'takt'
+"""Directory with the ``takt`` package sources."""
+
 stop_if_compiled(PACKAGE_ROOT)
 
 from takt.domain.model.target import Target  # noqa: E402 - guard must run first
 
 MARIADB_IMAGE = 'mariadb:11.4'
+"""Docker image of the MariaDB test server."""
+
 ACCOUNT = 'takt'
+"""User name and password of the test database account."""
+
 ROOT = 'root'
+"""Password of the MariaDB ``root`` account, also used as its user name."""
 
 
 @pytest.fixture

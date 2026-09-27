@@ -26,6 +26,7 @@ PACKAGES = (
     'takt.infrastructure.render',
     'takt.cli',
 )
+"""Packages that must import without errors."""
 
 
 @pytest.mark.parametrize('package', PACKAGES)

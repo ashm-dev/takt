@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 _EXIT_CODE = 2
+"""Exit code when compiled modules are found."""
 
 
 def stop_if_compiled(package_root: Path) -> None:

@@ -3,6 +3,7 @@
 import re
 
 _FLAG_PATTERN = re.compile(r'(?<![\w-])--?[A-Za-z][\w-]*')
+"""Short or long flag that does not follow a word character or a dash."""
 
 
 def help_flags(text: str) -> set[str]:
