@@ -13,6 +13,7 @@ from tests.domain.exact_pattern import exact_pattern
 from tests.infrastructure.config.config_inputs import FULL_FILE, sources
 
 EMPTY_CONFIG = TaktConfig(targets={}, name_template=None, path=None)
+"""Config loaded when there is no ``takt.toml`` or it is empty."""
 
 
 @pytest.fixture

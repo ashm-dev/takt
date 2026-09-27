@@ -15,6 +15,7 @@ from takt.infrastructure.config.dialect_registry import (
 )
 
 REAL_FIND_SPEC = util.find_spec
+"""Original ``find_spec`` saved before tests patch it."""
 
 
 def find_spec_without_pymysql(name: str) -> object:

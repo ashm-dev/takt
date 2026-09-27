@@ -17,13 +17,17 @@ UNSUPPORTED_POSTGRESQL = (
     "unsupported database 'postgresql'; "
     'supported in this version: mariadb, sqlite'
 )
+"""Error text for a PostgreSQL URL, which this version does not support."""
 
 LOCAL = Target(name='local', url='sqlite:///bench.sqlite', dialect='sqlite')
+"""Target that ``FULL_FILE`` defines as ``local``."""
+
 MARIA_CI = Target(
     name='maria_ci',
     url='mariadb+pymysql://user:pass@db.local:3306/bench',
     dialect='mariadb',
 )
+"""Target that ``FULL_FILE`` defines as ``maria_ci``."""
 
 
 def sqlite_target(url: str) -> Target:

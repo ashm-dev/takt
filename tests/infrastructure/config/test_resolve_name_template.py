@@ -12,6 +12,7 @@ from tests.domain.exact_pattern import exact_pattern
 from tests.infrastructure.config.config_inputs import sources
 
 EMPTY_NAME = 'run name must not be empty'
+"""Error text for an empty run name."""
 
 
 def write_template(tmp_path: Path, template: str) -> None:

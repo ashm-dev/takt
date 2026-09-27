@@ -11,6 +11,7 @@ url = "sqlite:///bench.sqlite"
 [targets.maria_ci]
 url = "mariadb+pymysql://user:pass@db.local:3306/bench"
 """
+"""``takt.toml`` text with a name template and two targets."""
 
 
 def sources(cwd: Path) -> ConfigSources:
