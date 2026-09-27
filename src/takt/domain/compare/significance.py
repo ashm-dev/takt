@@ -10,14 +10,13 @@ from takt.domain.compare.t_distribution import tdist95conf_level
 
 @dataclass(frozen=True, kw_only=True)
 class Significance:
-    """Result of the significance test.
-
-    :ivar significant: Whether the samples differ significantly.
-    :ivar t_score: The t-test score, or ``None`` when it was not computed.
-    """
+    """Result of the significance test."""
 
     significant: bool
+    """Whether the samples differ significantly."""
+
     t_score: float | None
+    """The t-test score, or ``None`` when it was not computed."""
 
 
 def is_significant(

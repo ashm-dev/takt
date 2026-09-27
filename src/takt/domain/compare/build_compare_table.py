@@ -16,11 +16,19 @@ from takt.domain.model.benchmark import Benchmark
 from takt.domain.model.suite import Suite
 
 _DEFAULT_UNIT: Final = 'second'
+"""Unit assumed when no run of a benchmark names one."""
+
 _NOT_SIGNIFICANT: Final = 'not significant'
+"""Cell text for a value that does not differ significantly from the base."""
 
 _BenchmarksByName = Mapping[str, Benchmark]
+"""Benchmarks of one suite that have values, keyed by benchmark name."""
+
 _Row = tuple[str, ...]
+"""Table row: benchmark name, then one cell per suite."""
+
 _IgnoredOperand = tuple[str, tuple[str, ...]]
+"""Operand label and the sorted names of its benchmarks left out."""
 
 
 def build_compare_table(

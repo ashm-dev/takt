@@ -11,8 +11,10 @@ _TDIST95_CONF_LEVELS: Final[tuple[float, ...]] = (
     2.06, 2.056, 2.052, 2.048, 2.045,
     2.042,
 )  # fmt: skip
+"""Critical values indexed by degrees of freedom from 0 to 30."""
 
 _WideRange = tuple[int, float]
+"""Lowest degrees of freedom of a range and its critical value."""
 
 _WIDE_RANGES: Final[tuple[_WideRange, ...]] = (
     (200, 1.96),
@@ -23,6 +25,7 @@ _WIDE_RANGES: Final[tuple[_WideRange, ...]] = (
     (40, 2.021),
     (len(_TDIST95_CONF_LEVELS), _TDIST95_CONF_LEVELS[-1]),
 )
+"""Critical values from 31 degrees of freedom up, largest bound first."""
 
 
 def tdist95conf_level(degrees_of_freedom: float) -> float:

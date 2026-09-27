@@ -7,11 +7,10 @@ from takt.domain.model.suite import Suite
 
 @dataclass(frozen=True, kw_only=True)
 class LabeledSuite:
-    """Suite taking part in a comparison.
-
-    :ivar label: Operand exactly as the user wrote it.
-    :ivar suite: The suite behind the operand.
-    """
+    """Suite taking part in a comparison."""
 
     label: str
+    """Operand exactly as the user wrote it."""
+
     suite: Suite
+    """The suite behind the operand."""

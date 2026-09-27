@@ -3,15 +3,34 @@
 from typing import Final
 
 _TIMEDELTA_UNITS: Final[tuple[str, ...]] = ('sec', 'ms', 'us', 'ns')
+"""Unit names for seconds, milliseconds, microseconds and nanoseconds."""
+
 _MAX_POWER: Final = 2
+"""Largest decimal exponent that sets the precision of a time value."""
+
 _MIN_POWER: Final = -9
+"""Decimal exponent for time values below ``1e-8``, zero included."""
+
 _TEN: Final = 10.0
+"""Base of the decimal exponent, a float so that its powers stay floats."""
+
 _KIB: Final = 1024.0
+"""Bytes in one kibibyte."""
+
 _MIB: Final = _KIB * _KIB
+"""Bytes in one mebibyte."""
+
 _BYTES_LIMIT: Final = 10 * _KIB
+"""Sizes below this many bytes are printed in bytes."""
+
 _KIB_LIMIT: Final = 10 * _MIB
+"""Sizes above this many bytes are printed in MiB instead of KiB."""
+
 _POW10_START: Final = 10000
+"""Smallest integer value that may be printed as a power of ten."""
+
 _POW2_START: Final = 8192
+"""Integer values above this may be printed as a power of two."""
 
 
 def format_value(unit: str, value: float) -> str:
