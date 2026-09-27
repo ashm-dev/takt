@@ -8,8 +8,6 @@ class BenchmarkInterruptedError(Exception):
 
     It only rides along as ``__cause__`` of the ``KeyboardInterrupt``, so
     Ctrl+C stays a ``KeyboardInterrupt`` for every caller.
-
-    :ivar result_path: New result file with the benchmarks that finished.
     """
 
     def __init__(self, result_path: Path) -> None:
@@ -19,3 +17,4 @@ class BenchmarkInterruptedError(Exception):
         """
         super().__init__(f'partial result was written to {result_path}')
         self.result_path = result_path
+        """New result file with the benchmarks that finished."""

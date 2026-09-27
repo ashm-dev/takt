@@ -5,6 +5,7 @@ from takt.domain.errors.configuration_error import ConfigurationError
 _MESSAGE = (
     'no database targets configured: use --db, --target, TAKT_DB or takt.toml'
 )
+"""Error text that lists every way to configure a database target."""
 
 
 class NoTargetsError(ConfigurationError):

@@ -5,10 +5,7 @@ from takt.domain.model.suite_summary import SuiteSummary
 
 
 class AmbiguousOperandError(ExecutionError):
-    """Compare operand matches several stored suites.
-
-    :ivar candidates: Matching suites in lookup order.
-    """
+    """Compare operand matches several stored suites."""
 
     def __init__(
         self,
@@ -23,3 +20,4 @@ class AmbiguousOperandError(ExecutionError):
         """
         super().__init__(message)
         self.candidates = candidates
+        """Matching suites in lookup order."""

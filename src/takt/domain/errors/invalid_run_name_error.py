@@ -6,11 +6,7 @@ from takt.domain.errors.usage_error import UsageError
 
 
 class InvalidRunNameError(UsageError):
-    """Run name template or rendered run name is invalid.
-
-    :ivar result_path: Result file that ``takt run`` produced before the
-        final name was checked, or ``None``.
-    """
+    """Run name template or rendered run name is invalid."""
 
     def __init__(
         self,
@@ -25,3 +21,5 @@ class InvalidRunNameError(UsageError):
         """
         super().__init__(message)
         self.result_path = result_path
+        """Result file that ``takt run`` produced before the final name was
+        checked, or ``None``."""

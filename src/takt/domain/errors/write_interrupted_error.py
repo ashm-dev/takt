@@ -8,9 +8,6 @@ class WriteInterruptedError(Exception):
 
     It only rides along as ``__cause__`` of the ``KeyboardInterrupt``, so
     Ctrl+C stays a ``KeyboardInterrupt`` for every caller.
-
-    :ivar result_path: Complete result file that was being written.
-    :ivar name: Run name given to the result, or ``None``.
     """
 
     def __init__(self, result_path: Path, name: str | None) -> None:
@@ -21,4 +18,7 @@ class WriteInterruptedError(Exception):
         """
         super().__init__(f'writing of {result_path} was interrupted')
         self.result_path = result_path
+        """Complete result file that was being written."""
+
         self.name = name
+        """Run name given to the result, or ``None``."""

@@ -6,13 +6,7 @@ from takt.domain.errors.execution_error import ExecutionError
 
 
 class BenchmarkFailedError(ExecutionError):
-    """Benchmark process failed or left no result file.
-
-    :ivar return_code: Exit code of the benchmark process: ``127`` if it
-        could not start, ``0`` if it finished without a result file.
-    :ivar result_path: Result file that the failed process still wrote,
-        or ``None``.
-    """
+    """Benchmark process failed or left no result file."""
 
     def __init__(
         self,
@@ -29,4 +23,8 @@ class BenchmarkFailedError(ExecutionError):
         """
         super().__init__(message)
         self.return_code = return_code
+        """Exit code of the benchmark process: ``127`` if it could not start,
+        ``0`` if it finished without a result file."""
+
         self.result_path = result_path
+        """Result file that the failed process still wrote, or ``None``."""
