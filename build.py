@@ -9,9 +9,16 @@ from setuptools import Distribution
 from setuptools.command.build_ext import build_ext
 
 SOURCE_ROOT = Path('src')
+"""Folder that holds the importable ``takt`` package."""
+
 PACKAGE_ROOT = SOURCE_ROOT / 'takt'
+"""Folder of the ``takt`` package whose modules mypyc compiles."""
+
 MIGRATIONS_DIR = 'migrations'
+"""Folder name of Alembic migrations, which mypyc must skip."""
+
 PARALLEL_JOBS = 2
+"""Number of C extensions that are compiled at the same time."""
 
 
 def collect_sources() -> list[str]:
