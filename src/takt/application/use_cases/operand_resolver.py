@@ -13,8 +13,10 @@ from takt.domain.operand.plain_operand import PlainOperand
 from takt.domain.operand.tagged_operand import TaggedOperand
 
 _SHORT_HASH_LENGTH = 12
+"""Number of hash characters shown for each match in an ambiguity error."""
 
 _Matches = tuple[SuiteSummary, ...]
+"""Stored suites that match one operand."""
 
 
 class OperandResolver:

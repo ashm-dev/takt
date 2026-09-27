@@ -15,6 +15,7 @@ from takt.domain.operand.operand import Operand
 from takt.domain.operand.parse_operand import parse_operand
 
 _MIN_OPERANDS = 2
+"""Smallest operand count: the base and at least one run to compare with it."""
 
 
 class CompareSuites:
