@@ -1,5 +1,5 @@
 [project]
-name = "takt"
+name = "takt-py"
 version = "0.1.0"
 description = "Run pyperformance and pyperf benchmarks and store the results in SQL databases."
 authors = [

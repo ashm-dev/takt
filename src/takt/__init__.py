@@ -13,8 +13,8 @@ from takt.domain.errors.execution_error import ExecutionError
 from takt.domain.errors.takt_error import TaktError
 from takt.domain.errors.usage_error import UsageError
 
-__version__: Final[str] = version('takt')
-"""Version of the installed ``takt`` distribution."""
+__version__: Final[str] = version('takt-py')
+"""Version of the installed ``takt-py`` distribution."""
 
 __all__ = (
     'run',
