@@ -17,14 +17,16 @@ jobs:
     container: quay.io/pypa/manylinux_2_28_x86_64
     steps:
       - uses: actions/checkout@v5
+      - name: Put Python 3.14 on PATH
+        run: echo /opt/python/cp314-cp314/bin >> "$GITHUB_PATH"
       - name: Install Poetry
-        run: /opt/python/cp314-cp314/bin/python -m pip install "poetry==${POETRY_VERSION}"
+        run: pip install "poetry==${POETRY_VERSION}"
       - name: Build wheel
         env:
           TAKT_MYPYC: '1'
         run: |
-          /opt/python/cp314-cp314/bin/python -m poetry env use /opt/python/cp314-cp314/bin/python
-          /opt/python/cp314-cp314/bin/python -m poetry build -f wheel
+          poetry env use python3.14
+          poetry build -f wheel
       - name: Repair wheel
         run: auditwheel repair dist/*.whl -w wheelhouse
       - uses: actions/upload-artifact@v4
