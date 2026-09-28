@@ -1,6 +1,9 @@
 site_name: takt
 site_description: Run pyperformance and pyperf benchmarks and store the results in SQL databases.
 site_author: Shamil Abdulaev
+site_url: https://ashm-dev.github.io/takt/
+repo_url: https://github.com/ashm-dev/takt
+repo_name: ashm-dev/takt
 extra:
   social:
     - icon: fontawesome/solid/globe
