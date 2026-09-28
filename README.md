@@ -68,7 +68,7 @@ With this file, `takt run -b nbody --fast` stores the result in `bench.db` under
 
 ## Documentation
 
-The full documentation is in the `docs` directory. To read it locally:
+The full documentation is at [ashm-dev.github.io/takt](https://ashm-dev.github.io/takt/). Its sources are in the `docs` directory. To read it locally:
 
 ```bash
 poetry run mkdocs serve

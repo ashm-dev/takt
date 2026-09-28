@@ -68,7 +68,7 @@ url = "sqlite:///bench.db"
 
 ## Документация
 
-Полная документация лежит в каталоге `docs`. Чтобы посмотреть её локально:
+Полная документация — на сайте [ashm-dev.github.io/takt](https://ashm-dev.github.io/takt/ru/). Её исходники лежат в каталоге `docs`. Чтобы посмотреть её локально:
 
 ```bash
 poetry run mkdocs serve
